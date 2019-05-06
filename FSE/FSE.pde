@@ -9,6 +9,37 @@ PFont[] light = new PFont[3];
 PFont[] xLight = new PFont[3];
 PFont[] thin = new PFont[3];
 
+PImage square;
+PImage back;
+
+int JUMPPOWER=-10;
+float gravity=0.5;
+
+float px=0.0;
+float py=0.0;
+float vy=0;
+float angle=0;
+
+boolean moveLeft=false;
+boolean moveRight=false;
+
+void movePlayer(){
+  if(moveRight){
+    px+=10;;
+  }
+  if(moveLeft){
+    px-=10;;
+  }
+  py+=vy;//moving the player up/down
+  if (py>450){
+    py=450;//keep the player on the ground
+    vy=0;//stop falling
+  }
+  
+  vy+=gravity;//apply gravity
+}
+
+
 void initFont(){
   for (int i = 0; i < regular.length; i++){
     regular[i] = createFont("Font/Montserrat-Regular.ttf", (i+1)*48);
@@ -21,6 +52,8 @@ void initFont(){
 void setup(){
   size(1280, 720);
   initFont();
+  square=loadImage("Imgs/white-small-square_25ab.png");
+  back=loadImage("Imgs/Wiki-background.png");
 }
 
 void mainMenu(){
@@ -94,6 +127,27 @@ void mainMenu(){
   
 }
 
+void keyPressed(){
+  if (key==32 && py==450){//only jump if on ground
+    vy=JUMPPOWER;//jumping power
+  }
+}//end keyPressed
+
+
+void game(){
+  movePlayer();
+  for(int i=0;i<99999;i+=600){
+    //rotate(angle);
+    // angle+=0.1;
+    image(back,px+i,0);
+    rect(0,565,800,565);
+  }
+  px-=10;
+  image(square,200,py);
+  fill(0,255,0);
+}
+
 void draw(){
   if (currentScene == 0) mainMenu();
+  else if (currentScene == 3) game();
 }
