@@ -44,8 +44,8 @@ void draw(){
   background(255);
   movePlayer();
   for(int i=0;i<99999;i+=600){
-    rotate(angle);
-    angle+=0.1;
+    //rotate(angle);
+    // angle+=0.1;
     image(back,px+i,0);
     rect(0,565,800,565);
   }
