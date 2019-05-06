@@ -34,6 +34,13 @@ void keyPressed(){
   }
 }//end keyPressed
 
+void addTrail(){
+  for(int i=0;i<10;i++){
+    tint(255,100+i*5);
+    image(square,200+i*5,py,height*(1/i),width*(1/i));
+  }
+}
+
 void setup(){
   size(800,600);
   square=loadImage("white-small-square_25ab.png");
@@ -44,12 +51,14 @@ void draw(){
   background(255);
   movePlayer();
   for(int i=0;i<99999;i+=600){
-    //rotate(angle);
-    // angle+=0.1;
+    tint(255,255);
+    rotate(angle);
+    //angle+=0.1;
     image(back,px+i,0);
     rect(0,565,800,565);
+    addTrail();
   }
   px-=10;
   image(square,200,py);
   fill(0,255,0);
-}
+} 
