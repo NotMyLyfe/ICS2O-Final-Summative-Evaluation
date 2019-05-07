@@ -9,6 +9,8 @@ PFont[] light = new PFont[3];
 PFont[] xLight = new PFont[3];
 PFont[] thin = new PFont[3];
 
+float time = 0;
+
 PImage square;
 PImage back;
 
@@ -22,6 +24,8 @@ float angle=0;
 
 boolean moveLeft=false;
 boolean moveRight=false;
+
+ArrayList<ArrayList<Float>> trail = new ArrayList<ArrayList<Float>>();
 
 void movePlayer(){
   if(moveRight){
@@ -134,9 +138,22 @@ void keyPressed(){
 }//end keyPressed
 
 void addTrail(){
-  for(int i=0;i<10;i++){
-    tint(255,100+i*5);
-    image(square,200+i*5,py,height*(1/i),width*(1/i));
+  tint(255,100);
+  ArrayList<Float> newTrail = new ArrayList<Float>();
+  newTrail.add(200.0);
+  newTrail.add(pos[1]);
+  trail.add(newTrail);
+  time = millis();
+}
+
+void updateTrail(){
+  tint(255, 100);
+  for(int i = 0; i < trail.size(); i++){
+    image(square, trail.get(i).get(0), trail.get(i).get(1));
+    if (trail.get(i).get(0)+square.width < 0){
+      trail.remove(i);
+    }
+    trail.get(i).set(0, trail.get(i).get(0)-1);
   }
 }
 
@@ -147,10 +164,12 @@ void game(){
     rotate(angle);
     //angle+=0.1;
     image(back,pos[0]+i,0);
-    rect(0,565,800,565);
-    //addTrail();
+    rect(0,565,width,565);
   }
+  if (millis()-time >= 250) addTrail();
+  updateTrail();
   pos[0]-=10;
+  tint(255, 255);
   image(square,200,pos[1]);
   fill(0,255,0);
 }
