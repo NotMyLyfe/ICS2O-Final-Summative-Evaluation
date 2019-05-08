@@ -13,7 +13,8 @@ PImage square;
 PImage back;
 
 int JUMPPOWER=-10;
-float gravity=0.5;
+float gravity=0.5
+;
 
 float pos[] = {0.0, 0.0};
 
@@ -135,8 +136,8 @@ void keyPressed(){
 
 void addTrail(){
   for(int i=0;i<10;i++){
-    tint(255,100+i*5);
-    image(square,200+i*5,py,height*(1/i),width*(1/i));
+    tint(255,100-i*5);
+    image(square,200-i*5,pos[1],height*(1/i),width*(1/i));
   }
 }
 
@@ -147,7 +148,7 @@ void game(){
     rotate(angle);
     //angle+=0.1;
     image(back,pos[0]+i,0);
-    rect(0,565,800,565);
+    rect(0,565,width,565);
     //addTrail();
   }
   pos[0]-=10;
