@@ -17,10 +17,10 @@ float time = 0;
 
 PImage square;
 PImage back;
+PImage[] character = new PImage[3];
 
 int JUMPPOWER=-10;
-float gravity=0.5
-;
+float gravity=0.5;
 
 float pos[] = {0.0, 0.0};
 
@@ -58,9 +58,14 @@ void initFont(){
   }
 }
 
+void initImgs(){
+  character[0] = loadImage("Imgs/Character Body.png");
+}
+
 void setup(){
   size(1280, 720);
   initFont();
+  initImgs();
   square=loadImage("Imgs/white-small-square_25ab.png");
   back=loadImage("Imgs/Wiki-background.png");
   if (loadStrings("saveGame.txt") != null){
@@ -145,8 +150,8 @@ void addTrail(){
 
 void updateTrail(){
   for(int i = 0; i < trail.size(); i++){
-    tint(255, 55+trail.get(i).get(0));
-    image(square, trail.get(i).get(0), trail.get(i).get(1));
+    tint(255, trail.get(i).get(0));
+    image(character[0], trail.get(i).get(0), trail.get(i).get(1));
     if (trail.get(i).get(0)+square.width < 0){
       trail.remove(i);
     }
@@ -159,16 +164,18 @@ int gameFrame = 0;
 void game(){
   movePlayer();
   for(int i=0;i<99999;i+=600){
+    imageMode(CORNER);
     tint(255,255);
     image(back,pos[0]+i,0);
   }
   rectMode(CORNER);
   rect(0,565,width,565);
   if (trail.size() == 0 || trail.get(trail.size()-1).get(0) <= 200-square.width/1.25 || trail.get(trail.size()-1).get(1) > pos[1]+square.height/1.25 || trail.get(trail.size()-1).get(1)+square.height/1.25 < pos[1]) addTrail();
+  imageMode(CENTER);
   updateTrail();
   pos[0]-=10;
   tint(255, 255);
-  image(square,200,pos[1]);
+  image(character[0],200,pos[1]);
   fill(0,255,0);
 }
 
