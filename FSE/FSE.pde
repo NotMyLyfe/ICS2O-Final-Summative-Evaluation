@@ -144,8 +144,8 @@ void addTrail(){
 }
 
 void updateTrail(){
-  tint(255, 100);
   for(int i = 0; i < trail.size(); i++){
+    tint(255, 55+trail.get(i).get(0));
     image(square, trail.get(i).get(0), trail.get(i).get(1));
     if (trail.get(i).get(0)+square.width < 0){
       trail.remove(i);
