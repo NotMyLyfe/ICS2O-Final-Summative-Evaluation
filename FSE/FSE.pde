@@ -63,7 +63,7 @@ void setup(){
   square=loadImage("Imgs/white-small-square_25ab.png");
   back=loadImage("Imgs/Wiki-background.png");
   if (loadStrings("saveGame.txt") != null){
-    saveData[] = loadStrings("saveGame.txt");
+    saveData = loadStrings("saveGame.txt");
   }
 }
 
