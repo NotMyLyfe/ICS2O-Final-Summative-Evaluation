@@ -150,7 +150,7 @@ void updateTrail(){
     if (trail.get(i).get(0)+square.width < 0){
       trail.remove(i);
     }
-    trail.get(i).set(0, trail.get(i).get(0)-1);
+    trail.get(i).set(0, trail.get(i).get(0)-5);
   }
 }
 
@@ -160,10 +160,9 @@ void game(){
   movePlayer();
   for(int i=0;i<99999;i+=600){
     tint(255,255);
-    rotate(angle);
-    //angle+=0.1;
     image(back,pos[0]+i,0);
   }
+  rectMode(CORNER);
   rect(0,565,width,565);
   if (trail.size() == 0 || trail.get(trail.size()-1).get(0) <= 200-square.width/1.25 || trail.get(trail.size()-1).get(1) > pos[1]+square.height/1.25 || trail.get(trail.size()-1).get(1)+square.height/1.25 < pos[1]) addTrail();
   updateTrail();
