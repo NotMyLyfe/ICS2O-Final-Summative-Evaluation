@@ -2,12 +2,18 @@
 By Gordon Lin and Daniel Weng
 */
 
-int currentScene = 3;
+int currentScene = 0;
 
 PFont[] regular = new PFont[3];
 PFont[] light = new PFont[3];
 PFont[] xLight = new PFont[3];
 PFont[] thin = new PFont[3];
+
+String[] saveData = {};
+
+float loadError = 0;
+
+float time = 0;
 
 PImage square;
 PImage back;
@@ -24,6 +30,8 @@ float angle=0;
 boolean moveLeft=false;
 boolean moveRight=false;
 
+ArrayList<ArrayList<Float>> trail = new ArrayList<ArrayList<Float>>();
+
 void movePlayer(){
   if(moveRight){
     pos[0]+=10;;
@@ -32,8 +40,8 @@ void movePlayer(){
     pos[0]-=10;;
   }
   pos[1]+=vy;//moving the player up/down
-  if (pos[1]>450){
-    pos[1]=450;//keep the player on the ground
+  if (pos[1]>565-square.height){
+    pos[1]=565-square.height;//keep the player on the ground
     vy=0;//stop falling
   }
   
@@ -55,6 +63,9 @@ void setup(){
   initFont();
   square=loadImage("Imgs/white-small-square_25ab.png");
   back=loadImage("Imgs/Wiki-background.png");
+  if (loadStrings("saveGame.txt") != null){
+    saveData = loadStrings("saveGame.txt");
+  }
 }
 
 void mainMenu(){
@@ -68,6 +79,7 @@ void mainMenu(){
   rectMode(CENTER);
   if (mouseX > width/2-150 && mouseX < width/2+150 && mouseY > height/2-60 && mouseY < height/2+20){
     fill(0);
+    if (mousePressed) currentScene = 2;
   }
   else{
     fill(255);
@@ -90,14 +102,16 @@ void mainMenu(){
   rect(width/2, height/2+80, 300, 80);
   if (mouseX > width/2-150 && mouseX < width/2+150 && mouseY > height/2+40 && mouseY < height/2+120){
     fill(255);
+    if (mousePressed) currentScene = 1;
   }
   else{
     fill(0);
   }
-  text("Load Game", width/2, height/2+75);
+  text("Credits", width/2, height/2+75);
   
   if (mouseX > width/2-150 && mouseX < width/2+150 && mouseY > height/2+140 && mouseY < height/2+220){
     fill(0);
+    if (mousePressed) exit();
   }
   else{
     fill(255);
@@ -109,37 +123,38 @@ void mainMenu(){
   else{
     fill(0);
   }
-  text("Credits", width/2, height/2+175);
-  
-  if (mouseX > width/2-150 && mouseX < width/2+150 && mouseY > height/2+240 && mouseY < height/2+320){
-    fill(0);
-  }
-  else{
-    fill(255);
-  }
-  rect(width/2, height/2+280, 300, 80);
-  if (mouseX > width/2-150 && mouseX < width/2+150 && mouseY > height/2+240 && mouseY < height/2+320){
-    fill(255);
-  }
-  else{
-    fill(0);
-  }
-  text("Exit", width/2, height/2+275);
+  text("Exit", width/2, height/2+175);
   
 }
 
 void keyPressed(){
-  if (key==32 && pos[1]==450){//only jump if on ground
+  if (key==32 && pos[1]==565-square.height){//only jump if on ground
     vy=JUMPPOWER;//jumping power
   }
 }//end keyPressed
 
 void addTrail(){
-  for(int i=0;i<10;i++){
-    tint(255,100-i*5);
-    image(square,200-i*5,pos[1],height*(1/i),width*(1/i));
+
+  tint(255,100);
+  ArrayList<Float> newTrail = new ArrayList<Float>();
+  newTrail.add(200.0);
+  newTrail.add(pos[1]);
+  trail.add(newTrail);
+  time = millis();
+}
+
+void updateTrail(){
+  tint(255, 100);
+  for(int i = 0; i < trail.size(); i++){
+    image(square, trail.get(i).get(0), trail.get(i).get(1));
+    if (trail.get(i).get(0)+square.width < 0){
+      trail.remove(i);
+    }
+    trail.get(i).set(0, trail.get(i).get(0)-1);
   }
 }
+
+int gameFrame = 0;
 
 void game(){
   movePlayer();
@@ -148,15 +163,21 @@ void game(){
     rotate(angle);
     //angle+=0.1;
     image(back,pos[0]+i,0);
-    rect(0,565,width,565);
-    //addTrail();
   }
+  rect(0,565,width,565);
+  if (trail.size() == 0 || trail.get(trail.size()-1).get(0) <= 200-square.width/1.25 || trail.get(trail.size()-1).get(1) > pos[1]+square.height/1.25 || trail.get(trail.size()-1).get(1)+square.height/1.25 < pos[1]) addTrail();
+  updateTrail();
   pos[0]-=10;
+  tint(255, 255);
   image(square,200,pos[1]);
   fill(0,255,0);
 }
 
+void credits(){
+}
+
 void draw(){
   if (currentScene == 0) mainMenu();
-  else if (currentScene == 3) game();
+  else if (currentScene == 1) credits();
+  else if (currentScene == 2) game();
 }
