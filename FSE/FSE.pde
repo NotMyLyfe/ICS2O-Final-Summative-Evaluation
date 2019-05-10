@@ -2,7 +2,7 @@
 By Gordon Lin and Daniel Weng
 */
 
-int currentScene = 0;
+int currentScene = 2;
 
 PFont[] regular = new PFont[3];
 PFont[] light = new PFont[3];
@@ -17,10 +17,10 @@ float time = 0;
 
 PImage square;
 PImage back;
+PImage[] character = new PImage[3];
 
 int JUMPPOWER=-10;
-float gravity=0.5
-;
+float gravity=0.5;
 
 float pos[] = {0.0, 0.0};
 
@@ -43,8 +43,8 @@ void movePlayer(){
     pos[0]-=10;;
   }
   pos[1]+=vy;//moving the player up/down
-  if (pos[1]>565-square.height){
-    pos[1]=565-square.height;//keep the player on the ground
+  if (pos[1]>700-character[0].height){
+    pos[1]=700-character[0].height;//keep the player on the ground
     vy=0;//stop falling
   }
   
@@ -61,9 +61,16 @@ void initFont(){
   }
 }
 
+void initImgs(){
+  character[0] = loadImage("Imgs/Character Body.png");
+  character[1] = loadImage("Imgs/Character Arm.png");
+  character[2] = loadImage("Imgs/Character Leg.png");
+}
+
 void setup(){
   size(1280, 720);
   initFont();
+  initImgs();
   square=loadImage("Imgs/white-small-square_25ab.png");
   back=loadImage("Imgs/Wiki-background.png");
   if (loadStrings("saveGame.txt") != null){
@@ -131,7 +138,7 @@ void mainMenu(){
 }
 
 void keyPressed(){
-  if (key==32 && pos[1]==565-square.height){//only jump if on ground
+  if (key==32 && pos[1]==700-character[0].height){//only jump if on ground
     vy=JUMPPOWER;//jumping power
   }
 }//end keyPressed
@@ -143,20 +150,31 @@ void platform(){
   }
 }
 
+float rotation = 0;
+float vR = radians(10);
+
+
 void addTrail(){
 
   tint(255,100);
   ArrayList<Float> newTrail = new ArrayList<Float>();
   newTrail.add(180.0);
   newTrail.add(pos[1]);
+  newTrail.add(rotation);
   trail.add(newTrail);
-  time = millis();
 }
 
 void updateTrail(){
   for(int i = 0; i < trail.size(); i++){
-    tint(255, 25+(trail.get(i).get(0)));
-    image(square, trail.get(i).get(0), trail.get(i).get(1));
+    tint(255, trail.get(i).get(0));
+    pushMatrix();
+    translate(trail.get(i).get(0),trail.get(i).get(1)+character[0].height/3);
+    rotate(trail.get(i).get(2));
+    image(character[2], 0, character[1].height/2);
+    rotate(-trail.get(i).get(2)*2);
+    image(character[2], 0, character[1].height/2);
+    popMatrix();
+    image(character[0], trail.get(i).get(0), trail.get(i).get(1));
     if (trail.get(i).get(0)+square.width < 0){
       trail.remove(i);
     }
@@ -164,26 +182,39 @@ void updateTrail(){
   }
 }
 
-int gameFrame = 0;
-
-void game(){
-  movePlayer();
-  for(int i=0;i<99999;i+=600){
-    tint(255,255);
-    image(back,pos[0]+i,0);
-  }
+void drawChar(){
   rectMode(CORNER);
   rect(0,565,width,565);
   for (int i=0;i<platx.length;i++){
     rect(platx[i],platy[i],60,10); 
   }
   if (trail.size() == 0 || trail.get(trail.size()-1).get(0) <= 200-square.width/1.25 || trail.get(trail.size()-1).get(1) > pos[1]+square.height/1.25 || trail.get(trail.size()-1).get(1)+square.height/1.25 < pos[1]) addTrail();
+  imageMode(CENTER);
   updateTrail();
   pos[0]-=3;
   tint(255, 255);
-  image(square,200,pos[1]);
   fill(0,255,0);
   platform();
+  if (rotation >= PI/4 || rotation <= -PI/4) vR*=-1;
+  rotation+=vR;
+  pushMatrix();
+  translate(200,pos[1]+character[0].height/3);
+  rotate(rotation);
+  image(character[2], 0, character[1].height/2);
+  rotate(-rotation*2);
+  image(character[2], 0, character[1].height/2);
+  popMatrix();
+  image(character[0],200,pos[1]);
+}
+
+void game(){
+  movePlayer();
+  for(int i=0;i<99999;i+=600){
+    imageMode(CORNER);
+    tint(255,255);
+    image(back,pos[0]+i,0);
+  }
+  drawChar();
 }
 
 void credits(){
