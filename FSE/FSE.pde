@@ -65,6 +65,10 @@ void initImgs(){
   character[0] = loadImage("Imgs/Character Body.png");
   character[1] = loadImage("Imgs/Character Arm.png");
   character[2] = loadImage("Imgs/Character Leg.png");
+  for (int i = 0; i < 3; i++){
+    character[i].resize(character[i].width*3/4, character[i].height*3/4);
+  }
+  character[1].resize(character[1].width*3/4, character[1].height*3/4);
 }
 
 void setup(){
@@ -151,7 +155,7 @@ void platform(){
 }
 
 float rotation = 0;
-float vR = radians(10);
+float vR = radians(8.5);
 
 
 void addTrail(){
@@ -182,9 +186,19 @@ void updateTrail(){
   }
 }
 
+void drawArms(){
+  rectMode(CENTER);
+  pushMatrix();
+  translate(200, pos[1]);
+  if (mousePressed) rotate(-PI/2);
+  else rotate(rotation);
+  image(character[1], 0, character[1].height/2);
+  rectMode(CENTER);
+  rect(0, character[1].height, 20, 30); //placeholder for gun
+  popMatrix();
+}
+
 void drawChar(){
-  rectMode(CORNER);
-  rect(0,565,width,565);
   for (int i=0;i<platx.length;i++){
     rect(platx[i],platy[i],60,10); 
   }
@@ -205,6 +219,7 @@ void drawChar(){
   image(character[2], 0, character[1].height/2);
   popMatrix();
   image(character[0],200,pos[1]);
+  drawArms();
 }
 
 void game(){
@@ -214,6 +229,8 @@ void game(){
     tint(255,255);
     image(back,pos[0]+i,0);
   }
+   rectMode(CORNER);
+  rect(0,565,width,565);
   drawChar();
 }
 
