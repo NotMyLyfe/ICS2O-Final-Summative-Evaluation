@@ -30,6 +30,9 @@ float angle=0;
 boolean moveLeft=false;
 boolean moveRight=false;
 
+int[] platx=new int[35];
+int[] platy=new int[35];
+
 ArrayList<ArrayList<Float>> trail = new ArrayList<ArrayList<Float>>();
 
 void movePlayer(){
@@ -133,11 +136,18 @@ void keyPressed(){
   }
 }//end keyPressed
 
+void platform(){
+  for(int i=0;i<platx.length;i++){
+    platx[i]=int(random(300,3750));
+    platy[i]=int(random(400,500));
+  }
+}
+
 void addTrail(){
 
   tint(255,100);
   ArrayList<Float> newTrail = new ArrayList<Float>();
-  newTrail.add(200.0);
+  newTrail.add(180.0);
   newTrail.add(pos[1]);
   trail.add(newTrail);
   time = millis();
@@ -145,12 +155,12 @@ void addTrail(){
 
 void updateTrail(){
   for(int i = 0; i < trail.size(); i++){
-    tint(255, 55+trail.get(i).get(0));
+    tint(255, 25+(trail.get(i).get(0)));
     image(square, trail.get(i).get(0), trail.get(i).get(1));
     if (trail.get(i).get(0)+square.width < 0){
       trail.remove(i);
     }
-    trail.get(i).set(0, trail.get(i).get(0)-5);
+    trail.get(i).set(0, trail.get(i).get(0)-10);
   }
 }
 
@@ -164,12 +174,16 @@ void game(){
   }
   rectMode(CORNER);
   rect(0,565,width,565);
+  for (int i=0;i<platx.length;i++){
+    rect(platx[i],platy[i],60,10); 
+  }
   if (trail.size() == 0 || trail.get(trail.size()-1).get(0) <= 200-square.width/1.25 || trail.get(trail.size()-1).get(1) > pos[1]+square.height/1.25 || trail.get(trail.size()-1).get(1)+square.height/1.25 < pos[1]) addTrail();
   updateTrail();
-  pos[0]-=10;
+  pos[0]-=3;
   tint(255, 255);
   image(square,200,pos[1]);
   fill(0,255,0);
+  platform();
 }
 
 void credits(){
