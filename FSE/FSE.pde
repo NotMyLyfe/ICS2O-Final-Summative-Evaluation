@@ -9,7 +9,7 @@ PFont[] light = new PFont[3];
 PFont[] xLight = new PFont[3];
 PFont[] thin = new PFont[3];
 
-String[] saveData = {};
+String[] saveData = {"0", "0"}; //0th value: past distance, 1st value: gun type
 
 float loadError = 0;
 
@@ -18,6 +18,8 @@ float time = 0;
 PImage square;
 PImage back;
 PImage[] character = new PImage[3];
+PImage[] glock = new PImage[2];
+
 
 int JUMPPOWER=-10;
 float gravity=0.5;
@@ -30,8 +32,8 @@ float angle=0;
 boolean moveLeft=false;
 boolean moveRight=false;
 
-int[] platx=new int[35];
-int[] platy=new int[35];
+int bullets = 12;
+int reloadTime = 4000;
 
 ArrayList<ArrayList<Float>> trail = new ArrayList<ArrayList<Float>>();
 
@@ -69,6 +71,8 @@ void initImgs(){
     character[i].resize(character[i].width*3/4, character[i].height*3/4);
   }
   character[1].resize(character[1].width*3/4, character[1].height*3/4);
+  glock[0] = loadImage("Imgs/Glock Shell.png");
+  glock[1] = loadImage("Imgs/Glock Side.png");
 }
 
 void setup(){
@@ -93,7 +97,7 @@ void mainMenu(){
   rectMode(CENTER);
   if (mouseX > width/2-150 && mouseX < width/2+150 && mouseY > height/2-60 && mouseY < height/2+20){
     fill(0);
-    if (mousePressed) currentScene = 2;
+    if (mousePressed) startGame();
   }
   else{
     fill(255);
@@ -141,22 +145,25 @@ void mainMenu(){
   
 }
 
+void startGame(){
+  currentScene = 2;
+  if (int(saveData[1]) == 0){
+    bullets = 12;
+    reloadTime = 4000;
+  }
+}
+
 void keyPressed(){
   if (key==32 && pos[1]==700-character[0].height){//only jump if on ground
     vy=JUMPPOWER;//jumping power
   }
 }//end keyPressed
 
-void platform(){
-  for(int i=0;i<platx.length;i++){
-    platx[i]=int(random(300,3750));
-    platy[i]=int(random(400,500));
-  }
-}
 
 float rotation = 0;
 float vR = radians(8.5);
-
+float recoil = 0;
+float vRecoil = 0;
 
 void addTrail(){
 
@@ -186,29 +193,60 @@ void updateTrail(){
   }
 }
 
+boolean justFired = false;
+float reloadStart = 0;
+
 void drawArms(){
   rectMode(CENTER);
   pushMatrix();
   translate(200, pos[1]);
-  if (mousePressed) rotate(-PI/2);
+  if (mousePressed && !justFired && bullets > 0) {
+    vRecoil = 2;
+    recoil=2;
+    justFired = true;
+    bullets--;
+    if (bullets == 0) reloadStart = millis();
+  }
+  else if(!mousePressed && recoil == 0){
+    justFired = false;
+  }
+  if (recoil >= 10){
+    vRecoil*=-1;
+  }
+  if (recoil != 0){
+    recoil+=vRecoil;
+    rotate(-PI/2);
+  }
   else rotate(rotation);
+  if (int(saveData[1]) == 0){
+    image(glock[0], 5, character[1].height);
+    image(glock[1], 2+glock[0].width/2, character[1].height-recoil);
+  }
   image(character[1], 0, character[1].height/2);
   rectMode(CENTER);
-  rect(0, character[1].height, 20, 30); //placeholder for gun
+  println(recoil);
   popMatrix();
+  if (bullets == 0 && millis()-reloadStart >= reloadTime){
+    bullets = 12;
+    recoil = 2;
+    vRecoil = 2;
+  }
+}
+
+void charInfo(){
+  fill(0);
+  textFont(regular[0], 48);
+  textAlign(CORNER);
+  text("Bullets remaining: " + bullets, 48, 48);
 }
 
 void drawChar(){
-  for (int i=0;i<platx.length;i++){
-    rect(platx[i],platy[i],60,10); 
-  }
   if (trail.size() == 0 || trail.get(trail.size()-1).get(0) <= 200-square.width/1.25 || trail.get(trail.size()-1).get(1) > pos[1]+square.height/1.25 || trail.get(trail.size()-1).get(1)+square.height/1.25 < pos[1]) addTrail();
   imageMode(CENTER);
   updateTrail();
   pos[0]-=3;
   tint(255, 255);
   fill(0,255,0);
-  platform();
   if (rotation >= PI/4 || rotation <= -PI/4) vR*=-1;
   rotation+=vR;
   pushMatrix();
@@ -232,6 +270,7 @@ void game(){
    rectMode(CORNER);
   rect(0,565,width,565);
   drawChar();
+  charInfo();
 }
 
 void credits(){
