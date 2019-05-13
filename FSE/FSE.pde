@@ -151,7 +151,7 @@ void platform(){
 }
 
 float rotation = 0;
-float vR = radians(10);
+float vR = radians(8.5);
 
 
 void addTrail(){
@@ -186,7 +186,7 @@ void drawChar(){
   rectMode(CORNER);
   rect(0,565,width,565);
   for (int i=0;i<platx.length;i++){
-    rect(platx[i],platy[i],60,10); 
+    //rect(platx[i],platy[i],60,10); 
   }
   if (trail.size() == 0 || trail.get(trail.size()-1).get(0) <= 200-square.width/1.25 || trail.get(trail.size()-1).get(1) > pos[1]+square.height/1.25 || trail.get(trail.size()-1).get(1)+square.height/1.25 < pos[1]) addTrail();
   imageMode(CENTER);
@@ -194,7 +194,7 @@ void drawChar(){
   pos[0]-=3;
   tint(255, 255);
   fill(0,255,0);
-  platform();
+  //platform();
   if (rotation >= PI/4 || rotation <= -PI/4) vR*=-1;
   rotation+=vR;
   pushMatrix();
