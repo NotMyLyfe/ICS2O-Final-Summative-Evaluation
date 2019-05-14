@@ -21,16 +21,14 @@ PImage[] character = new PImage[3];
 PImage[] glock = new PImage[2];
 
 
-int JUMPPOWER=-10;
-float gravity=0.5;
+int JUMPPOWER=-12;
+float gravity=0.6;
+boolean jump=false;
 
 float pos[] = {0.0, 0.0};
 
 float vy=0;
 float angle=0;
-
-boolean moveLeft=false;
-boolean moveRight=false;
 
 int bullets = 12;
 int reloadTime = 4000;
@@ -41,12 +39,6 @@ float distTravelled=0;
 float speed=10;
 
 void movePlayer(){
-  if(moveRight){
-    pos[0]+=10;;
-  }
-  if(moveLeft){
-    pos[0]-=10;;
-  }
   pos[1]+=vy;//moving the player up/down
   if (pos[1]>700-character[0].height){
     pos[1]=700-character[0].height;//keep the player on the ground
@@ -157,10 +149,16 @@ void startGame(){
 }
 
 void keyPressed(){
-  if (key==32 && pos[1]==700-character[0].height){//only jump if on ground
+  if (key=='w' && pos[1]==700-character[0].height){//only jump if on ground
     vy=JUMPPOWER;//jumping power
   }
 }//end keyPressed
+
+void keyReleased(){
+  if(key==32){
+    jump=false;
+  }
+}
 
 
 float rotation = 0;
@@ -177,6 +175,15 @@ void addTrail(){
   newTrail.add(pos[1]);
   newTrail.add(rotation);
   trail.add(newTrail);
+}
+
+void jetpack(){
+  if(keyPressed && key==32){
+    jump=true;
+    if(vy>=0 && jump){
+      vy=2*gravity;
+    }
+  }
 }
 
 void updateTrail(){
@@ -265,6 +272,7 @@ void drawChar(){
 
 void game(){
   movePlayer();
+  jetpack();
   for(int i=0;i<99999;i+=600){
     imageMode(CORNER);
     tint(255,255);
