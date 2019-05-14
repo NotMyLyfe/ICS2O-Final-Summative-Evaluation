@@ -37,6 +37,9 @@ int reloadTime = 4000;
 
 ArrayList<ArrayList<Float>> trail = new ArrayList<ArrayList<Float>>();
 
+float distTravelled=0;
+float speed=10;
+
 void movePlayer(){
   if(moveRight){
     pos[0]+=10;;
@@ -225,7 +228,6 @@ void drawArms(){
   }
   image(character[1], 0, character[1].height/2);
   rectMode(CENTER);
-  println(recoil);
   popMatrix();
   if (bullets == 0 && millis()-reloadStart >= reloadTime){
     bullets = 12;
@@ -270,6 +272,10 @@ void game(){
   }
    rectMode(CORNER);
   rect(0,565,width,565);
+  distTravelled=distTravelled+(1*0.1*speed);
+  text(int(distTravelled)+" m",100,100);
+  speed=distTravelled/1000+1;
+  println(speed);
   drawChar();
   charInfo();
 }
