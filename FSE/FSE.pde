@@ -25,7 +25,7 @@ int JUMPPOWER=-12;
 float gravity=0.6;
 boolean jump=false;
 
-float pos[] = {200.0, 0.0};
+float pos[] = {500.0, 0.0};
 
 float vy=0;
 float angle=0;
@@ -40,15 +40,17 @@ float speed=10;
 
 PImage background[] = new PImage[3];
 
-float[][] groundPos = {{0, height+400}, {1280, height-100}};
+float[][] groundPos = {{0, height+400}, {1280, height+400}};
 
 float topOfGrass = 0;
+float topOfNextGrass = 0;
 int nextGround = 0;
 int current = 0;
-
+float bottomOfPlayer = 0;
 boolean onGround = true;
 
 void movePlayer() {
+  bottomOfPlayer = pos[1]+character[0].height/3+character[2].height;
   pos[1]+=vy;//moving the player up/down
   for (int i = 0; i < 2; i++) {
     //println(groundPos[i][0] + background[0].width > pos[0] && pos[0] > groundPos[i][0]);
@@ -59,13 +61,18 @@ void movePlayer() {
       current = i;
     }
   }
-  if (topOfGrass+49 > pos[1] + character[0].height/3+character[2].height) {
-    onGround = true;;
+  topOfNextGrass = groundPos[nextGround][1]+49;
+  float rightOfChar = groundPos[nextGround][0] - (pos[0] + character[0].width/2 + 1);
+  float heightDif = bottomOfPlayer - topOfNextGrass;
+  println(heightDif);
+  if (heightDif > 10 && rightOfChar < 5 && rightOfChar > -5) pos[0]-=speed*5;
+  if (topOfGrass <= bottomOfPlayer && !onGround && vy > 0) {
+    onGround = true;
     vy=0;//stop falling
   }
-  if (onGround) pos[1]=topOfGrass-character[0].height+49;
+  if (onGround) pos[1]=topOfGrass-(character[0].height/3+character[2].height);
+  else vy+=gravity;//apply gravity
   //println(pos[1] + character[0].height/3+character[2].height, topOfGrass+49);
-  vy+=gravity;//apply gravity
 }
 
 
@@ -166,7 +173,7 @@ void startGame() {
 }
 
 void keyPressed() {
-  if (key=='w' && pos[1]==topOfGrass-character[0].height+49) {//only jump if on ground
+  if (key=='w' && onGround) {//only jump if on ground
     vy=JUMPPOWER;//jumping power
     onGround = false;
   }
@@ -207,7 +214,7 @@ void jetpack() {
 
 void updateTrail() {
   for (int i = 0; i < trail.size(); i++) {
-    tint(255, trail.get(i).get(0));
+    tint(255, (trail.get(i).get(0)*1.5+pos[0])/5);
     pushMatrix();
     translate(trail.get(i).get(0), trail.get(i).get(1)+character[0].height/3);
     rotate(trail.get(i).get(2));
@@ -237,11 +244,10 @@ void updateTrail() {
       image(character[1], 0, character[1].height/2);
       popMatrix();
     }
+    trail.get(i).set(0, trail.get(i).get(0)-5*int(speed));
     if (trail.get(i).get(0)+square.width < 0) {
       trail.remove(i);
     }
-
-    trail.get(i).set(0, trail.get(i).get(0)-10);
   }
 }
 
@@ -290,7 +296,7 @@ void charInfo() {
 }
 
 void drawChar() {
-  if (trail.size() == 0 || trail.get(trail.size()-1).get(0) <= 200-square.width/1.25 || trail.get(trail.size()-1).get(1) > pos[1]+square.height/1.25 || trail.get(trail.size()-1).get(1)+square.height/1.25 < pos[1]) addTrail();
+  if (trail.size() == 0 || trail.get(trail.size()-1).get(0) <= pos[0]-square.width/speed*1.5 || trail.get(trail.size()-1).get(1) > pos[1]+square.height/speed*1.5 || trail.get(trail.size()-1).get(1)+square.height/speed*1.5 < pos[1]) addTrail();
   imageMode(CENTER);
   updateTrail();
   tint(255, 255);
@@ -307,24 +313,38 @@ void drawChar() {
   image(character[0], pos[0], pos[1]);
   drawArms();
 }
-
+float nextHeight;
+int next;
+float[] skyX = {0, 1280};
 void game() {
-  println(pos[1]==topOfGrass-character[0].height+49);
   movePlayer();
   jetpack();
   imageMode(CENTER);
   image(background[2], width/2, height/2);
+  nextHeight = random(-25, 25);
   for (int i = 0; i < groundPos.length; i++) {
     imageMode(CORNER);
     image(background[0], groundPos[i][0], groundPos[i][1]);
-    groundPos[i][0]-=int(speed)*5;
     if (groundPos[i][0] <= -background[0].width) {
-      groundPos[i][0] = background[0].width;
+      if (i == 0) next = 1;
+      else next = 0;
+      if (groundPos[next][1]+nextHeight > height) groundPos[i][1] = height;
+      else if (groundPos[next][1]+nextHeight < height-400) groundPos[i][1] = height-400;
+      else groundPos[i][1] = groundPos[next][1]+nextHeight;
+      groundPos[i][0] = groundPos[next][0]+background[0].width;
+    }
+    groundPos[i][0]-=int(speed)*5;
+    image(background[1], skyX[i], 0);
+    skyX[i]-=int(speed)*2;
+    if (skyX[i] <= -background[1].width){
+      if (i == 0) next = 1;
+      else next = 0;
+      skyX[i] = skyX[next]+background[1].width;
     }
   }
   distTravelled=distTravelled+(1*0.1*speed);
   text(int(distTravelled)+" m", 100, 100);
-  speed=distTravelled/750+1;
+  speed=distTravelled/250+1;
   drawChar();
   charInfo();
 }
