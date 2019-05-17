@@ -2,7 +2,7 @@
  By Gordon Lin and Daniel Weng
  */
 
-int currentScene = 2;
+int currentScene = 0;
 
 PFont[] regular = new PFont[3];
 PFont[] light = new PFont[3];
@@ -29,7 +29,8 @@ float pos[] = {500.0, 0.0};
 float vy=0;
 float angle=0;
 
-int bullets = 12;
+int[] bullets = {12};
+int bulletsRemaining = 0;
 
 ArrayList<ArrayList<Float>> trail = new ArrayList<ArrayList<Float>>();
 
@@ -46,6 +47,7 @@ int nextGround = 0;
 int current = 0;
 float bottomOfPlayer = 0;
 boolean onGround = true;
+boolean colliding = false;
 
 void movePlayer() {
   bottomOfPlayer = pos[1]+character[0].height/3+character[2].height;
@@ -62,7 +64,12 @@ void movePlayer() {
   topOfNextGrass = groundPos[nextGround][1]+49;
   float rightOfChar = groundPos[nextGround][0] - (pos[0] + character[0].width/2 + 1);
   float heightDif = bottomOfPlayer - topOfNextGrass;
-  if (heightDif > 5 && rightOfChar < 5 && rightOfChar > -5) pos[0]-=speed*5;
+  if (heightDif > 5 && rightOfChar < 5 && rightOfChar > -5){
+    pos[0]-=speed*5;
+    onGround = false;
+    colliding = true;
+  }
+  else colliding = false;
   if (onGround && heightDif < 0 && rightOfChar <= 1){
     onGround = false;
     pos[1]-=5;
@@ -72,7 +79,7 @@ void movePlayer() {
     onGround = true;
     vy=0;//stop falling
   }
-  if (onGround) pos[1]=topOfGrass-(character[0].height/3+character[2].height);
+  if (onGround && !colliding) pos[1]=topOfGrass-(character[0].height/3+character[2].height);
   else vy+=gravity;//apply gravity
   //println(pos[1] + character[0].height/3+character[2].height, topOfGrass+49);
 }
@@ -130,7 +137,10 @@ void mainMenu() {
   }
   if (buttons[0]) {
     fill(0);
-    if (mousePressed) startGame();
+    if (mousePressed){
+      currentScene = 2;
+      bulletsRemaining = bullets[int(saveData[1])]+1;
+    }
   } else {
     fill(255);
   }
@@ -169,14 +179,6 @@ void mainMenu() {
     fill(0);
   }
   text("Exit", width/2, height/2+175);
-}
-
-void startGame() {
-  currentScene = 2;
-  if (int(saveData[1]) == 0) {
-    bullets = 12;
-    reloadTime = 4000;
-  }
 }
 
 void keyPressed() {
@@ -221,7 +223,7 @@ void jetpack() {
 
 void updateTrail() {
   for (int i = 0; i < trail.size(); i++) {
-    tint(255, (trail.get(i).get(0)*1.5+pos[0])/5);
+    tint(255, (trail.get(i).get(0))/5);
     pushMatrix();
     translate(trail.get(i).get(0), trail.get(i).get(1)+character[0].height/3);
     rotate(trail.get(i).get(2));
@@ -268,12 +270,12 @@ void drawArms() {
   rectMode(CENTER);
   pushMatrix();
   translate(pos[0], pos[1]);
-  if (mousePressed && !justFired && bullets > 0) {
+  if (mousePressed && !justFired && bulletsRemaining > 0) {
     vRecoil = 2;
     recoil=2;
     justFired = true;
-    bullets--;
-    if (bullets == 0) reloadStart = millis();
+    bulletsRemaining--;
+    if (bulletsRemaining == 0) reloadStart = millis();
   } else if (!mousePressed && recoil == 0) {
     justFired = false;
   }
@@ -291,8 +293,8 @@ void drawArms() {
   image(character[1], 0, character[1].height/2);
   rectMode(CENTER);
   popMatrix();
-  if (bullets == 0 && millis()-reloadStart >= reloadTime[int(saveData[1])]) {
-    bullets = 12;
+  if (bulletsRemaining == 0 && millis()-reloadStart >= reloadTime[int(saveData[1])]) {
+    bulletsRemaining = 12;
     recoil = 2;
     vRecoil = 2;
   }
@@ -302,11 +304,11 @@ void charInfo() {
   fill(0);
   textFont(regular[0], 48);
   textAlign(CORNER);
-  text("Bullets remaining: " + bullets, 48, 48);
+  text("Bullets remaining: " + bulletsRemaining, 48, 48);
 }
 
 void drawChar() {
-  if (trail.size() == 0 || trail.get(trail.size()-1).get(0) <= pos[0]-character[0].width * speed || trail.get(trail.size()-1).get(1) > pos[1]+character[0].height * speed || trail.get(trail.size()-1).get(1)+character[0].height * speed < pos[1]) addTrail();
+  if (trail.size() == 0 || trail.get(trail.size()-1).get(0) <= pos[0]-character[0].width/1.2 || trail.get(trail.size()-1).get(1) > pos[1]+character[0].height/1.2 || trail.get(trail.size()-1).get(1)+character[0].height/1.2 < pos[1]) addTrail();
   imageMode(CENTER);
   updateTrail();
   tint(255, 255);
