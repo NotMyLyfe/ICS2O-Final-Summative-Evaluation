@@ -72,11 +72,8 @@ void movePlayer() {
   else colliding = false;
   if (onGround && heightDif < 0 && rightOfChar <= 1){
     onGround = false;
-    pos[1]--;
+    pos[1]-=5;
     vy = 0;
-  }
-  if(!colliding && pos[0]<500){
-    pos[0]++;
   }
   if (topOfGrass <= bottomOfPlayer && !onGround && vy > 0) {
     onGround = true;
@@ -184,22 +181,16 @@ void mainMenu() {
   text("Exit", width/2, height/2+175);
 }
 
-boolean justJumped = false;
-
 void keyPressed() {
-  if (key=='w' && onGround && !justJumped) {//only jump if on ground
+  if (key=='w' && onGround) {//only jump if on ground
     vy=JUMPPOWER;//jumping power
     onGround = false;
-    justJumped = true;
   }
 }//end keyPressed
 
 void keyReleased() {
   if (key==32) {
     jump=false;
-  }
-  if (key == 'w'){
-    justJumped = false;
   }
 }
 
@@ -232,7 +223,7 @@ void jetpack() {
 
 void updateTrail() {
   for (int i = 0; i < trail.size(); i++) {
-    tint(255, (trail.get(i).get(0) / pos[0])*200);
+    tint(255, (trail.get(i).get(0))/5);
     pushMatrix();
     translate(trail.get(i).get(0), trail.get(i).get(1)+character[0].height/3);
     rotate(trail.get(i).get(2));
@@ -263,7 +254,7 @@ void updateTrail() {
       popMatrix();
     }
     trail.get(i).set(0, trail.get(i).get(0)-5*int(speed));
-    if (trail.get(i).get(0)+character[0].width < 0 || trail.get(i).get(0)/pos[0]*200 < 10) {
+    if (trail.get(i).get(0)+character[0].width < 0) {
       trail.remove(i);
     }
   }
@@ -369,7 +360,7 @@ void game() {
     groundPos[i][0]-=int(speed)*5;
   }
   movePlayer();
-  distTravelled=distTravelled+(1*0.04*speed);
+  distTravelled=distTravelled+(1*0.05*speed);
   text(int(distTravelled)+" m", 100, 100);
   speed=distTravelled/250+2;
   drawChar();
