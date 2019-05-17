@@ -15,11 +15,10 @@ float loadError = 0;
 
 float time = 0;
 
-PImage square;
-PImage back;
 PImage[] character = new PImage[3];
 PImage[] glock = new PImage[2];
 
+int[] reloadTime = {4000};
 
 int JUMPPOWER=-12;
 float gravity=0.6;
@@ -31,7 +30,6 @@ float vy=0;
 float angle=0;
 
 int bullets = 12;
-int reloadTime = 4000;
 
 ArrayList<ArrayList<Float>> trail = new ArrayList<ArrayList<Float>>();
 
@@ -64,8 +62,12 @@ void movePlayer() {
   topOfNextGrass = groundPos[nextGround][1]+49;
   float rightOfChar = groundPos[nextGround][0] - (pos[0] + character[0].width/2 + 1);
   float heightDif = bottomOfPlayer - topOfNextGrass;
-  println(heightDif);
-  if (heightDif > 10 && rightOfChar < 5 && rightOfChar > -5) pos[0]-=speed*5;
+  if (heightDif > 5 && rightOfChar < 5 && rightOfChar > -5) pos[0]-=speed*5;
+  if (onGround && heightDif < 0 && rightOfChar <= 1){
+    onGround = false;
+    pos[1]-=5;
+    vy = 0;
+  }
   if (topOfGrass <= bottomOfPlayer && !onGround && vy > 0) {
     onGround = true;
     vy=0;//stop falling
@@ -105,12 +107,13 @@ void setup() {
   size(1280, 720);
   initFont();
   initImgs();
-  square=loadImage("Imgs/white-small-square_25ab.png");
-  back=loadImage("Imgs/Wiki-background.png");
   if (loadStrings("saveGame.txt") != null) {
     saveData = loadStrings("saveGame.txt");
   }
+  frameRate(60);
 }
+
+boolean[] buttons = {false, false, false};
 
 void mainMenu() {
   background(0);
@@ -121,27 +124,31 @@ void mainMenu() {
 
   textFont(light[0], 48);
   rectMode(CENTER);
-  if (mouseX > width/2-150 && mouseX < width/2+150 && mouseY > height/2-60 && mouseY < height/2+20) {
+  for (int i = 0; i < 3; i++){
+    if (mouseX > width/2-150 && mouseX < width/2+150 && mouseY > height/2-60+i*100 && mouseY < height/2+20+i*100) buttons[i] = true;
+    else buttons[i] = false;
+  }
+  if (buttons[0]) {
     fill(0);
     if (mousePressed) startGame();
   } else {
     fill(255);
   }
   rect(width/2, height/2-20, 300, 80);
-  if (mouseX > width/2-150 && mouseX < width/2+150 && mouseY > height/2-60 && mouseY < height/2+20) {
+  if (buttons[0]) {
     fill(255);
   } else {
     fill(0);
   }
   text("Play Game", width/2, height/2-25);
 
-  if (mouseX > width/2-150 && mouseX < width/2+150 && mouseY > height/2+40 && mouseY < height/2+120) {
+  if (buttons[1]) {
     fill(0);
   } else {
     fill(255);
   }
   rect(width/2, height/2+80, 300, 80);
-  if (mouseX > width/2-150 && mouseX < width/2+150 && mouseY > height/2+40 && mouseY < height/2+120) {
+  if (buttons[1]) {
     fill(255);
     if (mousePressed) currentScene = 1;
   } else {
@@ -149,14 +156,14 @@ void mainMenu() {
   }
   text("Credits", width/2, height/2+75);
 
-  if (mouseX > width/2-150 && mouseX < width/2+150 && mouseY > height/2+140 && mouseY < height/2+220) {
+  if (buttons[2]) {
     fill(0);
     if (mousePressed) exit();
   } else {
     fill(255);
   }
   rect(width/2, height/2+180, 300, 80);
-  if (mouseX > width/2-150 && mouseX < width/2+150 && mouseY > height/2+140 && mouseY < height/2+220) {
+  if (buttons[2]) {
     fill(255);
   } else {
     fill(0);
@@ -245,7 +252,7 @@ void updateTrail() {
       popMatrix();
     }
     trail.get(i).set(0, trail.get(i).get(0)-5*int(speed));
-    if (trail.get(i).get(0)+square.width < 0) {
+    if (trail.get(i).get(0)+character[0].width < 0) {
       trail.remove(i);
     }
   }
@@ -253,6 +260,9 @@ void updateTrail() {
 
 boolean justFired = false;
 float reloadStart = 0;
+
+void addBullet(){
+}
 
 void drawArms() {
   rectMode(CENTER);
@@ -281,7 +291,7 @@ void drawArms() {
   image(character[1], 0, character[1].height/2);
   rectMode(CENTER);
   popMatrix();
-  if (bullets == 0 && millis()-reloadStart >= reloadTime) {
+  if (bullets == 0 && millis()-reloadStart >= reloadTime[int(saveData[1])]) {
     bullets = 12;
     recoil = 2;
     vRecoil = 2;
@@ -296,7 +306,7 @@ void charInfo() {
 }
 
 void drawChar() {
-  if (trail.size() == 0 || trail.get(trail.size()-1).get(0) <= pos[0]-square.width/speed*1.5 || trail.get(trail.size()-1).get(1) > pos[1]+square.height/speed*1.5 || trail.get(trail.size()-1).get(1)+square.height/speed*1.5 < pos[1]) addTrail();
+  if (trail.size() == 0 || trail.get(trail.size()-1).get(0) <= pos[0]-character[0].width * speed || trail.get(trail.size()-1).get(1) > pos[1]+character[0].height * speed || trail.get(trail.size()-1).get(1)+character[0].height * speed < pos[1]) addTrail();
   imageMode(CENTER);
   updateTrail();
   tint(255, 255);
@@ -317,23 +327,12 @@ float nextHeight;
 int next;
 float[] skyX = {0, 1280};
 void game() {
-  movePlayer();
   jetpack();
   imageMode(CENTER);
   image(background[2], width/2, height/2);
-  nextHeight = random(-25, 25);
+  nextHeight = random(-75, 75);
   for (int i = 0; i < groundPos.length; i++) {
     imageMode(CORNER);
-    image(background[0], groundPos[i][0], groundPos[i][1]);
-    if (groundPos[i][0] <= -background[0].width) {
-      if (i == 0) next = 1;
-      else next = 0;
-      if (groundPos[next][1]+nextHeight > height) groundPos[i][1] = height;
-      else if (groundPos[next][1]+nextHeight < height-400) groundPos[i][1] = height-400;
-      else groundPos[i][1] = groundPos[next][1]+nextHeight;
-      groundPos[i][0] = groundPos[next][0]+background[0].width;
-    }
-    groundPos[i][0]-=int(speed)*5;
     image(background[1], skyX[i], 0);
     skyX[i]-=int(speed)*2;
     if (skyX[i] <= -background[1].width){
@@ -341,10 +340,27 @@ void game() {
       else next = 0;
       skyX[i] = skyX[next]+background[1].width;
     }
+    image(background[0], groundPos[i][0], groundPos[i][1]);
+    if (groundPos[i][0] <= -background[0].width) {
+      if (i == 0) next = 1;
+      else next = 0;
+      if (groundPos[next][1]+nextHeight > height-50) {
+        groundPos[i][1] = height-50;
+        println("too low");
+      }
+      else if (groundPos[next][1]+nextHeight < height-400){
+        groundPos[i][1] = height-400;
+        println("too high");
+      }
+      else groundPos[i][1] = groundPos[next][1]+nextHeight;
+      groundPos[i][0] = groundPos[next][0]+background[0].width;
+    }
+    groundPos[i][0]-=int(speed)*5;
   }
+  movePlayer();
   distTravelled=distTravelled+(1*0.1*speed);
   text(int(distTravelled)+" m", 100, 100);
-  speed=distTravelled/250+1;
+  speed=distTravelled/250+2;
   drawChar();
   charInfo();
 }
