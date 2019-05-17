@@ -181,16 +181,22 @@ void mainMenu() {
   text("Exit", width/2, height/2+175);
 }
 
+boolean justJumped = false;
+
 void keyPressed() {
-  if (key=='w' && onGround) {//only jump if on ground
+  if (key=='w' && onGround && !justJumped) {//only jump if on ground
     vy=JUMPPOWER;//jumping power
     onGround = false;
+    justJumped = true;
   }
 }//end keyPressed
 
 void keyReleased() {
   if (key==32) {
     jump=false;
+  }
+  if (key == 'w'){
+    justJumped = false;
   }
 }
 
@@ -223,7 +229,7 @@ void jetpack() {
 
 void updateTrail() {
   for (int i = 0; i < trail.size(); i++) {
-    tint(255, (trail.get(i).get(0))/5);
+    tint(255, (trail.get(i).get(0) / pos[0])*200);
     pushMatrix();
     translate(trail.get(i).get(0), trail.get(i).get(1)+character[0].height/3);
     rotate(trail.get(i).get(2));
@@ -254,7 +260,7 @@ void updateTrail() {
       popMatrix();
     }
     trail.get(i).set(0, trail.get(i).get(0)-5*int(speed));
-    if (trail.get(i).get(0)+character[0].width < 0) {
+    if (trail.get(i).get(0)+character[0].width < 0 || trail.get(i).get(0)/pos[0]*200 < 10) {
       trail.remove(i);
     }
   }
