@@ -64,15 +64,15 @@ void movePlayer() {
   topOfNextGrass = groundPos[nextGround][1]+49;
   float rightOfChar = groundPos[nextGround][0] - (pos[0] + character[0].width/2 + 1);
   float heightDif = bottomOfPlayer - topOfNextGrass;
-  if (heightDif > 5 && rightOfChar < 5 && rightOfChar > -5){
+  if (heightDif > 10 && rightOfChar < 10 && rightOfChar > -10){
     pos[0]-=speed*5;
     onGround = false;
     colliding = true;
   }
   else colliding = false;
-  if (onGround && heightDif < 0 && rightOfChar <= 1){
+  if (onGround && heightDif < 0 && rightOfChar <= 1 && !colliding){
     onGround = false;
-    pos[1]-=5;
+    pos[1]--;
     vy = 0;
   }
   if (topOfGrass <= bottomOfPlayer && !onGround && vy > 0) {
@@ -366,7 +366,7 @@ void game() {
     groundPos[i][0]-=int(speed)*5;
   }
   movePlayer();
-  distTravelled=distTravelled+(1*0.1*speed);
+  distTravelled=distTravelled+(1+0.05*speed);
   text(int(distTravelled)+" m", 100, 100);
   speed=distTravelled/250+2;
   drawChar();
