@@ -374,10 +374,12 @@ void game() {
   speed=distTravelled/250+2;
   drawChar();
   charInfo();
-  if(pos[0]<0){
+  if(pos[0]<-60){
+    speed=0;
     textSize(100);
     text("GAME OVER",300,300);
     textSize(48);
+    text("Distance: "+int(distTravelled),300,350);
   }
 }
 
