@@ -371,7 +371,7 @@ void game() {
   movePlayer();
   distTravelled=distTravelled+(1*0.04*speed);
   text(int(distTravelled)+" m", 100, 100);
-  speed=distTravelled/250+2;
+  speed=distTravelled/1+2;
   drawChar();
   charInfo();
   if(pos[0]<-60){
