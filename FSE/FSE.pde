@@ -63,18 +63,21 @@ void movePlayer() {
     }
   }
   topOfNextGrass = groundPos[nextGround][1]+49;
-  float rightOfChar = groundPos[nextGround][0] - (pos[0] + character[0].width/2 + 1);
+  float nextX = groundPos[nextGround][0] - int(speed)*5+character[0].width/2;
   float heightDif = bottomOfPlayer - topOfNextGrass;
-  if (heightDif > 10 && rightOfChar < 10 && rightOfChar > -10){
+  println(heightDif + " " + nextX);
+  if (heightDif > 10 && nextX<=pos[0]+character[0].width && nextX >= pos[0]-character[0].width){
     pos[0]-=speed*5;
     onGround = false;
     colliding = true;
   }
   else colliding = false;
-  if (onGround && heightDif < 0 && rightOfChar <= 1 && !colliding){
+  if (onGround && heightDif < 0 && nextX <= pos[0] && !colliding){
     onGround = false;
     pos[1]--;
+    pos[0]++;
     vy = 0;
+    pos[0]--;
   }
   if(!colliding && pos[0]<500){
     pos[0]++;
