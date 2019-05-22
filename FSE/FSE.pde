@@ -35,7 +35,8 @@ int bulletsRemaining = 0;
 ArrayList<ArrayList<Float>> trail = new ArrayList<ArrayList<Float>>();
 
 float distTravelled=0;
-float speed=10;
+float speed=1;
+float speedUp=1/60;
 
 PImage background[] = new PImage[3];
 
@@ -371,7 +372,7 @@ void game() {
   movePlayer();
   distTravelled=distTravelled+(1*0.04*speed);
   text(int(distTravelled)+" m", 100, 100);
-  speed=distTravelled/250+2;
+  speed=speed+speedUp/60;
   drawChar();
   charInfo();
   if(pos[0]<-60){
