@@ -64,29 +64,14 @@ void movePlayer() {
   topOfNextGrass = groundPos[nextGround][1]+49;
   float nextX = groundPos[nextGround][0] - int(speed)*5+character[0].width/2;
   float heightDif = bottomOfPlayer - topOfNextGrass;
-  println(heightDif + " " + nextX);
-  if (heightDif > 10 && nextX<=pos[0]+character[0].width && nextX >= pos[0]-character[0].width){
-    pos[0]-=speed*5;
-    onGround = false;
-    colliding = true;
-  }
-  else colliding = false;
-  if (onGround && heightDif < 0 && nextX <= pos[0] && !colliding){
-    onGround = false;
-    pos[1]--;
-    pos[0]++;
-    vy = 0;
-    pos[0]--;
-  }
+  // add new collisions here
   if(!colliding && pos[0]<500){
     pos[0]++;
   }
   if (topOfGrass <= bottomOfPlayer && !onGround && vy > 0) {
     onGround = true;
     vy=0;//stop falling
-  }
-  if (onGround && !colliding) pos[1]=topOfGrass-(character[0].height/3+character[2].height);
-  else vy+=gravity;//apply gravity
+  }//apply gravity
   //println(pos[1] + character[0].height/3+character[2].height, topOfGrass+49);
 }
 
