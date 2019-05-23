@@ -103,7 +103,7 @@ void initImgs() {
   character[1] = loadImage("Imgs/Character Arm.png");
   character[2] = loadImage("Imgs/Character Leg.png");
   character[3] = loadImage("Imgs/Jetpack.png");
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < 4; i++) {
     character[i].resize(character[i].width*3/4, character[i].height*3/4);
   }
   character[1].resize(character[1].width*3/4, character[1].height*3/4);
@@ -242,7 +242,7 @@ void updateTrail() {
     image(character[2], 0, character[1].height/2);
     popMatrix();
     image(character[0], trail.get(i).get(0), trail.get(i).get(1));
-    if (trail.get(i).get(3)==0) {
+    if (trail.get(i).get(3)==0 || reloading) {
       pushMatrix();
       translate(trail.get(i).get(0), trail.get(i).get(1));
       rotate(trail.get(i).get(2));
@@ -276,7 +276,7 @@ float reloadStart = 0;
 
 void addBullet(){
 }
-
+boolean reloading = false;
 void drawArms() {
   rectMode(CENTER);
   pushMatrix();
@@ -293,7 +293,7 @@ void drawArms() {
   if (recoil >= 10) {
     vRecoil*=-1;
   }
-  if (recoil != 0 && pos[0] > 0) {
+  if (recoil != 0 && pos[0] > 0 && !reloading) {
     recoil+=vRecoil;
     rotate(-PI/2);
   } else if(pos[0]>0) rotate(rotation);
@@ -308,6 +308,10 @@ void drawArms() {
     bulletsRemaining = 12;
     recoil = 2;
     vRecoil = 2;
+    reloading = false;
+  }
+  else if (bulletsRemaining == 0){
+    reloading = true;
   }
 }
 
@@ -335,7 +339,7 @@ void drawChar() {
   rotate(-rotation*2);
   image(character[2], 0, character[1].height/2);
   popMatrix();
-  image(character[3],pos[0]-character[0].width/2-9,pos[1]+15);
+  image(character[3],pos[0]-character[0].width/2-5,pos[1]+10);
   image(character[0], pos[0], pos[1]);
   drawArms();
 }
