@@ -36,7 +36,7 @@ ArrayList<ArrayList<Float>> trail = new ArrayList<ArrayList<Float>>();
 
 float distTravelled=0;
 float speed=1;
-float speedUp=1/60;
+float speedUp=0.1;
 
 PImage background[] = new PImage[3];
 
@@ -63,7 +63,7 @@ void movePlayer() {
     }
   }
   topOfNextGrass = groundPos[nextGround][1]+49;
-  float nextX = groundPos[nextGround][0] - int(speed)*5+character[0].width/2;
+  float nextX = groundPos[nextGround][0] - speed*5+character[0].width/2;
   float heightDif = bottomOfPlayer - topOfNextGrass;
   println(heightDif + " " + nextX);
   if (heightDif > 10 && nextX<=pos[0]+character[0].width && nextX >= pos[0]-character[0].width){
@@ -216,7 +216,6 @@ float vRecoil = 0;
 
 void addTrail() {
 
-  tint(255, 100);
   ArrayList<Float> newTrail = new ArrayList<Float>();
   newTrail.add(pos[0]-20);
   newTrail.add(pos[1]);
@@ -236,7 +235,7 @@ void jetpack() {
 
 void updateTrail() {
   for (int i = 0; i < trail.size(); i++) {
-    tint(255, (trail.get(i).get(0) / pos[0])*200);
+    tint(255, (trail.get(i).get(0) / pos[0])*150);
     pushMatrix();
     translate(trail.get(i).get(0), trail.get(i).get(1)+character[0].height/3);
     rotate(trail.get(i).get(2));
@@ -266,7 +265,7 @@ void updateTrail() {
       image(character[1], 0, character[1].height/2);
       popMatrix();
     }
-    trail.get(i).set(0, trail.get(i).get(0)-5*int(speed));
+    trail.get(i).set(0, trail.get(i).get(0)-int(speed)/2-10);
     if (trail.get(i).get(0)+character[0].width < 0 || trail.get(i).get(0)/pos[0]*200 < 10) {
       trail.remove(i);
     }
@@ -349,7 +348,7 @@ void game() {
   for (int i = 0; i < groundPos.length; i++) {
     imageMode(CORNER);
     image(background[1], skyX[i], 0);
-    skyX[i]-=int(speed)*2;
+    skyX[i]-=int(speed)/4+5;
     if (skyX[i] <= -background[1].width){
       if (i == 0) next = 1;
       else next = 0;
@@ -370,12 +369,13 @@ void game() {
       else groundPos[i][1] = groundPos[next][1]+nextHeight;
       groundPos[i][0] = groundPos[next][0]+background[0].width;
     }
-    groundPos[i][0]-=int(speed)*5;
+    groundPos[i][0]-=int(speed)/3+5;
   }
   movePlayer();
   distTravelled=distTravelled+(1*0.04*speed);
   text(int(distTravelled)+" m", 100, 100);
   speed=speed+speedUp/60;
+  println(speed);
   drawChar();
   charInfo();
   if(pos[0]<-60){
