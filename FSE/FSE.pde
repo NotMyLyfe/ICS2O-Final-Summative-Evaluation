@@ -15,7 +15,7 @@ float loadError = 0;
 
 float time = 0;
 
-PImage[] character = new PImage[3];
+PImage[] character = new PImage[4];
 PImage[] glock = new PImage[2];
 
 int[] reloadTime = {4000};
@@ -36,11 +36,11 @@ ArrayList<ArrayList<Float>> trail = new ArrayList<ArrayList<Float>>();
 
 float distTravelled=0;
 float speed=1;
-float speedUp=1/60;
+float speedUp=0.1;
 
 PImage background[] = new PImage[3];
 
-float[][] groundPos = {{0, height+400}, {1280, height+400}};
+float[][] groundPos = {{0, height+400}, {1280, height+random(-75, 75)+400}};
 
 float topOfGrass = 0;
 float topOfNextGrass = 0;
@@ -49,31 +49,43 @@ int current = 0;
 float bottomOfPlayer = 0;
 boolean onGround = true;
 boolean colliding = false;
+boolean falling = false;
 
 void movePlayer() {
   bottomOfPlayer = pos[1]+character[0].height/3+character[2].height;
   pos[1]+=vy;//moving the player up/down
-  for (int i = 0; i < 2; i++) {
-    //println(groundPos[i][0] + background[0].width > pos[0] && pos[0] > groundPos[i][0]);
-    if (groundPos[i][0] + background[0].width > pos[0] && pos[0] > groundPos[i][0]) {
-      topOfGrass = groundPos[i][1]+49;
-      if (i == 0) nextGround = 1;
-      else nextGround = 0;
-      current = i;
-    }
+  for (int i = 0; i < 2; i++){
+    if (pos[0]>= groundPos[i][0] && pos[0]<= groundPos[i][0]+background[0].width) current = i;
   }
+  if (current == 0) nextGround = 1;
+  else nextGround = 0;
+  topOfGrass = groundPos[current][1]+49;
   topOfNextGrass = groundPos[nextGround][1]+49;
-  float nextX = groundPos[nextGround][0] - int(speed)*5+character[0].width/2;
-  float heightDif = bottomOfPlayer - topOfNextGrass;
-  // add new collisions here
-  if(!colliding && pos[0]<500){
+  if (onGround && !colliding && !falling) pos[1]=topOfGrass-(character[0].height/3+character[2].height);
+  else if (!colliding && !falling) vy+=gravity;
+  println(groundPos[nextGround][0]-int(speed)/3-character[0].width/2 + " " + pos[0]);
+  if (groundPos[nextGround][0]-int(speed)/3+-character[0].width/2<= pos[0] && bottomOfPlayer<topOfNextGrass && onGround  && groundPos[nextGround][0] > 0){
+    onGround = false;
+    falling = true;
+    colliding = false;
+    vy=0;
+  }
+  else if (groundPos[nextGround][0]-int(speed)/3+1 <= pos[0]+character[0].width/2 && bottomOfPlayer-topOfNextGrass >= 10 && !falling && groundPos[nextGround][0] > 0){
+    pos[0]-= int(speed)/3+6;
+    colliding = true;
+  }
+  else{
+    colliding = false;
+    falling = false;
+  }
+  if (pos[0] < 500 && pos[0]>0){
     pos[0]++;
   }
-  if (topOfGrass <= bottomOfPlayer && !onGround && vy > 0) {
+  if (!onGround && !falling && bottomOfPlayer >= topOfGrass & !justJumped){
+    vy = 0;
     onGround = true;
-    vy=0;//stop falling
-  }//apply gravity
-  //println(pos[1] + character[0].height/3+character[2].height, topOfGrass+49);
+  }
+  //apply gravity
 }
 
 
@@ -90,6 +102,7 @@ void initImgs() {
   character[0] = loadImage("Imgs/Character Body.png");
   character[1] = loadImage("Imgs/Character Arm.png");
   character[2] = loadImage("Imgs/Character Leg.png");
+  character[3] = loadImage("Imgs/Jetpack.png");
   for (int i = 0; i < 3; i++) {
     character[i].resize(character[i].width*3/4, character[i].height*3/4);
   }
@@ -176,7 +189,7 @@ void mainMenu() {
 boolean justJumped = false;
 
 void keyPressed() {
-  if (key=='w' && onGround && !justJumped) {//only jump if on ground
+  if (key=='w' && onGround && !justJumped && pos[0]>0) {//only jump if on ground
     vy=JUMPPOWER;//jumping power
     onGround = false;
     justJumped = true;
@@ -201,7 +214,6 @@ float vRecoil = 0;
 
 void addTrail() {
 
-  tint(255, 100);
   ArrayList<Float> newTrail = new ArrayList<Float>();
   newTrail.add(pos[0]-20);
   newTrail.add(pos[1]);
@@ -221,7 +233,7 @@ void jetpack() {
 
 void updateTrail() {
   for (int i = 0; i < trail.size(); i++) {
-    tint(255, (trail.get(i).get(0) / pos[0])*200);
+    tint(255, (trail.get(i).get(0) / pos[0])*150);
     pushMatrix();
     translate(trail.get(i).get(0), trail.get(i).get(1)+character[0].height/3);
     rotate(trail.get(i).get(2));
@@ -240,7 +252,8 @@ void updateTrail() {
       }
       image(character[1], 0, character[1].height/2);
       popMatrix();
-    } else {
+    }
+    else {
       pushMatrix();
       translate(trail.get(i).get(0), trail.get(i).get(1));
       rotate(-PI/2);
@@ -251,7 +264,7 @@ void updateTrail() {
       image(character[1], 0, character[1].height/2);
       popMatrix();
     }
-    trail.get(i).set(0, trail.get(i).get(0)-5*int(speed));
+    trail.get(i).set(0, trail.get(i).get(0)-int(speed)/3-5);
     if (trail.get(i).get(0)+character[0].width < 0 || trail.get(i).get(0)/pos[0]*200 < 10) {
       trail.remove(i);
     }
@@ -280,10 +293,10 @@ void drawArms() {
   if (recoil >= 10) {
     vRecoil*=-1;
   }
-  if (recoil != 0) {
+  if (recoil != 0 && pos[0] > 0) {
     recoil+=vRecoil;
     rotate(-PI/2);
-  } else rotate(rotation);
+  } else if(pos[0]>0) rotate(rotation);
   if (int(saveData[1]) == 0) {
     image(glock[0], 5, character[1].height);
     image(glock[1], 2+glock[0].width/2, character[1].height-recoil);
@@ -311,8 +324,10 @@ void drawChar() {
   updateTrail();
   tint(255, 255);
   fill(0, 255, 0);
-  if (rotation >= PI/4 || rotation <= -PI/4) vR*=-1;
-  rotation+=vR;
+  if (pos[0] > 0) {
+    if (rotation >= PI/4 || rotation <= -PI/4) vR*=-1;
+    rotation+=vR;
+  }
   pushMatrix();
   translate(pos[0], pos[1]+character[0].height/3);
   rotate(rotation);
@@ -331,31 +346,32 @@ void game() {
   imageMode(CENTER);
   image(background[2], width/2, height/2);
   nextHeight = random(-75, 75);
-  for (int i = 0; i < groundPos.length; i++) {
-    imageMode(CORNER);
+  imageMode(CORNER);
+  for (int i = 0; i < skyX.length; i++){
     image(background[1], skyX[i], 0);
-    skyX[i]-=int(speed)*2;
+    skyX[i]-=int(speed)/4+5;
     if (skyX[i] <= -background[1].width){
       if (i == 0) next = 1;
       else next = 0;
-      skyX[i] = skyX[next]+background[1].width;
+      if (skyX[next] < 0) skyX[i] = width;
+      else skyX[i] = skyX[next]+background[1].width;
     }
+  }
+  for (int i = 0; i < groundPos.length; i++) {
     image(background[0], groundPos[i][0], groundPos[i][1]);
     if (groundPos[i][0] <= -background[0].width) {
       if (i == 0) next = 1;
       else next = 0;
       if (groundPos[next][1]+nextHeight > height-50) {
         groundPos[i][1] = height-50;
-        println("too low");
       }
       else if (groundPos[next][1]+nextHeight < height-400){
         groundPos[i][1] = height-400;
-        println("too high");
       }
       else groundPos[i][1] = groundPos[next][1]+nextHeight;
       groundPos[i][0] = groundPos[next][0]+background[0].width;
     }
-    groundPos[i][0]-=int(speed)*5;
+    groundPos[i][0]-=int(speed)/3+5;
   }
   movePlayer();
   distTravelled=distTravelled+(1*0.04*speed);
@@ -363,7 +379,7 @@ void game() {
   speed=speed+speedUp/60;
   drawChar();
   charInfo();
-  if(pos[0]<-60){
+  if(pos[0]<=0){
     speed=0;
     textSize(100);
     text("GAME OVER",300,300);
