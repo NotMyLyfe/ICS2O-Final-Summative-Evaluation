@@ -49,45 +49,42 @@ int current = 0;
 float bottomOfPlayer = 0;
 boolean onGround = true;
 boolean colliding = false;
+boolean falling = false;
 
 void movePlayer() {
   bottomOfPlayer = pos[1]+character[0].height/3+character[2].height;
   pos[1]+=vy;//moving the player up/down
-  for (int i = 0; i < 2; i++) {
-    //println(groundPos[i][0] + background[0].width > pos[0] && pos[0] > groundPos[i][0]);
-    if (groundPos[i][0] + background[0].width > pos[0] && pos[0] > groundPos[i][0]) {
-      topOfGrass = groundPos[i][1]+49;
-      if (i == 0) nextGround = 1;
-      else nextGround = 0;
-      current = i;
-    }
+  for (int i = 0; i < 2; i++){
+    if (pos[0]>= groundPos[i][0] && pos[0]<= groundPos[i][0]+background[0].width) current = i;
   }
+  if (current == 0) nextGround = 1;
+  else nextGround = 0;
+  topOfGrass = groundPos[current][1]+49;
   topOfNextGrass = groundPos[nextGround][1]+49;
-  float nextX = groundPos[nextGround][0] - int(speed)*5+character[0].width/2;
-  float heightDif = bottomOfPlayer - topOfNextGrass;
-  println(heightDif + " " + nextX);
-  if (heightDif > 10 && nextX<=pos[0]+character[0].width && nextX >= pos[0]-character[0].width){
-    pos[0]-=speed*5;
+  if (groundPos[nextGround][0]-int(speed)*5 <= pos[0] && bottomOfPlayer<topOfNextGrass && onGround  && groundPos[nextGround][0] > 0){
     onGround = false;
+    falling = true;
+    colliding = false;
+    vy=0;
+  }
+  else if (groundPos[nextGround][0]-int(speed)*5 <= pos[0]+character[0].width/2 && bottomOfPlayer-topOfNextGrass >= 10 && !falling && groundPos[nextGround][0] > 0){
+    pos[0]-= int(speed)*5+1;
     colliding = true;
+    println(groundPos[nextGround][0]-int(speed)*5 + " " + pos[0]+character[0].width/2 );
   }
-  else colliding = false;
-  if (onGround && heightDif < 0 && nextX <= pos[0] && !colliding){
-    onGround = false;
-    pos[1]--;
+  else{
+    colliding = false;
+    falling = false;
+  }
+  if (pos[0] < 500){
     pos[0]++;
+  }
+  if (!onGround && !falling && bottomOfPlayer > topOfGrass){
     vy = 0;
-    pos[0]--;
-  }
-  if(!colliding && pos[0]<500){
-    pos[0]++;
-  }
-  if (topOfGrass <= bottomOfPlayer && !onGround && vy > 0) {
     onGround = true;
-    vy=0;//stop falling
   }
-  if (onGround && !colliding) pos[1]=topOfGrass-(character[0].height/3+character[2].height);
-  else vy+=gravity;//apply gravity
+  if (onGround && !colliding && !falling) pos[1]=topOfGrass-(character[0].height/3+character[2].height);
+  else if (!colliding && !falling) vy+=gravity;//apply gravity
   //println(pos[1] + character[0].height/3+character[2].height, topOfGrass+49);
 }
 
@@ -353,7 +350,8 @@ void game() {
     if (skyX[i] <= -background[1].width){
       if (i == 0) next = 1;
       else next = 0;
-      skyX[i] = skyX[next]+background[1].width;
+      if (skyX[next] < 0) skyX[i] = width;
+      else skyX[i] = skyX[next]+background[1].width;
     }
     image(background[0], groundPos[i][0], groundPos[i][1]);
     if (groundPos[i][0] <= -background[0].width) {
@@ -361,14 +359,13 @@ void game() {
       else next = 0;
       if (groundPos[next][1]+nextHeight > height-50) {
         groundPos[i][1] = height-50;
-        println("too low");
       }
       else if (groundPos[next][1]+nextHeight < height-400){
         groundPos[i][1] = height-400;
-        println("too high");
       }
       else groundPos[i][1] = groundPos[next][1]+nextHeight;
-      groundPos[i][0] = groundPos[next][0]+background[0].width;
+      if (groundPos[next][0] < 0) groundPos[i][0] = width;
+      else groundPos[i][0] = groundPos[next][0]+background[0].width;
     }
     groundPos[i][0]-=int(speed)*5;
   }
