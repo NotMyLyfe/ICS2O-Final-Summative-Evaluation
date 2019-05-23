@@ -335,6 +335,7 @@ void drawChar() {
   rotate(-rotation*2);
   image(character[2], 0, character[1].height/2);
   popMatrix();
+  image(character[3],pos[0]-character[0].width/2-9,pos[1]+15);
   image(character[0], pos[0], pos[1]);
   drawArms();
 }
