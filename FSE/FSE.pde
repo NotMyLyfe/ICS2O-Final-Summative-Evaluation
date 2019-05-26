@@ -50,33 +50,40 @@ float bottomOfPlayer = 0;
 boolean onGround = true;
 boolean colliding = false;
 boolean falling = false;
+boolean gap = false;
 
 void movePlayer() {
   bottomOfPlayer = pos[1]+character[0].height/3+character[2].height;
   pos[1]+=vy;//moving the player up/down
   for (int i = 0; i < 2; i++){
     if (pos[0]>= groundPos[i][0] && pos[0]<= groundPos[i][0]+background[0].width) current = i;
+    else if (i == 2) current = -1;
   }
   if (current == 0) nextGround = 1;
   else nextGround = 0;
-  topOfGrass = groundPos[current][1]+49;
-  topOfNextGrass = groundPos[nextGround][1]+49;
-  if (onGround && !colliding && !falling) pos[1]=topOfGrass-(character[0].height/3+character[2].height);
-  else if (!colliding && !falling) vy+=gravity;
-  println(groundPos[nextGround][0]-int(speed)/3-character[0].width/2 + " " + pos[0]);
-  if (groundPos[nextGround][0]-int(speed)/3+-character[0].width/2<= pos[0] && bottomOfPlayer<topOfNextGrass && onGround  && groundPos[nextGround][0] > 0){
-    onGround = false;
-    falling = true;
-    colliding = false;
-    vy=0;
+  if (current != -1 && nextGround !=-1){
+    topOfGrass = groundPos[current][1]+49;
+    topOfNextGrass = groundPos[nextGround][1]+49;
+    if (onGround && !colliding && !falling) pos[1]=topOfGrass-(character[0].height/3+character[2].height);
+    else if (!colliding && !falling) vy+=gravity;
+    if (groundPos[nextGround][0]-int(speed)/3+-character[0].width/2<= pos[0] && bottomOfPlayer<topOfNextGrass && onGround  && groundPos[nextGround][0] > 0){
+      onGround = false;
+      falling = true;
+      colliding = false;
+      vy=0;
+    }
+    else if (groundPos[nextGround][0]-int(speed)/3+1 <= pos[0]+character[0].width/2 && bottomOfPlayer-topOfNextGrass >= 10 && !falling && groundPos[nextGround][0] > 0){
+      pos[0]-= int(speed)/3+6;
+      colliding = true;
+    }
+    else{
+      colliding = false;
+      falling = false;
+    }
   }
-  else if (groundPos[nextGround][0]-int(speed)/3+1 <= pos[0]+character[0].width/2 && bottomOfPlayer-topOfNextGrass >= 10 && !falling && groundPos[nextGround][0] > 0){
-    pos[0]-= int(speed)/3+6;
-    colliding = true;
-  }
-  else{
-    colliding = false;
-    falling = false;
+  else {
+    topOfGrass = height*2;
+    
   }
   if (pos[0] < 500 && pos[0]>0){
     pos[0]++;
@@ -142,9 +149,9 @@ void mainMenu() {
   }
   if (buttons[0]) {
     fill(0);
-    if (mousePressed){
+    if (clicked){
       currentScene = 2;
-      bulletsRemaining = bullets[int(saveData[1])]+1;
+      bulletsRemaining = bullets[int(saveData[1])];
     }
   } else {
     fill(255);
@@ -165,7 +172,7 @@ void mainMenu() {
   rect(width/2, height/2+80, 300, 80);
   if (buttons[1]) {
     fill(255);
-    if (mousePressed) currentScene = 1;
+    if (clicked) currentScene = 1;
   } else {
     fill(0);
   }
@@ -173,7 +180,7 @@ void mainMenu() {
 
   if (buttons[2]) {
     fill(0);
-    if (mousePressed) exit();
+    if (clicked) exit();
   } else {
     fill(255);
   }
@@ -195,6 +202,16 @@ void keyPressed() {
     justJumped = true;
   }
 }//end keyPressed
+
+boolean clicked = false;
+
+void mousePressed(){
+  clicked = true;
+}
+
+void mouseReleased(){
+  clicked = false;
+}
 
 void keyReleased() {
   if (key==32) {
@@ -223,7 +240,7 @@ void addTrail() {
 }
 
 void jetpack() {
-  if (keyPressed && key==32) {
+  if (keyPressed && key==32 && !colliding) {
     jump=true;
     if (vy>=0 && jump) {
       vy=2*gravity;
@@ -284,10 +301,11 @@ void drawArms() {
   if (mousePressed && !justFired && bulletsRemaining > 0) {
     vRecoil = 2;
     recoil=2;
-    justFired = true;
+    if (int(saveData[1]) == 0) justFired = true;
     bulletsRemaining--;
     if (bulletsRemaining == 0) reloadStart = millis();
-  } else if (!mousePressed && recoil == 0) {
+  } else if (!mousePressed
+  && recoil == 0) {
     justFired = false;
   }
   if (recoil >= 10) {
@@ -394,6 +412,9 @@ void game() {
 }
 
 void credits() {
+  background(0);
+  textFont(regular[1], 96);
+  textMode(CENTER);
 }
 
 void draw() {
