@@ -264,7 +264,7 @@ void updateTrail() {
       image(character[1], 0, character[1].height/2);
       popMatrix();
     }
-    trail.get(i).set(0, trail.get(i).get(0)-int(speed)/3-5);
+    trail.get(i).set(0, trail.get(i).get(0)-int(speed)/3-10);
     if (trail.get(i).get(0)+character[0].width < 0 || trail.get(i).get(0)/pos[0]*200 < 10) {
       trail.remove(i);
     }
@@ -379,9 +379,12 @@ void game() {
     groundPos[i][0]-=int(speed)/3+5;
   }
   movePlayer();
-  distTravelled=distTravelled+(1*0.04*speed);
+  distTravelled=distTravelled+0.04*speed;
   text(int(distTravelled)+" m", 100, 100);
   speed=speed+speedUp/60;
+  if(colliding){
+    distTravelled=distTravelled-0.04*speed;
+    }
   drawChar();
   charInfo();
   if(pos[0]<=0){
