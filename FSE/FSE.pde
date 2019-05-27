@@ -88,7 +88,7 @@ void movePlayer() {
   if (pos[0] < 500 && pos[0]>0){
     pos[0]++;
   }
-  if (!onGround && !falling && bottomOfPlayer >= topOfGrass & !justJumped){
+  if (!onGround && !falling && bottomOfPlayer >= topOfGrass && !justJumped){
     vy = 0;
     onGround = true;
   }
@@ -194,12 +194,14 @@ void mainMenu() {
 }
 
 boolean justJumped = false;
+boolean holding = false;
 
 void keyPressed() {
-  if (key=='w' && onGround && !justJumped && pos[0]>0) {//only jump if on ground
+  if (key=='w' && onGround && !justJumped && pos[0]>0 && !holding) {//only jump if on ground
     vy=JUMPPOWER;//jumping power
     onGround = false;
     justJumped = true;
+    holding = true;
   }
 }//end keyPressed
 
@@ -219,6 +221,7 @@ void keyReleased() {
   }
   if (key == 'w'){
     justJumped = false;
+    holding = false;
   }
 }
 
@@ -412,6 +415,7 @@ void game() {
     textSize(48);
     text("Distance: "+int(distTravelled),300,350);
   }
+  if (justJumped) justJumped = false;
 }
 
 void credits() {
