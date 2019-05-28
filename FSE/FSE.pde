@@ -421,7 +421,11 @@ void game() {
 void credits() {
   background(0);
   textFont(regular[1], 96);
-  textMode(CENTER);
+  textAlign(CENTER, CENTER);
+  fill(255);
+  text("Credits", width/2, 100);
+  textFont(light[0], 48);
+  text("Sprites made by: Gordon Lin", width/2, 200);
 }
 
 void draw() {
