@@ -410,10 +410,21 @@ void game() {
   charInfo();
   if(pos[0]<=0){
     speed=0;
+    pos[0]=-1000;
     textSize(100);
     text("GAME OVER",300,300);
     textSize(48);
     text("Distance: "+int(distTravelled),300,350);
+    if (clicked){
+      currentScene = 0;
+      pos[0] = 500;
+      pos[1] = 0;
+      vy = 0;
+      bulletsRemaining = 0;
+      distTravelled = 0;
+      speed = 1;
+      speedUp = 0.1;
+    }
   }
   if (justJumped) justJumped = false;
 }
@@ -426,6 +437,10 @@ void credits() {
   text("Credits", width/2, 100);
   textFont(light[0], 48);
   text("Sprites made by: Gordon Lin", width/2, 200);
+  text("Code made by: Gordon Lin and Daniel Weng", width/2, 250);
+  text("Font made by: Montserrat Project Authors", width/2, 300);
+  rectMode(CENTER);
+  
 }
 
 void draw() {
