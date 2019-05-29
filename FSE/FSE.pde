@@ -384,6 +384,9 @@ void game() {
     }
   }
   for (int i = 0; i < groundPos.length; i++) {
+    fill(255,0,0);  
+    rect(groundPos[i][0]+300,groundPos[i][1],100,100);  
+    fill(0);
     image(background[0], groundPos[i][0], groundPos[i][1]);
     if (groundPos[i][0] <= -background[0].width) {
       if (i == 0) next = 1;
