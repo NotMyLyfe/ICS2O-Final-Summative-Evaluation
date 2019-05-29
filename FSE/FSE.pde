@@ -384,9 +384,6 @@ void game() {
     }
   }
   for (int i = 0; i < groundPos.length; i++) {
-    fill(255,0,0);
-    rect(groundPos[i][0]+300,groundPos[i][1],100,100);
-    fill(0);
     image(background[0], groundPos[i][0], groundPos[i][1]);
     if (groundPos[i][0] <= -background[0].width) {
       if (i == 0) next = 1;
@@ -440,14 +437,19 @@ void credits() {
   text("Credits", width/2, 100);
   textFont(light[0], 48);
   text("Sprites made by: Gordon Lin", width/2, 200);
-  text("Code made by: Gordon Lin and Daniel Weng", width/2, 250);
-  text("Font made by: Montserrat Project Authors", width/2, 300);
+  text("Code made by: Gordon Lin and Daniel Weng", width/2, 270);
+  text("Font made by: Montserrat Project Authors", width/2, 340);
   rectMode(CENTER);
-  
+  rect(width/2, 410, 900, 70);
+  fill(0);
+  text("Click here to view license for font", width/2, 410);
+  if (mouseX > width/2-450 && mouseX < width/2+450 && mouseY > 375 && mouseY < 445 && clicked) link("https://github.com/JulietaUla/Montserrat/blob/master/OFL.txt");
+  else if (clicked) currentScene = 0;
 }
 
 void draw() {
   if (currentScene == 0) mainMenu();
   else if (currentScene == 1) credits();
   else if (currentScene == 2) game();
+  if (clicked) clicked = false;
 }
