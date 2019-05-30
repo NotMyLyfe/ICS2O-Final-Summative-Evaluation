@@ -132,7 +132,8 @@ void setup() {
   frameRate(60);
 }
 
-boolean[] buttons = {false, false, false};
+boolean[] buttons = {false, false, false, false};
+String[] buttonText = {"Play Game", "Shop", "Credits", "Exit"};
 
 void mainMenu() {
   background(0);
@@ -143,54 +144,23 @@ void mainMenu() {
 
   textFont(light[0], 48);
   rectMode(CENTER);
-  for (int i = 0; i < 3; i++){
+  for (int i = 0; i < 4; i++){
     if (mouseX > width/2-150 && mouseX < width/2+150 && mouseY > height/2-60+i*100 && mouseY < height/2+20+i*100) buttons[i] = true;
     else buttons[i] = false;
-  }
-  if (buttons[0]) {
-    fill(0);
-    if (clicked){
-      currentScene = 3;
-      bulletsRemaining = bullets[int(saveData[1])];
+    if (buttons[i]){
+      fill(0);
+      if(clicked){
+        currentScene = i+1;
+        if(i == 0) bulletsRemaining = bullets[int(saveData[1])];
+      }
     }
-  } else {
-    fill(255);
+    else fill(255);
+    rect(width/2, height/2-20+100*i, 300, 80);
+    if(buttons[i]) fill(255);
+    else fill(0);
+    text(buttonText[i], width/2, height/2-25+100*i);
   }
-  rect(width/2, height/2-20, 300, 80);
-  if (buttons[0]) {
-    fill(255);
-  } else {
-    fill(0);
-  }
-  text("Play Game", width/2, height/2-25);
-
-  if (buttons[1]) {
-    fill(0);
-  } else {
-    fill(255);
-  }
-  rect(width/2, height/2+80, 300, 80);
-  if (buttons[1]) {
-    fill(255);
-    if (clicked) currentScene = 2;
-  } else {
-    fill(0);
-  }
-  text("Credits", width/2, height/2+75);
-
-  if (buttons[2]) {
-    fill(0);
-    if (clicked) exit();
-  } else {
-    fill(255);
-  }
-  rect(width/2, height/2+180, 300, 80);
-  if (buttons[2]) {
-    fill(255);
-  } else {
-    fill(0);
-  }
-  text("Exit", width/2, height/2+175);
+  
 }
 
 boolean justJumped = false;
@@ -369,7 +339,6 @@ float nextHeight;
 int next;
 float[] skyX = {0, 1280};
 void game() {
-  jetpack();
   imageMode(CENTER);
   image(background[2], width/2, height/2);
   nextHeight = random(-75, 75);
@@ -403,13 +372,14 @@ void game() {
     }
     groundPos[i][0]-=int(speed)/3+5;
   }
-  //movePlayer();
-  //distTravelled=distTravelled+0.04*speed;
-  //speed=speed+speedUp/60;
+  movePlayer();
+  distTravelled=distTravelled+0.04*speed;
+  speed=speed+speedUp/60;
   if(colliding){
     distTravelled=distTravelled-0.04*speed;
     }
   drawChar();
+  jetpack();
   if(pos[0]<=0){
     speed=0;
     pos[0]=-1000;
@@ -426,10 +396,10 @@ void game() {
       pos[1] = 0;
       vy = 0;
       bulletsRemaining = 0;
-      distTravelled = 0;
       speed = 1;
       speedUp = 0.1;
       if (int(saveData[0]) < distTravelled) saveData[0] = Integer.toString(int(distTravelled));
+      distTravelled = 0;
     }
   }
   else charInfo();
@@ -458,9 +428,14 @@ void credits() {
   else if (clicked) currentScene = 0;
 }
 
+void shop(){
+}
+
 void draw() {
   if (currentScene == 0) mainMenu();
-  else if (currentScene == 2) credits();
-  else if (currentScene == 3) game();
+  else if (currentScene == 2) shop();
+  else if (currentScene == 3) credits();
+  else if (currentScene == 1) game();
+  else if (currentScene == 4) exit();
   if (clicked) clicked = false;
 }
