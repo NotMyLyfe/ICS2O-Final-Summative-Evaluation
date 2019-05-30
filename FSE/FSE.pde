@@ -357,7 +357,10 @@ void game() {
   }
   for (int i = 0; i < groundPos.length; i++) {
     fill(255,0,0);  
-    rect(groundPos[i][0]+300,groundPos[i][1],100,100);  
+    rect(groundPos[i][0]+300,groundPos[i][1],100,100);
+    if(pos[1]>groundPos[i][1]-100 && pos[0]<groundPos[i][0]+305 && pos[0]>groundPos[i][0]+295){
+      colliding=true;
+    }
     fill(0);
     image(background[0], groundPos[i][0], groundPos[i][1]);
     if (groundPos[i][0] <= -background[0].width) {
@@ -448,6 +451,27 @@ void credits() {
 }
 
 void shop(){
+  background(0);
+  fill(255);
+  text("Shop",600,100);
+  rect(width/2,200,900,80);
+  rect(width/2,300,900,80);
+  rect(width/2,400,900,80);
+  rect(width/2,500,900,80);
+  rect(width/2,600,900,80);
+  textSize(10);
+  text("upgrade",width*3/4,200);
+  fill(0);
+  textSize(48);
+  text("Gun",width/4,200);
+  text("Jetpack",width/4,300);
+  text("Health",width/4,400);
+  rect(width*3/4,200,100,60);
+  rect(width*3/4,300,100,60);
+  rect(width*3/4,400,100,60);
+  if(clicked){
+    currentScene = 0;
+  }
 }
 
 void draw() {
