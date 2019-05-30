@@ -9,7 +9,7 @@ PFont[] light = new PFont[3];
 PFont[] xLight = new PFont[3];
 PFont[] thin = new PFont[3];
 
-String[] saveData = {"0", "0"}; //0th value: past distance, 1st value: gun type
+String[] saveData = {"0", "0", "0"}; //0th value: past distance, 1st value: gun type, 2nd value: armour type
 
 float loadError = 0;
 
@@ -150,7 +150,7 @@ void mainMenu() {
   if (buttons[0]) {
     fill(0);
     if (clicked){
-      currentScene = 2;
+      currentScene = 3;
       bulletsRemaining = bullets[int(saveData[1])];
     }
   } else {
@@ -172,7 +172,7 @@ void mainMenu() {
   rect(width/2, height/2+80, 300, 80);
   if (buttons[1]) {
     fill(255);
-    if (clicked) currentScene = 1;
+    if (clicked) currentScene = 2;
   } else {
     fill(0);
   }
@@ -341,6 +341,7 @@ void charInfo() {
   textFont(regular[0], 48);
   textAlign(CORNER);
   text("Bullets remaining: " + bulletsRemaining, 48, 48);
+  text(int(distTravelled)+" m", 100, 100);
 }
 
 void drawChar() {
@@ -402,22 +403,23 @@ void game() {
     }
     groundPos[i][0]-=int(speed)/3+5;
   }
-  movePlayer();
-  distTravelled=distTravelled+0.04*speed;
-  text(int(distTravelled)+" m", 100, 100);
-  speed=speed+speedUp/60;
+  //movePlayer();
+  //distTravelled=distTravelled+0.04*speed;
+  //speed=speed+speedUp/60;
   if(colliding){
     distTravelled=distTravelled-0.04*speed;
     }
   drawChar();
-  charInfo();
   if(pos[0]<=0){
     speed=0;
     pos[0]=-1000;
-    textSize(100);
-    text("GAME OVER",300,300);
-    textSize(48);
-    text("Distance: "+int(distTravelled),300,350);
+    fill(0);
+    textAlign(CENTER, CENTER);
+    textFont(regular[1], 70);
+    text("GAME OVER",width/2, height/2 - 50);
+    text("Distance: "+int(distTravelled),width/2,height/2 + 50);
+    textFont(regular[0], 48);
+    text("Press anywhere to continue", width/2, height-100);
     if (clicked){
       currentScene = 0;
       pos[0] = 500;
@@ -427,8 +429,10 @@ void game() {
       distTravelled = 0;
       speed = 1;
       speedUp = 0.1;
+      if (int(saveData[0]) < distTravelled) saveData[0] = Integer.toString(int(distTravelled));
     }
   }
+  else charInfo();
   if (justJumped) justJumped = false;
 }
 
@@ -440,19 +444,23 @@ void credits() {
   text("Credits", width/2, 100);
   textFont(light[0], 48);
   text("Sprites made by: Gordon Lin", width/2, 200);
-  text("Code made by: Gordon Lin and Daniel Weng", width/2, 270);
-  text("Font made by: Montserrat Project Authors", width/2, 340);
+  text("Code made by: Gordon Lin and Daniel Weng", width/2, 280);
+  text("Font made by: Montserrat Project Authors", width/2, 360);
+  boolean mouseOver = mouseX > width/2-450 && mouseX < width/2+450 && mouseY > 400 && mouseY < 480;
+  text("Press anywhere to return to main menu", width/2, height-100);
   rectMode(CENTER);
-  rect(width/2, 410, 900, 70);
-  fill(0);
-  text("Click here to view license for font", width/2, 410);
-  if (mouseX > width/2-450 && mouseX < width/2+450 && mouseY > 375 && mouseY < 445 && clicked) link("https://github.com/JulietaUla/Montserrat/blob/master/OFL.txt");
+  if (mouseOver) fill(0);
+  rect(width/2, 440, 900, 80);
+  if (!mouseOver) fill(0);
+  else fill(255);
+  text("Click here to view license for font", width/2, 440);
+  if (mouseOver && clicked) link("https://raw.githubusercontent.com/JulietaUla/Montserrat/master/OFL.txt");
   else if (clicked) currentScene = 0;
 }
 
 void draw() {
   if (currentScene == 0) mainMenu();
-  else if (currentScene == 1) credits();
-  else if (currentScene == 2) game();
+  else if (currentScene == 2) credits();
+  else if (currentScene == 3) game();
   if (clicked) clicked = false;
 }
