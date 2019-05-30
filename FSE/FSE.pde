@@ -134,6 +134,7 @@ void setup() {
 
 boolean[] buttons = {false, false, false, false};
 String[] buttonText = {"Play Game", "Shop", "Credits", "Exit"};
+boolean firstTime;
 
 void mainMenu() {
   background(0);
@@ -141,7 +142,6 @@ void mainMenu() {
   textFont(regular[1], 96);
   textAlign(CENTER, CENTER);
   text("Ultimate Dash", width/2, 100);
-
   textFont(light[0], 48);
   rectMode(CENTER);
   for (int i = 0; i < 4; i++){
@@ -160,7 +160,9 @@ void mainMenu() {
     else fill(0);
     text(buttonText[i], width/2, height/2-25+100*i);
   }
-  
+  if (int(saveData[0]) == 0){
+    firstTime = true;
+  }
 }
 
 boolean justJumped = false;
@@ -345,7 +347,7 @@ void game() {
   imageMode(CORNER);
   for (int i = 0; i < skyX.length; i++){
     image(background[1], skyX[i], 0);
-    skyX[i]-=int(speed)/4+5;
+    if (!firstTime) skyX[i]-=int(speed)/4+5;
     if (skyX[i] <= -background[1].width){
       if (i == 0) next = 1;
       else next = 0;
@@ -370,16 +372,33 @@ void game() {
       else groundPos[i][1] = groundPos[next][1]+nextHeight;
       groundPos[i][0] = groundPos[next][0]+background[0].width;
     }
-    groundPos[i][0]-=int(speed)/3+5;
+    if (!firstTime) groundPos[i][0]-=int(speed)/3+5;
   }
-  movePlayer();
-  distTravelled=distTravelled+0.04*speed;
-  speed=speed+speedUp/60;
-  if(colliding){
-    distTravelled=distTravelled-0.04*speed;
-    }
-  drawChar();
-  jetpack();
+  if (!firstTime){
+    movePlayer();
+    distTravelled=distTravelled+0.04*speed;
+    speed=speed+speedUp/60;
+    if(colliding){
+      distTravelled=distTravelled-0.04*speed;
+     }
+    drawChar();
+    jetpack();
+  }
+  else {
+    rectMode(CENTER);
+    fill(0, 200);
+    rect(width/2, height/2, width*0.8, height*0.8);
+    fill(255);
+    textFont(regular[1], 70);
+    textAlign(CENTER, CENTER);
+    text("Rules to the game", width/2, height/2-height*0.4+100);
+    textFont(light[0], 48);
+    text("Press W to jump, Space to glide,", width/2, height/2-80);
+    text("and Left Click to shoot.", width/2, height/2-20);
+    text("Go the furthest distance without dying!", width/2, height/2+40);
+    text("Press anywhere to continue", width/2, height/2+150);
+    if (clicked) firstTime = false;
+  }
   if(pos[0]<=0){
     speed=0;
     pos[0]=-1000;
@@ -402,7 +421,7 @@ void game() {
       distTravelled = 0;
     }
   }
-  else charInfo();
+  else if (!firstTime) charInfo();
   if (justJumped) justJumped = false;
 }
 
