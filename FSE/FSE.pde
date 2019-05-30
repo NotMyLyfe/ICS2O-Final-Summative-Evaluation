@@ -2,6 +2,8 @@
  By Gordon Lin and Daniel Weng
  */
 
+//Set memory limit to 2048, as this uses a lot of RAM
+
 int currentScene = 0;
 
 PFont[] regular = new PFont[3];
@@ -9,7 +11,7 @@ PFont[] light = new PFont[3];
 PFont[] xLight = new PFont[3];
 PFont[] thin = new PFont[3];
 
-String[] saveData = {"0", "0", "0"}; //0th value: past distance, 1st value: gun type, 2nd value: armour type
+String[] saveData = {"0", "0", "0", "10000"}; //0th value: past distance, 1st value: gun type, 2nd value: armour type, 3rd value: money
 
 float loadError = 0;
 
@@ -17,6 +19,7 @@ float time = 0;
 
 PImage[] character = new PImage[4];
 PImage[] glock = new PImage[2];
+PImage bullet;
 
 int[] reloadTime = {4000};
 
@@ -49,7 +52,6 @@ int current = 0;
 float bottomOfPlayer = 0;
 boolean onGround = true;
 boolean colliding = false;
-boolean falling = false;
 boolean gap = false;
 
 void movePlayer() {
@@ -64,21 +66,14 @@ void movePlayer() {
   if (current != -1 && nextGround !=-1){
     topOfGrass = groundPos[current][1]+49;
     topOfNextGrass = groundPos[nextGround][1]+49;
-    if (onGround && !colliding && !falling) pos[1]=topOfGrass-(character[0].height/3+character[2].height);
-    else if (!colliding && !falling) vy+=gravity;
-    if (groundPos[nextGround][0]-int(speed)/3+-character[0].width/2<= pos[0] && bottomOfPlayer<topOfNextGrass && onGround  && groundPos[nextGround][0] > 0){
-      onGround = false;
-      falling = true;
-      colliding = false;
-      vy=0;
-    }
-    else if (groundPos[nextGround][0]-int(speed)/3+1 <= pos[0]+character[0].width/2 && bottomOfPlayer-topOfNextGrass >= 10 && !falling && groundPos[nextGround][0] > 0){
+    if (onGround && !colliding) pos[1]=topOfGrass-(character[0].height/3+character[2].height);
+    else if (!colliding) vy+=gravity;
+    if (groundPos[nextGround][0]-int(speed)/3+1 <= pos[0]+character[0].width/2 && bottomOfPlayer-topOfNextGrass >= 10 && groundPos[nextGround][0] > 0){
       pos[0]-= int(speed)/3+6;
       colliding = true;
     }
     else{
       colliding = false;
-      falling = false;
     }
   }
   else {
@@ -88,7 +83,7 @@ void movePlayer() {
   if (pos[0] < 500 && pos[0]>0){
     pos[0]++;
   }
-  if (!onGround && !falling && bottomOfPlayer >= topOfGrass && !justJumped){
+  if (!onGround && bottomOfPlayer >= topOfGrass && !justJumped){
     vy = 0;
     onGround = true;
   }
@@ -100,7 +95,7 @@ void initFont() {
   for (int i = 0; i < regular.length; i++) {
     regular[i] = createFont("Font/Montserrat-Regular.ttf", (i+1)*48);
     light[i] = createFont("Font/Montserrat-Light.ttf", (i+1)*48);
-    xLight[i] = createFont("Font/Montserrat-LightItalic.ttf", (i+1)*48);
+    xLight[i] = createFont("Font/Montserrat-ExtraLight.ttf", (i+1)*48);
     thin[i] = createFont("Font/Montserrat-Thin.ttf", (i+1)*48);
   }
 }
@@ -120,6 +115,7 @@ void initImgs() {
   background[1] = loadImage("Imgs/Clouds.png");
   background[2] = loadImage("Imgs/Blue Sky.png");
   background[0].resize(width, background[0].height*2/3);
+  bullet = loadImage("Imgs/Bullet.png");
 }
 
 void setup() {
@@ -169,7 +165,7 @@ boolean justJumped = false;
 boolean holding = false;
 
 void keyPressed() {
-  if (key=='w' && onGround && !justJumped && pos[0]>0 && !holding) {//only jump if on ground
+  if (key=='w' && onGround && !justJumped && pos[0]>0 && !holding && currentScene == 1 && !firstTime) {//only jump if on ground
     vy=JUMPPOWER;//jumping power
     onGround = false;
     justJumped = true;
@@ -266,7 +262,10 @@ void updateTrail() {
 boolean justFired = false;
 float reloadStart = 0;
 
+ArrayList<ArrayList<Float>> bulletPos = new ArrayList<ArrayList<Float>>();
+
 void addBullet(){
+  ArrayList<Float> newBullet = new ArrayList<Float>();
 }
 boolean reloading = false;
 void drawArms() {
@@ -279,6 +278,7 @@ void drawArms() {
     if (int(saveData[1]) == 0) justFired = true;
     bulletsRemaining--;
     if (bulletsRemaining == 0) reloadStart = millis();
+    addBullet();
   } else if (!mousePressed
   && recoil == 0) {
     justFired = false;
@@ -419,6 +419,7 @@ void game() {
       speedUp = 0.1;
       if (int(saveData[0]) < distTravelled) saveData[0] = Integer.toString(int(distTravelled));
       distTravelled = 0;
+      //saveStrings("saveGame.txt", saveData);
     }
   }
   else if (!firstTime) charInfo();
