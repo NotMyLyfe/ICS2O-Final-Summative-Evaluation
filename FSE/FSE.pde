@@ -116,6 +116,7 @@ void initImgs() {
   background[2] = loadImage("Imgs/Blue Sky.png");
   background[0].resize(width, background[0].height*2/3);
   bullet = loadImage("Imgs/Bullet.png");
+  bullet.resize(bullet.width*5, bullet.height*5);
 }
 
 void setup() {
@@ -266,6 +267,19 @@ ArrayList<ArrayList<Float>> bulletPos = new ArrayList<ArrayList<Float>>();
 
 void addBullet(){
   ArrayList<Float> newBullet = new ArrayList<Float>();
+  if (int(saveData[1]) == 0){
+    newBullet.add(pos[0]+character[1].height+glock[0].height-10);
+    newBullet.add(pos[1]-character[1].width/2);
+  }
+  bulletPos.add(newBullet);
+}
+
+void drawBullet(){
+  for(int i = 0; i < bulletPos.size(); i++){
+    imageMode(CENTER);
+    image(bullet, bulletPos.get(i).get(0), bulletPos.get(i).get(1));
+    bulletPos.get(i).set(0, bulletPos.get(i).get(0)+30);
+  }
 }
 boolean reloading = false;
 void drawArms() {
@@ -306,6 +320,7 @@ void drawArms() {
   else if (bulletsRemaining == 0){
     reloading = true;
   }
+  drawBullet();
 }
 
 void charInfo() {
@@ -340,6 +355,7 @@ void drawChar() {
 float nextHeight;
 int next;
 float[] skyX = {0, 1280};
+ArrayList<ArrayList<Float>> obstacles = new ArrayList<ArrayList<Float>>();
 void game() {
   imageMode(CENTER);
   image(background[2], width/2, height/2);
@@ -356,7 +372,12 @@ void game() {
     }
   }
   for (int i = 0; i < groundPos.length; i++) {
-    fill(255,0,0);  
+    fill(255,0,0);
+    int randomThing = int(random(1,6));
+    if (randomThing == 1){
+      ArrayList<Float> newObstacle = new ArrayList<Float>();
+      int whatObstacle = int(random(1, 3));
+    }
     rect(groundPos[i][0]+300,groundPos[i][1],100,100);
     if(pos[1]>groundPos[i][1]-100 && pos[0]<groundPos[i][0]+305 && pos[0]>groundPos[i][0]+295){
       colliding=true;
