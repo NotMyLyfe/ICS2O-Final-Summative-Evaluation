@@ -481,16 +481,23 @@ void shop(){
   rect(width/2,400,900,80);
   rect(width/2,500,900,80);
   text("Press anywhere to return to main menu",width/2,height-100);
-  textSize(10);
-  text("upgrade",width*3/4,200);
   fill(0);
   textSize(48);
   text("Gun",width/4,200);
   text("Jetpack",width/4,300);
   text("Health",width/4,400);
+  text("Bullet Count",width/4+30,500);
   rect(width*3/4,200,100,60);
   rect(width*3/4,300,100,60);
   rect(width*3/4,400,100,60);
+  rect(width*3/4,500,100,60);
+  fill(255);
+  textSize(20);
+  text("upgrade",width*3/4,200);
+  text("upgrade",width*3/4,300);
+  text("upgrade",width*3/4,400);
+  text("upgrade",width*3/4,500);
+  textSize(48);
   if(clicked){
     currentScene = 0;
   }
