@@ -409,9 +409,9 @@ void game() {
     textAlign(CENTER, CENTER);
     textFont(regular[1], 70);
     text("GAME OVER",width/2, height/2 - 50);
-    text("Distance: "+int(distTravelled),width/2,height/2 + 50);
+    text("Distance: "+int(distTravelled)+"m",width/2,height/2 + 50);
     textFont(regular[0], 48);
-    text("Press anywhere to continue", width/2, height-100);
+    text("Press anywhere to return to main menu", width/2, height-100);
     if (clicked){
       currentScene = 0;
       pos[0] = 500;
@@ -459,7 +459,7 @@ void shop(){
   rect(width/2,300,900,80);
   rect(width/2,400,900,80);
   rect(width/2,500,900,80);
-  rect(width/2,600,900,80);
+  text("Press anywhere to return to main menu",width/2,height-100);
   textSize(10);
   text("upgrade",width*3/4,200);
   fill(0);
