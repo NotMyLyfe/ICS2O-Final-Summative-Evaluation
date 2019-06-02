@@ -20,6 +20,8 @@ float time = 0;
 PImage[] character = new PImage[4];
 PImage[] glock = new PImage[2];
 PImage bullet;
+PImage[] obstacleImages = new PImage[2];
+PImage cyborg;
 
 int[] reloadTime = {4000};
 
@@ -117,6 +119,8 @@ void initImgs() {
   background[0].resize(width, background[0].height*2/3);
   bullet = loadImage("Imgs/Bullet.png");
   bullet.resize(bullet.width*5, bullet.height*5);
+  obstacleImages[0] = loadImage("Imgs/Tree.png");
+  cyborg = loadImage("Imgs/Cyrbog.png");
 }
 
 void setup() {
@@ -356,6 +360,28 @@ float nextHeight;
 int next;
 float[] skyX = {0, 1280};
 ArrayList<ArrayList<Float>> obstacles = new ArrayList<ArrayList<Float>>();
+
+void addObstacle(float nextHeight, int next){
+  ArrayList<Float> newObstacle = new ArrayList<Float>();
+  float whatObstacle = int(random(1, 3));
+  newObstacle.add(random(groundPos[next][0]+100, groundPos[next][0]+background[0].width-100));
+  newObstacle.add(nextHeight);
+  newObstacle.add(whatObstacle);
+  obstacles.add(newObstacle);
+}
+
+void drawUpdateObstacle(){
+  for(int i = 0; i < obstacles.size(); i++){
+    fill(0);
+    rectMode(CENTER);
+    imageMode(CENTER);
+    if (obstacles.get(i).get(2) == 1) rect(obstacles.get(i).get(0), obstacles.get(i).get(1)-100, 50, 200);
+    else image(obstacleImages[0], obstacles.get(i).get(0), obstacles.get(i).get(1)-obstacleImages[0].height/2);
+    obstacles.get(i).set(0, obstacles.get(i).get(0)-(int(speed)/3+5));
+    println(obstacles.get(i).get(0), obstacles.get(i).get(1));
+  }
+}
+
 void game() {
   imageMode(CENTER);
   image(background[2], width/2, height/2);
@@ -373,11 +399,6 @@ void game() {
   }
   for (int i = 0; i < groundPos.length; i++) {
     fill(255,0,0);
-    int randomThing = int(random(1,6));
-    if (randomThing == 1){
-      ArrayList<Float> newObstacle = new ArrayList<Float>();
-      int whatObstacle = int(random(1, 3));
-    }
     rect(groundPos[i][0]+300,groundPos[i][1],100,100);
     if(pos[1]>groundPos[i][1]-100 && pos[0]<groundPos[i][0]+305 && pos[0]>groundPos[i][0]+295){
       colliding=true;
@@ -395,9 +416,15 @@ void game() {
       }
       else groundPos[i][1] = groundPos[next][1]+nextHeight;
       groundPos[i][0] = groundPos[next][0]+background[0].width;
+      int randomNumber = int(random(1, 4));
+      if (randomNumber == 1){
+        addObstacle(groundPos[i][1]+34, i);
+        println("ok");
+      }
     }
     if (!firstTime) groundPos[i][0]-=int(speed)/3+5;
   }
+  drawUpdateObstacle();
   if (!firstTime){
     movePlayer();
     distTravelled=distTravelled+0.04*speed;
