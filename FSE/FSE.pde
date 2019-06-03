@@ -35,6 +35,7 @@ float vy=0;
 float angle=0;
 
 int[] bullets = {12};
+int[] dmg = {10};
 int bulletsRemaining = 0;
 
 ArrayList<ArrayList<Float>> trail = new ArrayList<ArrayList<Float>>();
@@ -61,26 +62,19 @@ void movePlayer() {
   pos[1]+=vy;//moving the player up/down
   for (int i = 0; i < 2; i++){
     if (pos[0]>= groundPos[i][0] && pos[0]<= groundPos[i][0]+background[0].width) current = i;
-    else if (i == 2) current = -1;
   }
   if (current == 0) nextGround = 1;
   else nextGround = 0;
-  if (current != -1 && nextGround !=-1){
-    topOfGrass = groundPos[current][1]+49;
-    topOfNextGrass = groundPos[nextGround][1]+49;
-    if (onGround && !colliding) pos[1]=topOfGrass-(character[0].height/3+character[2].height);
-    else if (!colliding) vy+=gravity;
-    if (groundPos[nextGround][0]-int(speed)/3+1 <= pos[0]+character[0].width/2 && bottomOfPlayer-topOfNextGrass >= 10 && groundPos[nextGround][0] > 0){
-      pos[0]-= int(speed)/3+6;
-      colliding = true;
-    }
-    else{
-      colliding = false;
-    }
+  topOfGrass = groundPos[current][1]+49;
+  topOfNextGrass = groundPos[nextGround][1]+49;
+  if (onGround) pos[1]=topOfGrass-(character[0].height/3+character[2].height);
+  else if (!colliding || (colliding && !onGround)) vy+=gravity;
+  if (groundPos[nextGround][0]-int(speed)/3+1 <= pos[0]+character[0].width/2 && bottomOfPlayer-topOfNextGrass >= 10 && groundPos[nextGround][0] > 0){
+    pos[0]-= int(speed)/3+6;
+    colliding = true;
   }
-  else {
-    topOfGrass = height*2;
-    
+  else{
+    colliding = false;
   }
   if (pos[0] < 500 && pos[0]>0){
     pos[0]++;
@@ -120,7 +114,8 @@ void initImgs() {
   bullet = loadImage("Imgs/Bullet.png");
   bullet.resize(bullet.width*5, bullet.height*5);
   obstacleImages[0] = loadImage("Imgs/Tree.png");
-  cyborg = loadImage("Imgs/Cyrbog.png");
+  obstacleImages[1] = loadImage("Imgs/Bricks.png");
+  cyborg = loadImage("Imgs/Cyborg.png");
 }
 
 void setup() {
@@ -283,6 +278,7 @@ void drawBullet(){
     imageMode(CENTER);
     image(bullet, bulletPos.get(i).get(0), bulletPos.get(i).get(1));
     bulletPos.get(i).set(0, bulletPos.get(i).get(0)+30);
+    if (bulletPos.get(i).get(0)-bullet.width/2 > width || (bulletPos.get(i).get(0)+bullet.width/2>groundPos[nextGround][0] && bulletPos.get(i).get(1) > topOfNextGrass && groundPos[nextGround][0] > 0)) bulletPos.remove(i);
   }
 }
 boolean reloading = false;
@@ -360,25 +356,20 @@ float nextHeight;
 int next;
 float[] skyX = {0, 1280};
 ArrayList<ArrayList<Float>> obstacles = new ArrayList<ArrayList<Float>>();
+ArrayList<ArrayList<Float>> enemies = new ArrayList<ArrayList<Float>>();
 
-void addObstacle(float nextHeight, int next){
-  ArrayList<Float> newObstacle = new ArrayList<Float>();
-  float whatObstacle = int(random(1, 3));
-  newObstacle.add(random(groundPos[next][0]+100, groundPos[next][0]+background[0].width-100));
-  newObstacle.add(nextHeight);
-  newObstacle.add(whatObstacle);
-  obstacles.add(newObstacle);
+void updateEnemies(){
+  for (int i = 0; i < enemies.size(); i++){
+    imageMode(CENTER);
+  }
 }
 
 void drawUpdateObstacle(){
   for(int i = 0; i < obstacles.size(); i++){
-    fill(0);
-    rectMode(CENTER);
     imageMode(CENTER);
-    if (obstacles.get(i).get(2) == 1) rect(obstacles.get(i).get(0), obstacles.get(i).get(1)-100, 50, 200);
-    else image(obstacleImages[0], obstacles.get(i).get(0), obstacles.get(i).get(1)-obstacleImages[0].height/2);
+    image(obstacleImages[int(obstacles.get(i).get(2))], obstacles.get(i).get(0), obstacles.get(i).get(1)-obstacleImages[int(obstacles.get(i).get(2))].height/2);
     obstacles.get(i).set(0, obstacles.get(i).get(0)-(int(speed)/3+5));
-    println(obstacles.get(i).get(0), obstacles.get(i).get(1));
+    if (obstacles.get(i).get(0)+obstacleImages[int(obstacles.get(i).get(2))].height/2 <= 0) obstacles.remove(i);
   }
 }
 
@@ -398,8 +389,6 @@ void game() {
     }
   }
   for (int i = 0; i < groundPos.length; i++) {
-    fill(255,0,0);
-    rect(groundPos[i][0]+300,groundPos[i][1],100,100);
     if(pos[1]>groundPos[i][1]-100 && pos[0]<groundPos[i][0]+305 && pos[0]>groundPos[i][0]+295){
       colliding=true;
     }
@@ -416,10 +405,23 @@ void game() {
       }
       else groundPos[i][1] = groundPos[next][1]+nextHeight;
       groundPos[i][0] = groundPos[next][0]+background[0].width;
-      int randomNumber = int(random(1, 4));
-      if (randomNumber == 1){
-        addObstacle(groundPos[i][1]+34, i);
-        println("ok");
+      int randomNumber = int(random(0, 6));
+      for (int a = 0; a < randomNumber; a++){
+        ArrayList<Float> newObstacle = new ArrayList<Float>();
+        float whatObstacle = int(random(0, 2));
+        newObstacle.add(random(groundPos[i][0]+obstacleImages[0].width, groundPos[i][0]+background[0].width-obstacleImages[0].width));
+        newObstacle.add(groundPos[i][1]+34);
+        newObstacle.add(whatObstacle);
+        newObstacle.add(75.0);
+        obstacles.add(newObstacle);
+      }
+      int numOfEnemies = int(random(0, 5));
+      for (int a = 0; a < numOfEnemies; a++){
+        ArrayList<Float> newEnemy = new ArrayList<Float>();
+        newEnemy.add(random(groundPos[i][0]+cyborg.width, groundPos[i][0]+background[0].width-cyborg.width));
+        newEnemy.add(groundPos[i][1]+34);
+        newEnemy.add(100.0);
+        
       }
     }
     if (!firstTime) groundPos[i][0]-=int(speed)/3+5;
