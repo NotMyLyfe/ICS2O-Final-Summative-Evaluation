@@ -21,7 +21,7 @@ PImage[] character = new PImage[4];
 PImage[] glock = new PImage[2];
 PImage bullet;
 PImage[] obstacleImages = new PImage[2];
-PImage cyborg;
+PImage[] robot = new PImage[3];
 
 int[] reloadTime = {4000};
 
@@ -65,8 +65,7 @@ void movePlayer() {
   for (int i = 0; i < 2; i++){
     if (pos[0]>= groundPos[i][0] && pos[0]<= groundPos[i][0]+background[0].width) current = i;
   }
-  if (current == 0) nextGround = 1;
-  else nextGround = 0;
+  nextGround = (current+1)%2;
   topOfGrass = groundPos[current][1]+49;
   topOfNextGrass = groundPos[nextGround][1]+49;
   if (onGround) pos[1]=topOfGrass-(character[0].height/3+character[2].height);
@@ -85,6 +84,13 @@ void movePlayer() {
     vy = 0;
     onGround = true;
   }
+  for (int i = 0; i < obstacles.size(); i++){
+    if (obstacles.get(i).get(0)-obstacleImages[int(obstacles.get(i).get(2))].width/2-(int(speed)/3+5) < pos[0]+character[0].width/2 && obstacles.get(i).get(1)-obstacleImages[int(obstacles.get(i).get(2))].height/2 < bottomOfPlayer){
+      pos[0]-=int(speed)/3+6;
+      colliding = true;
+    }
+  }
+  
   //apply gravity
 }
 
@@ -103,10 +109,6 @@ void initImgs() {
   character[1] = loadImage("Imgs/Character Arm.png");
   character[2] = loadImage("Imgs/Character Leg.png");
   character[3] = loadImage("Imgs/Jetpack.png");
-  for (int i = 0; i < 4; i++) {
-    character[i].resize(character[i].width*3/4, character[i].height*3/4);
-  }
-  character[1].resize(character[1].width*3/4, character[1].height*3/4);
   glock[0] = loadImage("Imgs/Glock Shell.png");
   glock[1] = loadImage("Imgs/Glock Side.png");
   background[0] = loadImage("Imgs/Grass.png");
@@ -117,7 +119,17 @@ void initImgs() {
   bullet.resize(bullet.width*5, bullet.height*5);
   obstacleImages[0] = loadImage("Imgs/Tree.png");
   obstacleImages[1] = loadImage("Imgs/Bricks.png");
-  cyborg = loadImage("Imgs/Cyborg.png");
+  robot[0] = loadImage("Imgs/Robot.png");
+  robot[1] = loadImage("Imgs/Robot Arm.png");
+  robot[2] = loadImage("Imgs/Robot Leg.png");
+  for (int i = 0; i < 4; i++) {
+    character[i].resize(character[i].width*3/4, character[i].height*3/4);
+    if(i!=3){
+      robot[i].resize(robot[i].width*3/4, robot[i].height*3/4);
+    }
+  }
+  character[1].resize(character[1].width*3/4, character[1].height*3/4);
+  robot[1].resize(robot[1].width*3/4, robot[1].height*3/4);
 }
 
 void setup() {
@@ -227,9 +239,9 @@ void updateTrail() {
     pushMatrix();
     translate(trail.get(i).get(0), trail.get(i).get(1)+character[0].height/3);
     rotate(trail.get(i).get(2));
-    image(character[2], 0, character[1].height/2);
+    image(character[2], 0, character[2].height/2);
     rotate(-trail.get(i).get(2)*2);
-    image(character[2], 0, character[1].height/2);
+    image(character[2], 0, character[2].height/2);
     popMatrix();
     image(character[0], trail.get(i).get(0), trail.get(i).get(1));
     if (trail.get(i).get(3)==0 || reloading) {
@@ -346,9 +358,9 @@ void drawChar() {
   pushMatrix();
   translate(pos[0], pos[1]+character[0].height/3);
   rotate(rotation);
-  image(character[2], 0, character[1].height/2);
+  image(character[2], 0, character[2].height/2);
   rotate(-rotation*2);
-  image(character[2], 0, character[1].height/2);
+  image(character[2], 0, character[2].height/2);
   popMatrix();
   image(character[3],pos[0]-character[0].width/2-5,pos[1]+10);
   image(character[0], pos[0], pos[1]);
@@ -361,14 +373,34 @@ ArrayList<ArrayList<Float>> obstacles = new ArrayList<ArrayList<Float>>();
 ArrayList<ArrayList<Float>> enemies = new ArrayList<ArrayList<Float>>();
 
 void updateEnemies(){
+  imageMode(CENTER);
   for (int i = 0; i < enemies.size(); i++){
-    imageMode(CENTER);
+    int currentGroundEnemy=0;
+    float bottomEnemy = enemies.get(i).get(1)+robot[0].height/3+robot[2].height;
+    for(int j = 0; j < 2; j++){
+      if (enemies.get(i).get(0)>= groundPos[j][0] && enemies.get(i).get(0)<= groundPos[j][0]+background[0].width) currentGroundEnemy = j;
+    }
+    int nextGroundEnemy = (currentGroundEnemy+1)%2;
+    float topGroundEnemy = groundPos[currentGroundEnemy][1]+49;
+    float nextTopGroundEnemy = groundPos[nextGroundEnemy][1]+49;
+    enemies.get(i).set(1, topGroundEnemy-(robot[0].height/3+robot[2].height));
+    image(robot[0],enemies.get(i).get(0), enemies.get(i).get(1));
+    image(robot[1], enemies.get(i).get(0)-robot[1].width/2, enemies.get(i).get(1));
+    image(robot[2], enemies.get(i).get(0), enemies.get(i).get(1)+robot[0].height/3+robot[2].height/2);
+    if (!(enemies.get(i).get(0)-(int(speed)/3+10)>groundPos[nextGroundEnemy][0] && enemies.get(i).get(0)-(int(speed)/3+10) < groundPos[nextGroundEnemy][0]+background[0].width && bottomEnemy-nextTopGroundEnemy>5)) enemies.get(i).set(0, enemies.get(i).get(0)-(int(speed)/3+10));
+    rectMode(CENTER);
+    fill(0);
+    rect(enemies.get(i).get(0), enemies.get(i).get(1)-robot[0].height/2 - 50, 200, 40);
+    fill(255, 0, 0);
+    rectMode(CORNER);
+    rect(enemies.get(i).get(0)-90, enemies.get(i).get(1)-robot[0].height/2 - 50 - 10, 180, 20);
+    if (enemies.get(i).get(0)+robot[2].width/2 <= 0) enemies.remove(i);
   }
 }
 
 void drawUpdateObstacle(){
+  imageMode(CENTER);
   for(int i = 0; i < obstacles.size(); i++){
-    imageMode(CENTER);
     image(obstacleImages[int(obstacles.get(i).get(2))], obstacles.get(i).get(0), obstacles.get(i).get(1)-obstacleImages[int(obstacles.get(i).get(2))].height/2);
     obstacles.get(i).set(0, obstacles.get(i).get(0)-(int(speed)/3+5));
     if (obstacles.get(i).get(0)+obstacleImages[int(obstacles.get(i).get(2))].height/2 <= 0) obstacles.remove(i);
@@ -399,6 +431,8 @@ void game() {
       else skyX[i] = skyX[next]+background[1].width;
     }
   }
+  drawUpdateObstacle();
+  imageMode(CORNER);
   for (int i = 0; i < groundPos.length; i++) {
     if(pos[1]>groundPos[i][1]-100 && pos[0]<groundPos[i][0]+305 && pos[0]>groundPos[i][0]+295){
       colliding=true;
@@ -423,21 +457,22 @@ void game() {
         newObstacle.add(random(groundPos[i][0]+obstacleImages[0].width, groundPos[i][0]+background[0].width-obstacleImages[0].width));
         newObstacle.add(groundPos[i][1]+34);
         newObstacle.add(whatObstacle);
-        newObstacle.add(75.0);
+        newObstacle.add(50.0);
         obstacles.add(newObstacle);
       }
       int numOfEnemies = int(random(0, 5));
       for (int a = 0; a < numOfEnemies; a++){
         ArrayList<Float> newEnemy = new ArrayList<Float>();
-        newEnemy.add(random(groundPos[i][0]+cyborg.width, groundPos[i][0]+background[0].width-cyborg.width));
+        newEnemy.add(random(groundPos[i][0]+robot[2].width, groundPos[i][0]+background[0].width-robot[2].width));
         newEnemy.add(groundPos[i][1]+34);
         newEnemy.add(100.0);
-        
+        newEnemy.add(float(millis()));
+        enemies.add(newEnemy);
       }
     }
     if (!firstTime) groundPos[i][0]-=int(speed)/3+5;
   }
-  drawUpdateObstacle();
+  updateEnemies();
   if (!firstTime){
     movePlayer();
     distTravelled=distTravelled+0.04*speed;
