@@ -85,9 +85,14 @@ void movePlayer() {
     onGround = true;
   }
   for (int i = 0; i < obstacles.size(); i++){
-    if (obstacles.get(i).get(0)-obstacleImages[int(obstacles.get(i).get(2))].width/4-(int(speed)/3+5) < pos[0]+character[0].width/2 && obstacles.get(i).get(1)-obstacleImages[int(obstacles.get(i).get(2))].height/2 < bottomOfPlayer){
-      pos[0]-=int(speed)/3+6;
-    }
+    rectMode(CENTER);
+    float top = obstacles.get(i).get(1);
+    float futureLeft = obstacles.get(i).get(0)-obstacleImages[int(obstacles.get(i).get(2))].width/3-(int(speed)/3+5);
+    float futureRight = obstacles.get(i).get(0)+obstacleImages[int(obstacles.get(i).get(2))].width/3-(int(speed)/3+5);
+    top-=obstacleImages[int(obstacles.get(i).get(2))].height*((obstacles.get(i).get(2)+1)/2);
+    if (futureLeft < pos[0]+character[0].width/2 && bottomOfPlayer > top && futureRight > pos[0]-character[0].width/2) pos[0]-= int(speed)/3+6;
+    rect(obstacles.get(i).get(0), top, 100, 50);
+    rect(futureLeft, obstacles.get(i).get(1), 50, 100);
   }
   
   //apply gravity
