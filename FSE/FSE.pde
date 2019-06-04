@@ -85,8 +85,9 @@ void movePlayer() {
     onGround = true;
   }
   for (int i = 0; i < obstacles.size(); i++){
-    if (obstacles.get(i).get(0)-obstacleImages[int(obstacles.get(i).get(2))].width/4-(int(speed)/3+5) < pos[0]+character[0].width/2 && obstacles.get(i).get(1)-obstacleImages[int(obstacles.get(i).get(2))].height/2 < bottomOfPlayer){
+    if (obstacles.get(i).get(0)-obstacleImages[int(obstacles.get(i).get(2))].width/2-(int(speed)/3+5) < pos[0]+character[0].width/2 && obstacles.get(i).get(1)-obstacleImages[int(obstacles.get(i).get(2))].height/2 < bottomOfPlayer){
       pos[0]-=int(speed)/3+6;
+      colliding = true;
     }
   }
   
@@ -230,6 +231,10 @@ void jetpack() {
       vy=-2*gravity;
     }
   }
+}
+
+void fuel(){
+  
 }
 
 void updateTrail() {
