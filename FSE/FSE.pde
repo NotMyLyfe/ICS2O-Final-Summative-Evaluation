@@ -57,7 +57,7 @@ boolean onGround = true;
 boolean colliding = false;
 boolean gap = false;
 
-int health;
+int health=100;
 
 void movePlayer() {
   bottomOfPlayer = pos[1]+character[0].height/3+character[2].height;
@@ -228,7 +228,7 @@ void jetpack() {
   if (keyPressed && key==32 && !colliding) {
     jump=true;
     if (vy>=0 && jump) {
-      vy=2*gravity;
+      vy=-2*gravity;
     }
   }
 }
@@ -408,12 +408,11 @@ void drawUpdateObstacle(){
 }
 
 void health(){
-  health=100;
   if(colliding){
     health-=25;
   }
   fill(255,0,0);
-  rect(600,50,100,20);
+  rect(600,50,100*health/100,20);
 }
 
 void game() {
