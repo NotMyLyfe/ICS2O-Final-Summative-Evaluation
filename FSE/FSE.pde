@@ -82,6 +82,13 @@ void movePlayer() {
     vy = 0;
     onGround = true;
   }
+  for (int i = 0; i < obstacles.size(); i++){
+    if (obstacles.get(i).get(0)-obstacleImages[int(obstacles.get(i).get(2))].width/2-(int(speed)/3+5) < pos[0]+character[0].width/2 && obstacles.get(i).get(1)-obstacleImages[int(obstacles.get(i).get(2))].height/2 < bottomOfPlayer){
+      pos[0]-=int(speed)/3+6;
+      colliding = true;
+    }
+  }
+  
   //apply gravity
 }
 
@@ -379,6 +386,13 @@ void updateEnemies(){
     image(robot[1], enemies.get(i).get(0)-robot[1].width/2, enemies.get(i).get(1));
     image(robot[2], enemies.get(i).get(0), enemies.get(i).get(1)+robot[0].height/3+robot[2].height/2);
     if (!(enemies.get(i).get(0)-(int(speed)/3+10)>groundPos[nextGroundEnemy][0] && enemies.get(i).get(0)-(int(speed)/3+10) < groundPos[nextGroundEnemy][0]+background[0].width && bottomEnemy-nextTopGroundEnemy>5)) enemies.get(i).set(0, enemies.get(i).get(0)-(int(speed)/3+10));
+    rectMode(CENTER);
+    fill(0);
+    rect(enemies.get(i).get(0), enemies.get(i).get(1)-robot[0].height/2 - 50, 200, 40);
+    fill(255, 0, 0);
+    rectMode(CORNER);
+    rect(enemies.get(i).get(0)-90, enemies.get(i).get(1)-robot[0].height/2 - 50 - 10, 180, 20);
+    if (enemies.get(i).get(0)+robot[2].width/2 <= 0) enemies.remove(i);
   }
 }
 
@@ -441,6 +455,7 @@ void game() {
         newEnemy.add(random(groundPos[i][0]+robot[2].width, groundPos[i][0]+background[0].width-robot[2].width));
         newEnemy.add(groundPos[i][1]+34);
         newEnemy.add(100.0);
+        newEnemy.add(float(millis()));
         enemies.add(newEnemy);
       }
     }
