@@ -58,6 +58,7 @@ boolean colliding = false;
 boolean gap = false;
 
 int health=100;
+float fuel=100;
 
 void movePlayer() {
   bottomOfPlayer = pos[1]+character[0].height/3+character[2].height;
@@ -229,12 +230,24 @@ void addTrail() {
 }
 
 void jetpack() {
-  if (keyPressed && key==32 && !colliding) {
+  if (keyPressed && key==32) {
     jump=true;
-    if (vy>=0 && jump) {
+    if (vy>=0 && jump && fuel>0) {
       vy=-2*gravity;
     }
   }
+}
+
+void jetpackFuel(){
+  if(vy<0 && jump){
+    fuel-=0.1;
+  }
+  else if(fuel<100 && onGround){
+    fuel+=0.1;
+  }
+  fill(0);
+  rectMode(CORNER);
+  rect(600,140,fuel,20);
 }
 
 void updateTrail() {
@@ -412,11 +425,21 @@ void drawUpdateObstacle(){
 }
 
 void health(){
-  if(colliding){
+  if(colliding && health>75){
     health-=25;
   }
+  if(colliding && health==75 && health>50){
+    health-=25;
+  }
+  if(colliding && health==50 && health>25){
+    health-=25;
+  }
+  if(health==25 && colliding){
+    
+  }
   fill(255,0,0);
-  rect(600,50,100*health/100,20);
+  rectMode(CORNER);
+  rect(600,50,health,20);
 }
 
 void game() {
@@ -486,6 +509,7 @@ void game() {
     drawChar();
     jetpack();
     health();
+    jetpackFuel();
   }
   else {
     rectMode(CENTER);
