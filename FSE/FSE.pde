@@ -57,6 +57,8 @@ boolean onGround = true;
 boolean colliding = false;
 boolean gap = false;
 
+int health;
+
 void movePlayer() {
   bottomOfPlayer = pos[1]+character[0].height/3+character[2].height;
   pos[1]+=vy;//moving the player up/down
@@ -373,6 +375,15 @@ void drawUpdateObstacle(){
   }
 }
 
+void health(){
+  health=100;
+  if(colliding){
+    health-=25;
+  }
+  fill(255,0,0);
+  rect(600,50,100,20);
+}
+
 void game() {
   imageMode(CENTER);
   image(background[2], width/2, height/2);
@@ -405,7 +416,7 @@ void game() {
       }
       else groundPos[i][1] = groundPos[next][1]+nextHeight;
       groundPos[i][0] = groundPos[next][0]+background[0].width;
-      int randomNumber = int(random(0, 6));
+      int randomNumber = int(random(0, 4));
       for (int a = 0; a < randomNumber; a++){
         ArrayList<Float> newObstacle = new ArrayList<Float>();
         float whatObstacle = int(random(0, 2));
@@ -436,6 +447,7 @@ void game() {
      }
     drawChar();
     jetpack();
+    health();
   }
   else {
     rectMode(CENTER);
@@ -472,6 +484,7 @@ void game() {
       speedUp = 0.1;
       if (int(saveData[0]) < distTravelled) saveData[0] = Integer.toString(int(distTravelled));
       distTravelled = 0;
+      obstacles.clear();
       //saveStrings("saveGame.txt", saveData);
     }
   }
