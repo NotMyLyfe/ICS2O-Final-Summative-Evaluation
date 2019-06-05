@@ -431,6 +431,32 @@ void drawUpdateObstacle(){
     if (obstacles.get(i).get(0)+obstacleImages[int(obstacles.get(i).get(2))].height/2 <= 0) obstacles.remove(i);
   }
 }
+void detectCollision(){
+  for(int i = 0; i < bulletPos.size(); i++){
+    int[] value = {-1, -1};
+    float closest = 1000000;
+    for (int j = 0; j < obstacles.size(); j++){
+      float top = obstacles.get(j).get(1) - obstacleImages[int(obstacles.get(j).get(2))].height;
+      float left = obstacles.get(j).get(0) - obstacleImages[int(obstacles.get(j).get(2))].width/2;
+      if (left < closest && bulletPos.get(i).get(0) < left){
+        closest = left;
+        value[0] = j;
+        value[1] = 0;
+      }
+    }
+    for (int j = 0; j < enemies.size(); j++){
+      float bottom = enemies.get(j).get(1)+robot[0].height/3+robot[2].height;
+      float left = enemies.get(j).get(0)-robot[0].width/2;
+      if (left < closest && bulletPos.get(i).get(0) < left){
+        closest = left;
+        value[0] = j;
+        value[1] = 1;
+      }
+    }
+    rect(closest, height/2, 10, 500);
+    if (closest <= bulletPos.get(i).get(0) || closest <= pos[0]) closest = 100000;
+  }
+}
 
 void health(){
   if(colliding && health>75){
@@ -507,6 +533,7 @@ void game() {
     if (!firstTime) groundPos[i][0]-=int(speed)/3+5;
   }
   updateEnemies();
+  detectCollision();
   if (!firstTime){
     movePlayer();
     distTravelled=distTravelled+0.04*speed;
