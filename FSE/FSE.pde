@@ -60,6 +60,10 @@ boolean gap = false;
 int health=100;
 float fuel=100;
 
+boolean onObstacle = false;
+float topOfObstacle = 0;
+float rightOfObstacle = 0;
+
 void movePlayer() {
   bottomOfPlayer = pos[1]+character[0].height/3+character[2].height;
   pos[1]+=vy;//moving the player up/down
@@ -70,7 +74,8 @@ void movePlayer() {
   topOfGrass = groundPos[current][1]+49;
   topOfNextGrass = groundPos[nextGround][1]+49;
   if (onGround) pos[1]=topOfGrass-(character[0].height/3+character[2].height);
-  else if (!colliding || (colliding && !onGround)) vy+=gravity;
+  else if (onObstacle) pos[1] = topOfObstacle - (character[0].height/3+character[2].height);
+  else vy+=gravity;
   if (groundPos[nextGround][0]-int(speed)/3+1 <= pos[0]+character[0].width/2 && bottomOfPlayer-topOfNextGrass >= 10 && groundPos[nextGround][0] > 0){
     pos[0]-= int(speed)/3+6;
     colliding = true;
@@ -86,16 +91,22 @@ void movePlayer() {
     onGround = true;
   }
   for (int i = 0; i < obstacles.size(); i++){
-    rectMode(CENTER);
     float top = obstacles.get(i).get(1);
-    float futureLeft = obstacles.get(i).get(0)-obstacleImages[int(obstacles.get(i).get(2))].width/3-(int(speed)/3+5);
-    float futureRight = obstacles.get(i).get(0)+obstacleImages[int(obstacles.get(i).get(2))].width/3-(int(speed)/3+5);
+    float left = obstacles.get(i).get(0)-obstacleImages[int(obstacles.get(i).get(2))].width/3;
+    float right = obstacles.get(i).get(0)+obstacleImages[int(obstacles.get(i).get(2))].width/3;
+    float futureLeft = left-(int(speed)/3+5);
+    float futureRight = right-(int(speed)/3+5);
     top-=obstacleImages[int(obstacles.get(i).get(2))].height*((obstacles.get(i).get(2)+1)/2);
-    if (futureLeft < pos[0]+character[0].width/2 && bottomOfPlayer > top && futureRight > pos[0]-character[0].width/2) pos[0]-= int(speed)/3+6;
-    rect(obstacles.get(i).get(0), top, 100, 50);
-    rect(futureLeft, obstacles.get(i).get(1), 50, 100);
+    if(left < pos[0]+character[0].width/2 && right > pos[0]-character[0].width/2 && bottomOfPlayer > top){
+      onObstacle = true;
+      topOfObstacle = top;
+      rightOfObstacle = right;
+      pos[1] = topOfObstacle - (character[0].height/3+character[2].height);
+      vy=0;
+    }
+    else if (futureLeft < pos[0]+character[0].width/2 && futureRight > pos[0]-character[0].width/2 && bottomOfPlayer > top)  pos[0]-= int(speed)/3+6;
   }
-  
+  if (rightOfObstacle < pos[0]-character[0].width/2 || bottomOfPlayer != topOfObstacle && onObstacle) onObstacle = false;
   //apply gravity
 }
 
@@ -184,7 +195,7 @@ boolean justJumped = false;
 boolean holding = false;
 
 void keyPressed() {
-  if (key=='w' && onGround && !justJumped && pos[0]>0 && !holding && currentScene == 1 && !firstTime) {//only jump if on ground
+  if (key=='w' && (onGround || onObstacle) && !justJumped && pos[0]>0 && !holding && currentScene == 1 && !firstTime) {//only jump if on ground
     vy=JUMPPOWER;//jumping power
     onGround = false;
     justJumped = true;
@@ -230,11 +241,8 @@ void addTrail() {
 }
 
 void jetpack() {
-  if (keyPressed && key==32) {
-    jump=true;
-    if (vy>=0 && jump && fuel>0) {
-      vy=-2*gravity;
-    }
+  if (keyPressed && key==32 && fuel > 0) {
+    vy=-4*gravity;
   }
 }
 
