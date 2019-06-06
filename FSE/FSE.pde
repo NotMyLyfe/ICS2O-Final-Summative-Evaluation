@@ -36,6 +36,7 @@ float angle=0;
 
 int[] bullets = {12};
 int[] dmg = {25};
+int[] robotReload = {1500};
 int bulletsRemaining = 0;
 
 ArrayList<ArrayList<Float>> trail = new ArrayList<ArrayList<Float>>();
@@ -214,9 +215,6 @@ void mouseReleased(){
 }
 
 void keyReleased() {
-  if (key==32) {
-    jump=false;
-  }
   if (key == 'w'){
     justJumped = false;
     holding = false;
@@ -313,11 +311,18 @@ void addBullet(){
 }
 
 void drawBullet(){
+  imageMode(CENTER);
   for(int i = 0; i < bulletPos.size(); i++){
-    imageMode(CENTER);
     image(bullet, bulletPos.get(i).get(0), bulletPos.get(i).get(1));
     bulletPos.get(i).set(0, bulletPos.get(i).get(0)+30);
     if (bulletPos.get(i).get(0)-bullet.width/2 > width || (bulletPos.get(i).get(0)+bullet.width/2>groundPos[nextGround][0] && bulletPos.get(i).get(1) > topOfNextGrass && groundPos[nextGround][0] > 0)) bulletPos.remove(i);
+  }
+  for (int i = 0; i < enemyBullets.size(); i++){
+    image(bullet, enemyBullets.get(i).get(0), enemyBullets.get(i).get(1));
+    enemyBullets.get(i).set(0, enemyBullets.get(i).get(0)-30);
+    if (enemyBullets.get(i).get(0)-bullet.width/2 < 0){
+      enemyBullets.remove(i);
+    }
   }
 }
 boolean reloading = false;
@@ -396,6 +401,7 @@ int next;
 float[] skyX = {0, 1280};
 ArrayList<ArrayList<Float>> obstacles = new ArrayList<ArrayList<Float>>();
 ArrayList<ArrayList<Float>> enemies = new ArrayList<ArrayList<Float>>();
+ArrayList<ArrayList<Float>> enemyBullets = new ArrayList<ArrayList<Float>>();
 
 void updateEnemies(){
   imageMode(CENTER);
@@ -410,6 +416,27 @@ void updateEnemies(){
     float nextTopGroundEnemy = groundPos[nextGroundEnemy][1]+49;
     enemies.get(i).set(1, topGroundEnemy-(robot[0].height/3+robot[2].height));
     image(robot[0],enemies.get(i).get(0), enemies.get(i).get(1));
+    if (int(saveData[1]) == 0){
+      pushMatrix();
+      translate(enemies.get(i).get(0)-robot[1].width, enemies.get(i).get(1));
+      scale(-1, 1);
+      rotate(-PI/2);
+      image(glock[0], 5, 0);
+      image(glock[1], 2+glock[0].width/2, -enemies.get(i).get(4));
+      popMatrix();
+      if (millis()-enemies.get(i).get(2) >= robotReload[int(saveData[1])]){
+        ArrayList<Float> newBullet = new ArrayList<Float>();
+        newBullet.add(enemies.get(i).get(0)-robot[1].width);
+        newBullet.add(enemies.get(i).get(1)-2-glock[0].width/2);
+        enemyBullets.add(newBullet);
+        enemies.get(i).set(4, 2.0);
+        enemies.get(i).set(2, float(millis()));
+      }
+      if (enemies.get(i).get(4)!=0){
+        enemies.get(i).set(4, enemies.get(i).get(4)-enemies.get(i).get(5));
+      }
+      if (enemies.get(i).get(4) >= 10 || enemies.get(i).get(4) <= 0) enemies.get(i).set(5, enemies.get(i).get(5)*-1);
+    }
     image(robot[1], enemies.get(i).get(0)-robot[1].width/2, enemies.get(i).get(1));
     image(robot[2], enemies.get(i).get(0), enemies.get(i).get(1)+robot[0].height/3+robot[2].height/2);
     if (!(enemies.get(i).get(0)-(int(speed)/3+10)>groundPos[nextGroundEnemy][0] && enemies.get(i).get(0)-(int(speed)/3+10) < groundPos[nextGroundEnemy][0]+background[0].width && bottomEnemy-nextTopGroundEnemy>5)) enemies.get(i).set(0, enemies.get(i).get(0)-(int(speed)/3+10));
@@ -435,14 +462,18 @@ void detectCollision(){
   for(int i = 0; i < bulletPos.size(); i++){
     int[] value = {-1, -1};
     float closest = 1000000;
+    float topOfClosest = 100000;
+    float bottomOfClosest = 100000;
     float rightClosest = 1000000;
     for (int j = 0; j < obstacles.size(); j++){
       float top = obstacles.get(j).get(1) - obstacleImages[int(obstacles.get(j).get(2))].height;
       float left = obstacles.get(j).get(0) - obstacleImages[int(obstacles.get(j).get(2))].width/2;
       float right = obstacles.get(j).get(0) + obstacleImages[int(obstacles.get(j).get(2))].width/2;
-      if (left < closest && right < rightClosest && bulletPos.get(i).get(0) < right && bulletPos.get(i).get(0) > top&& bulletPos.get(i).get(1)<obstacles.get(j).get(1)){
+      if (left < closest && right < rightClosest && bulletPos.get(i).get(0) < right && bulletPos.get(i).get(1) > top&& bulletPos.get(i).get(1)<obstacles.get(j).get(1)){
         closest = left;
         rightClosest = right;
+        topOfClosest = top;
+        bottomOfClosest = obstacles.get(j).get(1);
         value[0] = j;
         value[1] = 0;
       }
@@ -455,16 +486,17 @@ void detectCollision(){
       if (left < closest && right < rightClosest && bulletPos.get(i).get(0) < right && bulletPos.get(i).get(1) > top && bulletPos.get(i).get(1) < bottom){
         closest = left;
         rightClosest = right;
+        topOfClosest = top;
+        bottomOfClosest = bottom;
         value[0] = j;
         value[1] = 1;
       }
     }
     if (closest <= bulletPos.get(i).get(0) && rightClosest <= bulletPos.get(i).get(0)  || closest <= pos[0]-character[0].width/2){
-      println("ok");
       closest = 100000;
       rightClosest = 100000;
     }
-    if (bulletPos.get(i).get(0)+30 >= closest){
+    if (bulletPos.get(i).get(0)+30 >= closest && bulletPos.get(i).get(1) > topOfClosest && bulletPos.get(i).get(1) < bottomOfClosest){
       bulletPos.remove(i);
       if (value[1] == 1){
         enemies.get(value[0]).set(3, enemies.get(value[0]).get(3)-dmg[int(saveData[1])]);
@@ -488,25 +520,17 @@ void detectCollision(){
         }
       }
     }
-    fill(0);
-    rect(closest, height/2, 50, height);
-    rect(rightClosest, height/2, 50, height);
+  }
+  for (int i = 0; i < enemies.size(); i++){
+    if (enemies.get(i).get(0)-(int(speed)/3+10) < pos[0]+character[0].width/2 && enemies.get(i).get(0) < pos[0]+character[0].width/2&& enemies.get(i).get(1)-robot[0].width/2 < pos[1]+character[0].height/3+character[2].height && enemies.get(i).get(1)+robot[0].height/3+robot[2].height > pos[1]-character[0].height/2){
+      health -= enemies.get(i).get(3)/4;
+      enemies.remove(i);
+      
+    }
   }
 }
 
 void health(){
-  if(colliding && health>75){
-    health-=25;   
-  }
-  if(colliding && health==75 && health>50){
-    health-=25;
-  }
-  if(colliding && health==50 && health>25){
-    health-=25;
-  }
-  if(health==25 && colliding){
-    
-  }
   fill(255,0,0);
   rectMode(CORNER);
   rect(600,50,health,20);
@@ -563,6 +587,8 @@ void game() {
         newEnemy.add(groundPos[i][1]+34);
         newEnemy.add(float(millis()));
         newEnemy.add(100.0);
+        newEnemy.add(0.0);
+        newEnemy.add(2.0);
         enemies.add(newEnemy);
       }
     }
@@ -591,13 +617,13 @@ void game() {
     textAlign(CENTER, CENTER);
     text("Rules to the game", width/2, height/2-height*0.4+100);
     textFont(light[0], 48);
-    text("Press W to jump, Space to glide,", width/2, height/2-80);
+    text("Press W to jump, Space to use jetpack,", width/2, height/2-80);
     text("and Left Click to shoot.", width/2, height/2-20);
     text("Go the furthest distance without dying!", width/2, height/2+40);
     text("Press anywhere to continue", width/2, height/2+150);
     if (clicked) firstTime = false;
   }
-  if(pos[0]<=0){
+  if(pos[0]<=0 || health <= 0){
     speed=0;
     pos[0]=-1000;
     fill(0);
@@ -618,6 +644,9 @@ void game() {
       if (int(saveData[0]) < distTravelled) saveData[0] = Integer.toString(int(distTravelled));
       distTravelled = 0;
       obstacles.clear();
+      reloading = false;
+      health = 100;
+      enemies.clear();
       //saveStrings("saveGame.txt", saveData);
     }
   }
