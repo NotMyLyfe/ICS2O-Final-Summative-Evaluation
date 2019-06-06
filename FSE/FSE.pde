@@ -59,6 +59,7 @@ boolean gap = false;
 
 int health=100;
 float fuel=100;
+ArrayList<ArrayList<Float>> coins = new ArrayList<ArrayList<Float>>();
 
 boolean onObstacle = false;
 float topOfObstacle = 0;
@@ -242,16 +243,13 @@ void addTrail() {
 
 void jetpack() {
   if (keyPressed && key==32 && fuel > 0) {
-    vy=-4*gravity;
+    vy=-3*gravity;
   }
-}
-
-void jetpackFuel(){
-  if(vy<0 && jump){
-    fuel-=0.1;
+  if(vy<0 && vy==-3*gravity && !onGround){
+    fuel-=0.5;
   }
-  else if(fuel<100 && onGround){
-    fuel+=0.1;
+  else if(fuel<100 && vy>=0){
+    fuel+=0.5;
   }
   fill(0);
   rectMode(CORNER);
@@ -433,21 +431,20 @@ void drawUpdateObstacle(){
 }
 
 void health(){
-  if(colliding && health>75){
-    health-=25;
-  }
-  if(colliding && health==75 && health>50){
-    health-=25;
-  }
-  if(colliding && health==50 && health>25){
-    health-=25;
-  }
-  if(health==25 && colliding){
-    
-  }
   fill(255,0,0);
   rectMode(CORNER);
   rect(600,50,health,20);
+}
+
+void addCoins(){
+  ArrayList<Float> newCoins = new ArrayList<Float>();
+  for (int i = 0; i < coins.size(); i++){
+    newCoins.add(pos[0]);
+    newCoins.add(pos[1]);
+    coins.get(i).set(0, obstacles.get(i).get(0)-(int(speed)/3+5));
+    ellipse(obstacles.get(i).get(0),obstacles.get(i).get(1),10,10);
+  }
+  coins.add(newCoins);
 }
 
 void game() {
@@ -457,7 +454,7 @@ void game() {
   imageMode(CORNER);
   for (int i = 0; i < skyX.length; i++){
     image(background[1], skyX[i], 0);
-    if (!firstTime) skyX[i]-=int(speed)/4+5;
+    if (!firstTime) skyX[i]-=int(speed)/4+1;
     if (skyX[i] <= -background[1].width){
       if (i == 0) next = 1;
       else next = 0;
@@ -517,7 +514,7 @@ void game() {
     drawChar();
     jetpack();
     health();
-    jetpackFuel();
+    addCoins();
   }
   else {
     rectMode(CENTER);
