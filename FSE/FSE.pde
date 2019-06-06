@@ -35,7 +35,7 @@ float vy=0;
 float angle=0;
 
 int[] bullets = {12};
-int[] dmg = {10};
+int[] dmg = {25};
 int bulletsRemaining = 0;
 
 ArrayList<ArrayList<Float>> trail = new ArrayList<ArrayList<Float>>();
@@ -418,7 +418,7 @@ void updateEnemies(){
     rect(enemies.get(i).get(0), enemies.get(i).get(1)-robot[0].height/2 - 50, 200, 40);
     fill(255, 0, 0);
     rectMode(CORNER);
-    rect(enemies.get(i).get(0)-90, enemies.get(i).get(1)-robot[0].height/2 - 50 - 10, 180, 20);
+    rect(enemies.get(i).get(0)-90, enemies.get(i).get(1)-robot[0].height/2 - 50 - 10, 180*(enemies.get(i).get(3)/100), 20);
     if (enemies.get(i).get(0)+robot[2].width/2 <= 0) enemies.remove(i);
   }
 }
@@ -435,32 +435,68 @@ void detectCollision(){
   for(int i = 0; i < bulletPos.size(); i++){
     int[] value = {-1, -1};
     float closest = 1000000;
+    float rightClosest = 1000000;
     for (int j = 0; j < obstacles.size(); j++){
       float top = obstacles.get(j).get(1) - obstacleImages[int(obstacles.get(j).get(2))].height;
       float left = obstacles.get(j).get(0) - obstacleImages[int(obstacles.get(j).get(2))].width/2;
-      if (left < closest && bulletPos.get(i).get(0) < left){
+      float right = obstacles.get(j).get(0) + obstacleImages[int(obstacles.get(j).get(2))].width/2;
+      if (left < closest && right < rightClosest && bulletPos.get(i).get(0) < right && bulletPos.get(i).get(0) > top&& bulletPos.get(i).get(1)<obstacles.get(j).get(1)){
         closest = left;
+        rightClosest = right;
         value[0] = j;
         value[1] = 0;
       }
     }
     for (int j = 0; j < enemies.size(); j++){
       float bottom = enemies.get(j).get(1)+robot[0].height/3+robot[2].height;
+      float top = enemies.get(j).get(1)-robot[0].height/2;
       float left = enemies.get(j).get(0)-robot[0].width/2;
-      if (left < closest && bulletPos.get(i).get(0) < left){
+      float right = enemies.get(j).get(0)+robot[0].width/2;
+      if (left < closest && right < rightClosest && bulletPos.get(i).get(0) < right && bulletPos.get(i).get(1) > top && bulletPos.get(i).get(1) < bottom){
         closest = left;
+        rightClosest = right;
         value[0] = j;
         value[1] = 1;
       }
     }
-    rect(closest, height/2, 10, 500);
-    if (closest <= bulletPos.get(i).get(0) || closest <= pos[0]) closest = 100000;
+    if (closest <= bulletPos.get(i).get(0) && rightClosest <= bulletPos.get(i).get(0)  || closest <= pos[0]-character[0].width/2){
+      println("ok");
+      closest = 100000;
+      rightClosest = 100000;
+    }
+    if (bulletPos.get(i).get(0)+30 >= closest){
+      bulletPos.remove(i);
+      if (value[1] == 1){
+        enemies.get(value[0]).set(3, enemies.get(value[0]).get(3)-dmg[int(saveData[1])]);
+        if (enemies.get(value[0]).get(3) <= 0){
+          enemies.remove(value[0]);
+          value[0] = -1;
+          value[1] = -1;
+          closest = 100000;
+          rightClosest = 100000;
+        }
+      }
+      else{
+        obstacles.get(value[0]).set(3, obstacles.get(value[0]).get(3)-dmg[int(saveData[1])]);
+        obstacles.get(value[0]).set(1, obstacles.get(value[0]).get(1)+obstacleImages[int(obstacles.get(value[0]).get(2))].height*(dmg[int(saveData[1])])/100);
+        if (obstacles.get(value[0]).get(3) <= 0){
+          obstacles.remove(value[0]);
+          value[0] = -1;
+          value[1] = -1;
+          closest = 100000;
+          rightClosest = 100000;
+        }
+      }
+    }
+    fill(0);
+    rect(closest, height/2, 50, height);
+    rect(rightClosest, height/2, 50, height);
   }
 }
 
 void health(){
   if(colliding && health>75){
-    health-=25;
+    health-=25;   
   }
   if(colliding && health==75 && health>50){
     health-=25;
@@ -517,16 +553,16 @@ void game() {
         newObstacle.add(random(groundPos[i][0]+obstacleImages[0].width, groundPos[i][0]+background[0].width-obstacleImages[0].width));
         newObstacle.add(groundPos[i][1]+34);
         newObstacle.add(whatObstacle);
-        newObstacle.add(50.0);
+        newObstacle.add(100.0);
         obstacles.add(newObstacle);
       }
-      int numOfEnemies = int(random(0, 5));
+      int numOfEnemies = int(random(0, 4));
       for (int a = 0; a < numOfEnemies; a++){
         ArrayList<Float> newEnemy = new ArrayList<Float>();
         newEnemy.add(random(groundPos[i][0]+robot[2].width, groundPos[i][0]+background[0].width-robot[2].width));
         newEnemy.add(groundPos[i][1]+34);
-        newEnemy.add(100.0);
         newEnemy.add(float(millis()));
+        newEnemy.add(100.0);
         enemies.add(newEnemy);
       }
     }
