@@ -197,8 +197,9 @@ boolean justJumped = false;
 boolean holding = false;
 
 void keyPressed() {
-  if (key=='w' && (onGround || onObstacle) && !justJumped && pos[0]>0 && !holding && currentScene == 1 && !firstTime) {//only jump if on ground
+  if (keyCode == 87 && (onGround || onObstacle) && !justJumped && pos[0]>0 && !holding && currentScene == 1 && !firstTime) {//only jump if on ground
     vy=JUMPPOWER;//jumping power
+    println(keyCode);
     onGround = false;
     justJumped = true;
     holding = true;
@@ -240,13 +241,17 @@ void addTrail() {
 }
 
 void jetpack() {
-  if (keyPressed && key==32 && fuel > 0) {
-    vy=-3*gravity;
+  boolean jetpackUse = false;
+  if (keyPressed && key==32 && fuel >= 0) {
+    if (pos[1] > -character[0].height/2) vy=-3*gravity;
+    else vy = 0;
+    jetpackUse = true;
   }
-  if(vy<0 && vy==-3*gravity && !onGround){
+  else jetpackUse = false;
+  if(jetpackUse && !onGround){
     fuel-=0.5;
   }
-  else if(fuel<100 && vy>=0){
+  else if(fuel<100 && vy>=0 && !jetpackUse && onGround){
     fuel+=0.5;
   }
   fill(0);
@@ -534,17 +539,6 @@ void health(){
   rect(600,50,health,20);
 }
 
-void addCoins(){
-  ArrayList<Float> newCoins = new ArrayList<Float>();
-  for (int i = 0; i < coins.size(); i++){
-    newCoins.add(pos[0]);
-    newCoins.add(pos[1]);
-    coins.get(i).set(0, obstacles.get(i).get(0)-(int(speed)/3+5));
-    ellipse(obstacles.get(i).get(0),obstacles.get(i).get(1),10,10);
-  }
-  coins.add(newCoins);
-}
-
 void game() {
   imageMode(CENTER);
   image(background[2], width/2, height/2);
@@ -615,7 +609,7 @@ void game() {
     drawChar();
     jetpack();
     health();
-    addCoins();
+    //addCoins();
   }
   else {
     rectMode(CENTER);
