@@ -22,6 +22,7 @@ PImage[] glock = new PImage[2];
 PImage bullet;
 PImage[] obstacleImages = new PImage[2];
 PImage[] robot = new PImage[3];
+PImage mainMenuPic;
 
 int[] reloadTime = {4000};
 
@@ -66,6 +67,7 @@ boolean onObstacle = false;
 float topOfObstacle = 0;
 float rightOfObstacle = 0;
 
+
 void movePlayer() {
   bottomOfPlayer = pos[1]+character[0].height/3+character[2].height;
   pos[1]+=vy;//moving the player up/down
@@ -97,7 +99,6 @@ void movePlayer() {
     float left = obstacles.get(i).get(0)-obstacleImages[int(obstacles.get(i).get(2))].width/3;
     float right = obstacles.get(i).get(0)+obstacleImages[int(obstacles.get(i).get(2))].width/3;
     float futureLeft = left-(int(speed)/3+5);
-    float futureRight = right-(int(speed)/3+5);
     top-=obstacleImages[int(obstacles.get(i).get(2))].height*((obstacles.get(i).get(2)+1)/2);
     if(left < pos[0]+character[0].width/2 && right > pos[0]-character[0].width/2 && bottomOfPlayer > top){
       onObstacle = true;
@@ -106,7 +107,7 @@ void movePlayer() {
       pos[1] = topOfObstacle - (character[0].height/3+character[2].height);
       vy=0;
     }
-    else if (futureLeft < pos[0]+character[0].width/2 && futureRight > pos[0]-character[0].width/2 && bottomOfPlayer > top)  pos[0]-= int(speed)/3+6;
+    else if (left > pos[0]+character[0].width/2 && futureLeft < pos[0]+character[0].width/2 && right > pos[0]-character[0].width/2 && top<bottomOfPlayer)  pos[0]-= int(speed)/3+6;
   }
   if (rightOfObstacle < pos[0]-character[0].width/2 || bottomOfPlayer != topOfObstacle && onObstacle) onObstacle = false;
   //apply gravity
@@ -148,6 +149,8 @@ void initImgs() {
   }
   character[1].resize(character[1].width*3/4, character[1].height*3/4);
   robot[1].resize(robot[1].width*3/4, robot[1].height*3/4);
+  mainMenuPic = loadImage("Imgs/Main Menu Screen.png");
+  mainMenuPic.resize(width, height);
 }
 
 void setup() {
@@ -165,7 +168,9 @@ String[] buttonText = {"Play Game", "Shop", "Credits", "Exit"};
 boolean firstTime;
 
 void mainMenu() {
-  background(0);
+  background(100);
+  imageMode(CENTER);
+  image(mainMenuPic, width/2, height/2);
   fill(255);
   textFont(regular[1], 96);
   textAlign(CENTER, CENTER);
@@ -182,7 +187,7 @@ void mainMenu() {
         if(i == 0) bulletsRemaining = bullets[int(saveData[1])];
       }
     }
-    else fill(255);
+    else fill(255,170);
     rect(width/2, height/2-20+100*i, 300, 80);
     if(buttons[i]) fill(255);
     else fill(0);
@@ -307,7 +312,7 @@ ArrayList<ArrayList<Float>> bulletPos = new ArrayList<ArrayList<Float>>();
 void addBullet(){
   ArrayList<Float> newBullet = new ArrayList<Float>();
   if (int(saveData[1]) == 0){
-    newBullet.add(pos[0]+character[1].height+glock[0].height-10);
+    newBullet.add(pos[0]+character[0].width/2);
     newBullet.add(pos[1]-character[1].width/2);
   }
   bulletPos.add(newBullet);
