@@ -11,7 +11,7 @@ PFont[] light = new PFont[3];
 PFont[] xLight = new PFont[3];
 PFont[] thin = new PFont[3];
 
-String[] saveData = {"0", "0", "0", "10000", "0", "0"}; //0th value: past distance, 1st value: gun type, 2nd value: armour type, 3rd value: money, 4th value: top gun purchased, 5th value: top armour purchased
+String[] saveData = {"0", "1", "0", "10000", "0", "0"}; //0th value: past distance, 1st value: gun type, 2nd value: armour type, 3rd value: money, 4th value: top gun purchased, 5th value: top armour purchased
 
 float loadError = 0;
 
@@ -25,7 +25,7 @@ PImage[] obstacleImages = new PImage[2];
 PImage[] robot = new PImage[3];
 PImage mainMenuPic;
 
-int[] reloadTime = {1500, 2750};
+int[] reloadTime = {1500, 2500};
 
 int JUMPPOWER=-12;
 float gravity=0.6;
@@ -38,7 +38,7 @@ float angle=0;
 
 int[] bullets = {12, 7};
 int[] dmg = {25, 40};
-int[] robotReload = {1500, 2000};
+int[] robotReload = {1500, 2250};
 int bulletsRemaining = 0;
 
 ArrayList<ArrayList<Float>> trail = new ArrayList<ArrayList<Float>>();
@@ -722,35 +722,42 @@ void credits() {
   else if (clicked) currentScene = 0;
 }
 
+String[][] shopOptions = {{"Gun", "Jetpack", "Armour"}, {"Glock", "Deagle"}};
+int[] selection = {int(saveData[1])};
+
 void shop(){
   background(0);
   fill(255);
   textFont(regular[1], 96);
-  text("Shop",600,100);
-  rect(width/2,200,900,80);
-  rect(width/2,300,900,80);
-  rect(width/2,400,900,80);
-  rect(width/2,500,900,80);
-  text("Press anywhere to return to main menu",width/2,height-100);
-  fill(0);
-  textSize(48);
-  text("Gun",width/4,200);
-  text("Jetpack",width/4,300);
-  text("Health",width/4,400);
-  text("Bullet Count",width/4+30,500);
-  rect(width*3/4,200,100,60);
-  rect(width*3/4,300,100,60);
-  rect(width*3/4,400,100,60);
-  rect(width*3/4,500,100,60);
-  fill(255);
-  textSize(20);
-  text("upgrade",width*3/4,200);
-  text("upgrade",width*3/4,300);
-  text("upgrade",width*3/4,400);
-  text("upgrade",width*3/4,500);
-  textSize(48);
-  if(clicked){
-    currentScene = 0;
+  textAlign(CENTER, CENTER);
+  text("Shop",width/2, 70);
+  rectMode(CENTER);
+  textFont(light[0], 40);
+  for (int i = 0; i < shopOptions[0].length; i++){
+    fill(255);
+    text(shopOptions[0][i], width/2, i*170 + 180);
+    fill(255);
+    rect(width/2, i*170+250, 80, 80);
+    int[] areas = {abs(((width/2-50)-mouseX) * ((i*170+290)-mouseY) - ((width/2-50)-mouseX) * ((i*170+210)-mouseY)), abs(((width/2-50)-mouseX)*((i*170+250)-mouseY) - ((width/2-90) - mouseX) * ((i*170+290)-mouseY)), abs(((width/2-90)-mouseX)*((i*170+210)-mouseY) - ((width/2-50)-mouseX) * ((i*170+250)-mouseY))};
+    if (areas[0]  + areas[1] + areas[2]== abs(((width/2-50)-(width/2-50))*((i*170+250)-(i*170+210)) - ((width/2-90)-(width/2-50))*((i*170+290) - (i*170+210)))){
+      fill(127);
+    }
+    else fill (255);
+    beginShape();
+    vertex(width/2-50, i*170+210);
+    vertex(width/2-50, i*170+290);
+    vertex(width/2-90, i*170+250);
+    endShape();
+    int[] areas1 = {abs(((width/2+50)-mouseX) * ((i*170+290)-mouseY) - ((width/2+50)-mouseX) * ((i*170+210)-mouseY)), abs(((width/2+50)-mouseX)*((i*170+250)-mouseY) - ((width/2+90) - mouseX) * ((i*170+290)-mouseY)), abs(((width/2+90)-mouseX)*((i*170+210)-mouseY) - ((width/2+50)-mouseX) * ((i*170+250)-mouseY))};
+    if (areas1[0]  + areas1[1] + areas1[2]== abs(((width/2+50)-(width/2+50))*((i*170+250)-(i*170+210)) - ((width/2+90)-(width/2+50))*((i*170+290) - (i*170+210)))){
+      fill(127);
+    }
+    else fill (255);
+    beginShape();
+    vertex(width/2+50, i*170+210);
+    vertex(width/2+50, i*170+290);
+    vertex(width/2+90, i*170+250);
+    endShape();
   }
 }
 
