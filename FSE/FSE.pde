@@ -4,53 +4,49 @@
 
 //Set memory limit to 2048, as this uses a lot of RAM
 
-int currentScene = 0;
-
+int currentScene = 0;//shows what is on screen: 0 - main menu, 1 - game, 2 - shop, 3 -credits
+//initializing all fonts
 PFont[] regular = new PFont[3];
 PFont[] light = new PFont[3];
 PFont[] xLight = new PFont[3];
 PFont[] thin = new PFont[3];
 
 String[] saveData = {"0", "1", "0", "10000", "0", "0", "0", "0"}; //0th value: past distance, 1st value: gun type, 2nd value: armour type, 3rd value: money, 4th value: top gun purchased, 5th value: top armour purchased, 6th value: top jetpack, 7th value: jetpack
-
-float loadError = 0;
-
-float time = 0;
-
-PImage[] character = new PImage[4];
-PImage[] glock = new PImage[2];
-PImage[] deagle = new PImage[2];
-PImage bullet;
-PImage[] obstacleImages = new PImage[2];
-PImage[] robot = new PImage[3];
+//craeting image variables
+PImage[] character = new PImage[4];//player image
+PImage bullet;//bullet image
+PImage[] obstacleImages = new PImage[2];//obsatcle image
+PImage[] robot = new PImage[3];//robot image
 PImage mainMenuPic;
 
-int[] reloadTime = {1500, 2500};
+int[] reloadTime = {1500, 2500};//shows reload time for all guns
 
+//initializing gravity
 int JUMPPOWER=-12;
 float gravity=0.6;
 boolean jump=false;
 
+//position of player
 float pos[] = {500.0, 0.0};
 
-float vy=0;
-float angle=0;
+float vy=0;//delta-y
 
-int[] bullets = {12, 7};
-int[] dmg = {25, 40};
-int[] robotReload = {1500, 2250};
-int bulletsRemaining = 0;
+int[] bullets = {12, 7};//bullet capacity
+int[] dmg = {25, 40};//bullet damage
+int[] robotReload = {1500, 2250};//shows reload time for robots
+int bulletsRemaining = 0;//bullets remaining
 
-ArrayList<ArrayList<Float>> trail = new ArrayList<ArrayList<Float>>();
+ArrayList<ArrayList<Float>> trail = new ArrayList<ArrayList<Float>>();//2D list for trail
 
-float distTravelled=0;
-float speed=1;
-float speedUp=0.1;
+float distTravelled=0;//current distance travelled
+float speed=1;//current speed
+float speedUp=0.1;//increasing speed
 
-PImage background[] = new PImage[3];
+PImage background[] = new PImage[3];//background image
 
-float[][] groundPos = {{0, height+400}, {1280, height+random(-75, 75)+400}};
+float[][] groundPos = {{0, height+400}, {1280, height+random(-75, 75)+400}};//shows ground position
 
+//initializing ground
 float topOfGrass = 0;
 float topOfNextGrass = 0;
 int nextGround = 0;
@@ -60,19 +56,19 @@ boolean onGround = true;
 boolean colliding = false;
 boolean gap = false;
 
-int health=100;
-float fuel=100;
-ArrayList<ArrayList<Float>> coins = new ArrayList<ArrayList<Float>>();
+int health=100;//health of player
+float fuel=100;//fuel of player
+ArrayList<ArrayList<Float>> coins = new ArrayList<ArrayList<Float>>();//2D list for coins
 
-boolean onObstacle = false;
+boolean onObstacle = false;//on or off obstacle
 float topOfObstacle = 0;
 float rightOfObstacle = 0;
 
 void movePlayer() {
-  bottomOfPlayer = pos[1]+character[0].height/3+character[2].height;
+  bottomOfPlayer = pos[1]+character[0].height/3+character[2].height;//finds bottom of player
   pos[1]+=vy;//moving the player up/down
   for (int i = 0; i < 2; i++){
-    if (pos[0]>= groundPos[i][0] && pos[0]<= groundPos[i][0]+background[0].width) current = i;
+    if (pos[0]>= groundPos[i][0] && pos[0]<= groundPos[i][0]+background[0].width) current = i;//finds the ground the player's on
   }
   nextGround = (current+1)%2;
   topOfGrass = groundPos[current][1]+49;
