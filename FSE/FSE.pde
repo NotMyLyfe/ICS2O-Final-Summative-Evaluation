@@ -11,7 +11,7 @@ PFont[] light = new PFont[3];
 PFont[] xLight = new PFont[3];
 PFont[] thin = new PFont[3];
 
-String[] saveData = {"0", "1", "0", "10000", "0", "0"}; //0th value: past distance, 1st value: gun type, 2nd value: armour type, 3rd value: money, 4th value: top gun purchased, 5th value: top armour purchased
+String[] saveData = {"0", "1", "0", "10000", "0", "0", "0", "0"}; //0th value: past distance, 1st value: gun type, 2nd value: armour type, 3rd value: money, 4th value: top gun purchased, 5th value: top armour purchased, 6th value: top jetpack, 7th value: jetpack
 
 float loadError = 0;
 
@@ -67,7 +67,6 @@ ArrayList<ArrayList<Float>> coins = new ArrayList<ArrayList<Float>>();
 boolean onObstacle = false;
 float topOfObstacle = 0;
 float rightOfObstacle = 0;
-
 
 void movePlayer() {
   bottomOfPlayer = pos[1]+character[0].height/3+character[2].height;
@@ -164,14 +163,28 @@ void initImgs() {
   deagle[1] = loadImage("Imgs/Deagle Slide.png");
 }
 
+String[][] shopOptions = new String[4][];
+int[][] shopCosts = new int[2][];
+
 void setup() {
   size(1280, 720);
   initFont();
   initImgs();
-  if (loadStrings("saveGame.txt") != null) {
-    saveData = loadStrings("saveGame.txt");
+  if (loadStrings("data/saveData/saveGame.txt") != null) {
+    saveData = loadStrings("data/saveData/saveGame.txt");
   }
   frameRate(60);
+  for (int i = 0; i < shopOptions.length; i++){
+    shopOptions[i] = loadStrings("data/gameData/shopOptions"+i+".txt");
+    if (i < 2){
+      String[] buffer = loadStrings("data/gameData/shopPrice"+i+".txt");
+      int[] intBuffer = new int[buffer.length];
+      for (int j = 0; j < buffer.length; j++){
+        intBuffer[j]=int(buffer[j]);
+      }
+      shopCosts[i] = intBuffer;
+    }
+  }
 }
 
 boolean[] buttons = {false, false, false, false};
@@ -722,8 +735,7 @@ void credits() {
   else if (clicked) currentScene = 0;
 }
 
-String[][] shopOptions = {{"Gun", "Jetpack", "Armour"}, {"Glock", "Deagle"}};
-int[] selection = {int(saveData[1])};
+int[] selection = {int(saveData[1]), int(saveData[2]), int(saveData[6])};
 
 void shop(){
   background(0);
@@ -732,15 +744,23 @@ void shop(){
   textAlign(CENTER, CENTER);
   text("Shop",width/2, 70);
   rectMode(CENTER);
-  textFont(light[0], 40);
   for (int i = 0; i < shopOptions[0].length; i++){
+    textFont(light[0], 40);
     fill(255);
     text(shopOptions[0][i], width/2, i*170 + 180);
+    textFont(light[0], 30);
+    if (i!=2){
+      String price;
+      if (selection[i] > int(saveData[i+4]))price = "$" + String.format("%,d", shopCosts[i][selection[i]]);
+      else price = "BOUGHT";
+      text(shopOptions[i+1][selection[i]] + " (" + price + ")", width/2, i*170+310);
+    }
     fill(255);
     rect(width/2, i*170+250, 80, 80);
     int[] areas = {abs(((width/2-50)-mouseX) * ((i*170+290)-mouseY) - ((width/2-50)-mouseX) * ((i*170+210)-mouseY)), abs(((width/2-50)-mouseX)*((i*170+250)-mouseY) - ((width/2-90) - mouseX) * ((i*170+290)-mouseY)), abs(((width/2-90)-mouseX)*((i*170+210)-mouseY) - ((width/2-50)-mouseX) * ((i*170+250)-mouseY))};
     if (areas[0]  + areas[1] + areas[2]== abs(((width/2-50)-(width/2-50))*((i*170+250)-(i*170+210)) - ((width/2-90)-(width/2-50))*((i*170+290) - (i*170+210)))){
       fill(127);
+      if (clicked && selection[i] > 0) selection[i]--;
     }
     else fill (255);
     beginShape();
@@ -751,6 +771,7 @@ void shop(){
     int[] areas1 = {abs(((width/2+50)-mouseX) * ((i*170+290)-mouseY) - ((width/2+50)-mouseX) * ((i*170+210)-mouseY)), abs(((width/2+50)-mouseX)*((i*170+250)-mouseY) - ((width/2+90) - mouseX) * ((i*170+290)-mouseY)), abs(((width/2+90)-mouseX)*((i*170+210)-mouseY) - ((width/2+50)-mouseX) * ((i*170+250)-mouseY))};
     if (areas1[0]  + areas1[1] + areas1[2]== abs(((width/2+50)-(width/2+50))*((i*170+250)-(i*170+210)) - ((width/2+90)-(width/2+50))*((i*170+290) - (i*170+210)))){
       fill(127);
+      if (clicked && (selection[i] < shopOptions[i+1].length-1)||(i == 2 && selection[i]<int(saveData[6]))) selection[i]++;
     }
     else fill (255);
     beginShape();
