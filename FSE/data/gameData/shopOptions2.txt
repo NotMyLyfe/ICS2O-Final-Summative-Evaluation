@@ -1,0 +1,10 @@
+Nothing
+Basic
+Light
+Moderate
+Medium
+Heavy
+Kevlar
+Carbon Nanotube
+Nuclear
+Antimatter
