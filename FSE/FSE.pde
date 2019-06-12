@@ -11,19 +11,18 @@ PFont[] light = new PFont[3];
 PFont[] xLight = new PFont[3];
 PFont[] thin = new PFont[3];
 
-String[] saveData = {"0", "1", "0", "10000", "0", "0", "0", "0"}; //0th value: past distance, 1st value: gun type, 2nd value: armour type, 3rd value: money, 4th value: top gun purchased, 5th value: top armour purchased, 6th value: top jetpack, 7th value: jetpack
+String[] saveData = {"0", "0", "0", "2500", "0", "0", "0", "0"}; //0th value: past distance, 1st value: gun type, 2nd value: armour type, 3rd value: money, 4th value: top gun purchased, 5th value: top armour purchased, 6th value: top jetpack, 7th value: jetpack
 
 float loadError = 0;
 
 float time = 0;
-
+  
 PImage[] character = new PImage[4];
-PImage[] glock = new PImage[2];
-PImage[] deagle = new PImage[2];
 PImage bullet;
 PImage[] obstacleImages = new PImage[2];
 PImage[] robot = new PImage[3];
 PImage mainMenuPic;
+PImage[][] guns = new PImage[20][];
 
 int[] reloadTime = {1500, 2500};
 
@@ -129,8 +128,13 @@ void initImgs() {
   character[2] = loadImage("Imgs/Character Leg.png");
   character[3] = loadImage("Imgs/Jetpack.png");
   
-  glock[0] = loadImage("Imgs/Glock Shell.png");
-  glock[1] = loadImage("Imgs/Glock Side.png");
+  guns[0] = new PImage[2];
+  guns[0][0] = loadImage("Imgs/Glock Shell.png");
+  guns[0][1] = loadImage("Imgs/Glock Side.png");
+  
+  guns[1] = new PImage[2];
+  guns[1][0] = loadImage("Imgs/Deagle Shell.png");
+  guns[1][1] = loadImage("Imgs/Deagle Slide.png");
   
   background[0] = loadImage("Imgs/Grass.png");
   background[1] = loadImage("Imgs/Clouds.png");
@@ -158,9 +162,6 @@ void initImgs() {
   robot[1].resize(robot[1].width*3/4, robot[1].height*3/4);
   mainMenuPic = loadImage("Imgs/Main Menu Screen.png");
   mainMenuPic.resize(width, height);
-  
-  deagle[0] = loadImage("Imgs/Deagle Shell.png");
-  deagle[1] = loadImage("Imgs/Deagle Slide.png");
 }
 
 String[][] shopOptions = new String[4][];
@@ -271,7 +272,11 @@ void addTrail() {
 void jetpack() {
   boolean jetpackUse = false;
   if (keyPressed && key==32 && fuel >= 0) {
-    if (pos[1] > -character[0].height/2) vy=-3*gravity;
+    if (pos[1] > -character[0].height/2){
+      vy=-3*gravity;
+      onGround = false;
+      onObstacle = false;
+    }
     else vy = 0;
     jetpackUse = true;
   }
@@ -304,11 +309,12 @@ void updateTrail() {
       rotate(trail.get(i).get(2));
       switch(int(saveData[1])){
         case 0:
-          image(glock[0], 5, character[1].height);
-          image(glock[1], 2+glock[0].width/2, character[1].height-trail.get(i).get(3));
+          image(guns[0][0], 5, character[1].height);
+          image(guns[0][1], 2+guns[0][0].width/2, character[1].height-trail.get(i).get(3));
           break;
          case 1:
-           
+           image(guns[1][0], 5, character[1].height);
+           image(guns[1][1], guns[1][0].width/2+guns[1][1].width/4, character[1].height-recoil);
       }
       image(character[1], 0, character[1].height/2);
       popMatrix();
@@ -317,9 +323,14 @@ void updateTrail() {
       pushMatrix();
       translate(trail.get(i).get(0), trail.get(i).get(1));
       rotate(-PI/2);
-      if (int(saveData[1]) == 0) {
-        image(glock[0], 5, character[1].height);
-        image(glock[1], 2+glock[0].width/2, character[1].height-trail.get(i).get(3));
+      switch(int(saveData[1])){
+        case 0:
+          image(guns[0][0], 5, character[1].height);
+          image(guns[0][1], 2+guns[0][0].width/2, character[1].height-trail.get(i).get(3));
+          break;
+         case 1:
+           image(guns[1][0], 5, character[1].height);
+           image(guns[1][1], guns[1][0].width/2+guns[1][1].width/4, character[1].height-recoil);
       }
       image(character[1], 0, character[1].height/2);
       popMatrix();
@@ -388,12 +399,12 @@ void drawArms() {
   } else if(pos[0]>0) rotate(rotation);
   switch(int(saveData[1])){
     case 0:
-      image(glock[0], 5, character[1].height);
-      image(glock[1], glock[1].width/4+glock[0].width/2, character[1].height-recoil);
+      image(guns[0][0], 5, character[1].height);
+      image(guns[0][1], guns[0][1].width/4+guns[0][0].width/2, character[1].height-recoil);
       break;
     case 1:
-      image(deagle[0], 5, character[1].height);
-      image(deagle[1], deagle[0].width/2+deagle[1].width/4, character[1].height-recoil);
+      image(guns[1][0], 5, character[1].height);
+      image(guns[1][1], guns[1][0].width/2+guns[1][1].width/4, character[1].height-recoil);
   }
   image(character[1], 0, character[1].height/2);
   rectMode(CENTER);
@@ -413,9 +424,11 @@ void drawArms() {
 void charInfo() {
   fill(0);
   textFont(regular[0], 48);
-  textAlign(CORNER);
+  textAlign(LEFT);
   text("Bullets remaining: " + bulletsRemaining, 48, 48);
   text(int(distTravelled)+" m", 100, 100);
+  textAlign(RIGHT);
+  text("Money: $" + int(saveData[3]), width-100, 48);
 }
 
 void drawChar() {
@@ -465,19 +478,19 @@ void updateEnemies(){
     rotate(-PI/2);
     switch(int(saveData[1])){
       case 0:
-        image(glock[0], 5, 0);
-        image(glock[1], glock[1].width/4+glock[0].width/2, -enemies.get(i).get(4));
+        image(guns[0][0], 5, 0);
+        image(guns[0][1], guns[0][1].width/4+guns[0][0].width/2, -enemies.get(i).get(4));
         break;
       case 1:
-        image(deagle[0], 5, 0);
-        image(deagle[1], deagle[0].width/2+deagle[1].width/4, -enemies.get(i).get(4));
+        image(guns[1][0], 5, 0);
+        image(guns[1][1], guns[1][0].width/2+guns[1][1].width/4, -enemies.get(i).get(4));
         break;
     }
     popMatrix();
     if (millis()-enemies.get(i).get(2) >= robotReload[int(saveData[1])]){
       ArrayList<Float> newBullet = new ArrayList<Float>();
       newBullet.add(enemies.get(i).get(0)-robot[1].width);
-      newBullet.add(enemies.get(i).get(1)-2-glock[0].width/2);
+      newBullet.add(enemies.get(i).get(1)-2-guns[0][0].width/2);
       enemyBullets.add(newBullet);
       enemies.get(i).set(4, 2.0);
       enemies.get(i).set(2, float(millis()));
@@ -744,6 +757,10 @@ void shop(){
   textAlign(CENTER, CENTER);
   text("Shop",width/2, 70);
   rectMode(CENTER);
+  textFont(regular[0], 48);
+  textAlign(RIGHT, CENTER);
+  text("Money: $" + String.format("%d", int(saveData[3])), width-20, 70);
+  textAlign(CENTER, CENTER);
   for (int i = 0; i < shopOptions[0].length; i++){
     textFont(light[0], 40);
     fill(255);
@@ -754,31 +771,84 @@ void shop(){
       if (selection[i] > int(saveData[i+4]))price = "$" + String.format("%,d", shopCosts[i][selection[i]]);
       else price = "BOUGHT";
       text(shopOptions[i+1][selection[i]] + " (" + price + ")", width/2, i*170+310);
+      if (mouseX > width/2-40 && mouseX < width/2+40 && mouseY > i*170+210 && mouseY < i*170+290){
+        fill(127);
+      }
+      else fill(255);
+      rect(width/2, i*170+250, 80, 80);
+      imageMode(CENTER);
+      switch(i){
+        case 0:
+          pushMatrix();
+          translate(width/2, i*170+250);
+          rotate(-PI/2);
+          switch(selection[0]){
+            case 0:
+              image(guns[0][0], 0, 0);
+              image(guns[0][1], guns[0][0].width/2-guns[0][1].width/2, 0);
+              break;
+            case 1:
+              image(guns[1][0], 0, 0);
+              image(guns[1][1], guns[1][0].width/2-guns[1][1].width/2, 0);
+              break;
+          }
+          popMatrix();
+          break;
+      }
+      int[] areas = {abs(((width/2-50)-mouseX) * ((i*170+290)-mouseY) - ((width/2-50)-mouseX) * ((i*170+210)-mouseY)), abs(((width/2-50)-mouseX)*((i*170+250)-mouseY) - ((width/2-90) - mouseX) * ((i*170+290)-mouseY)), abs(((width/2-90)-mouseX)*((i*170+210)-mouseY) - ((width/2-50)-mouseX) * ((i*170+250)-mouseY))};
+      if (areas[0]  + areas[1] + areas[2]== abs(((width/2-50)-(width/2-50))*((i*170+250)-(i*170+210)) - ((width/2-90)-(width/2-50))*((i*170+290) - (i*170+210)))){
+        fill(127);
+        if (clicked && selection[i] > 0) selection[i]--;
+      }
+      else fill (255);
+      beginShape();
+      vertex(width/2-50, i*170+210);
+      vertex(width/2-50, i*170+290);
+      vertex(width/2-90, i*170+250);
+      endShape();
+      int[] areas1 = {abs(((width/2+50)-mouseX) * ((i*170+290)-mouseY) - ((width/2+50)-mouseX) * ((i*170+210)-mouseY)), abs(((width/2+50)-mouseX)*((i*170+250)-mouseY) - ((width/2+90) - mouseX) * ((i*170+290)-mouseY)), abs(((width/2+90)-mouseX)*((i*170+210)-mouseY) - ((width/2+50)-mouseX) * ((i*170+250)-mouseY))};
+      if (areas1[0]  + areas1[1] + areas1[2]== abs(((width/2+50)-(width/2+50))*((i*170+250)-(i*170+210)) - ((width/2+90)-(width/2+50))*((i*170+290) - (i*170+210)))){
+        fill(127);
+        if ((clicked && (selection[i] < shopOptions[i+1].length-1)||(i == 2 && selection[i]<int(saveData[6]))) && selection[i] <= int(saveData[i+4])) selection[i]++;
+      }
+      else fill (255);
+      beginShape();
+      vertex(width/2+50, i*170+210);
+      vertex(width/2+50, i*170+290);
+      vertex(width/2+90, i*170+250);
+      endShape();
     }
-    fill(255);
-    rect(width/2, i*170+250, 80, 80);
-    int[] areas = {abs(((width/2-50)-mouseX) * ((i*170+290)-mouseY) - ((width/2-50)-mouseX) * ((i*170+210)-mouseY)), abs(((width/2-50)-mouseX)*((i*170+250)-mouseY) - ((width/2-90) - mouseX) * ((i*170+290)-mouseY)), abs(((width/2-90)-mouseX)*((i*170+210)-mouseY) - ((width/2-50)-mouseX) * ((i*170+250)-mouseY))};
-    if (areas[0]  + areas[1] + areas[2]== abs(((width/2-50)-(width/2-50))*((i*170+250)-(i*170+210)) - ((width/2-90)-(width/2-50))*((i*170+290) - (i*170+210)))){
-      fill(127);
-      if (clicked && selection[i] > 0) selection[i]--;
+    else{
+      textAlign(CENTER);
+      rect(width/2, i*170+250, 200, 80);
+      fill(0);
+      if (selection[2] == 0){
+        text("Bought", width/2, i*170+245);
+        text("($1,000,000)", width/2, i*170+275);
+      }
+      int[] areas = {abs(((width/2-110)-mouseX) * ((i*170+290)-mouseY) - ((width/2-110)-mouseX) * ((i*170+210)-mouseY)), abs(((width/2-110)-mouseX)*((i*170+250)-mouseY) - ((width/2-150) - mouseX) * ((i*170+290)-mouseY)), abs(((width/2-150)-mouseX)*((i*170+210)-mouseY) - ((width/2-110)-mouseX) * ((i*170+250)-mouseY))};
+      if (areas[0]  + areas[1] + areas[2]== abs(((width/2-110)-(width/2-110))*((i*170+250)-(i*170+210)) - ((width/2-150)-(width/2-110))*((i*170+290) - (i*170+210)))){
+        fill(127);
+        if (clicked && selection[i] > 0) selection[i]--;
+      }
+      else fill (255);
+      beginShape();
+      vertex(width/2-110, i*170+210);
+      vertex(width/2-110, i*170+290);
+      vertex(width/2-150, i*170+250);
+      endShape();
+      int[] areas1 = {abs(((width/2+110)-mouseX) * ((i*170+290)-mouseY) - ((width/2+110)-mouseX) * ((i*170+210)-mouseY)), abs(((width/2+110)-mouseX)*((i*170+250)-mouseY) - ((width/2+150) - mouseX) * ((i*170+290)-mouseY)), abs(((width/2+150)-mouseX)*((i*170+210)-mouseY) - ((width/2+110)-mouseX) * ((i*170+250)-mouseY))};
+      if (areas1[0]  + areas1[1] + areas1[2]== abs(((width/2+110)-(width/2+110))*((i*170+250)-(i*170+210)) - ((width/2+150)-(width/2+110))*((i*170+290) - (i*170+210)))){
+        fill(127);
+        if ((clicked && (selection[i] < shopOptions[i+1].length-1)||(i == 2 && selection[i]<int(saveData[6]))) && selection[i] <= int(saveData[i+4])) selection[i]++;
+      }
+      else fill (255);
+      beginShape();
+      vertex(width/2+110, i*170+210);
+      vertex(width/2+110, i*170+290);
+      vertex(width/2+150, i*170+250);
+      endShape();
     }
-    else fill (255);
-    beginShape();
-    vertex(width/2-50, i*170+210);
-    vertex(width/2-50, i*170+290);
-    vertex(width/2-90, i*170+250);
-    endShape();
-    int[] areas1 = {abs(((width/2+50)-mouseX) * ((i*170+290)-mouseY) - ((width/2+50)-mouseX) * ((i*170+210)-mouseY)), abs(((width/2+50)-mouseX)*((i*170+250)-mouseY) - ((width/2+90) - mouseX) * ((i*170+290)-mouseY)), abs(((width/2+90)-mouseX)*((i*170+210)-mouseY) - ((width/2+50)-mouseX) * ((i*170+250)-mouseY))};
-    if (areas1[0]  + areas1[1] + areas1[2]== abs(((width/2+50)-(width/2+50))*((i*170+250)-(i*170+210)) - ((width/2+90)-(width/2+50))*((i*170+290) - (i*170+210)))){
-      fill(127);
-      if (clicked && (selection[i] < shopOptions[i+1].length-1)||(i == 2 && selection[i]<int(saveData[6]))) selection[i]++;
-    }
-    else fill (255);
-    beginShape();
-    vertex(width/2+50, i*170+210);
-    vertex(width/2+50, i*170+290);
-    vertex(width/2+90, i*170+250);
-    endShape();
   }
 }
 
