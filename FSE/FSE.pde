@@ -12,16 +12,18 @@ PFont[] xLight = new PFont[3];
 PFont[] thin = new PFont[3];
 
 
-String[] saveData = {"0", "0", "0", "0", "0", "0", "0", "0"}; //0th value: past distance, 1st value: gun type, 2nd value: armour type, 3rd value: money, 4th value: top gun purchased, 5th value: top armour purchased, 6th value: top jetpack, 7th value: jetpack
+String[] saveData = {"0", "4", "0", "500000", "19", "0", "0", "0"}; //0th value: past distance, 1st value: gun type, 2nd value: armour type, 3rd value: money, 4th value: top gun purchased, 5th value: top armour purchased, 6th value: top jetpack, 7th value: jetpack
 //craeting image variables
-PImage[] character = new PImage[4];//player image
+PImage[] character = new PImage[5];//player image
 PImage bullet;//bullet image
 PImage[] obstacleImages = new PImage[2];//obsatcle image
 PImage[] robot = new PImage[3];//robot image
 PImage mainMenuPic;
 PImage[][] guns = new PImage[20][];
+PImage armour;
 
-int[] reloadTime = {1500, 2500};//shows reload time for all guns
+int[] reloadTime = {1500, 2500, 2750, 2000, 3500, 3500, 4250, 3500, 3250, 3000, 2750, 2750, 2250, 2500, 4500, 4600, 6000, 6250, 10000, 10000};//shows reload time for all guns
+boolean[] auto = {false, false, true, true, false, false, true, true, false, true, true, true, true, true, false, false, true, true, false, false};
 
 //initializing gravity
 int JUMPPOWER=-12;
@@ -33,9 +35,10 @@ float pos[] = {500.0, 0.0};
 
 float vy=0;//delta-y
 
-int[] bullets = {12, 7};//bullet capacity
-int[] dmg = {25, 40};//bullet damage
-int[] robotReload = {1500, 2250};//shows reload time for robots
+int[] fireRate = {0, 0, 250, 250, 100, 100, 250, 150, 100, 100, 100, 100, 50, 100, 0, 0, 100, 100, 0, 0};
+int[] bullets = {12, 7, 25, 32, 8, 8, 32, 50, 30, 30, 30, 30, 30, 30, 1, 10, 150, 150, 1, 1};//bullet capacity
+int[] dmg = {25, 40, 30, 25, 50, 55, 40, 35, 35, 40, 35, 40, 40, 50, 200, 250, 30, 40, 1000, 2000};//bullet damage
+int[] robotReload = {1500, 2250, 2500, 2000, 2750, 2750, 2800, 2500, 2250, 2250, 2250, 2250, 2250, 2750, 4750, 4800, 1500, 1500, 10000, 10000};//shows reload time for robots
 int bulletsRemaining = 0;//bullets remaining
 
 ArrayList<ArrayList<Float>> trail = new ArrayList<ArrayList<Float>>();//2D list for trail
@@ -58,8 +61,12 @@ boolean onGround = true;
 boolean colliding = false;
 boolean gap = false;
 
-int health=100;//health of player
-float fuel=100;//fuel of player
+float speedBoost = gravity*float(int(saveData[7])/2);
+float maxFuel = 100+((int(saveData[7])+1)/2)*50;
+float maxHealth = 100 + int(saveData[2])*50;
+float health=maxHealth;//health of player
+float fuel=maxFuel;//fuel of player
+ArrayList<ArrayList<Float>> coins = new ArrayList<ArrayList<Float>>();//2D list for coins
 
 boolean onObstacle = false;//on or off obstacle
 float topOfObstacle = 0;
@@ -97,16 +104,18 @@ void movePlayer() {
     float right = obstacles.get(i).get(0)+obstacleImages[int(obstacles.get(i).get(2))].width/3;
     float futureLeft = left-(int(speed)/3+5);//moves obstacle
     top-=obstacleImages[int(obstacles.get(i).get(2))].height*((obstacles.get(i).get(2)+1)/2);
-    if(left <= pos[0]+character[0].width/2 && right >= pos[0]-character[0].width/2 && bottomOfPlayer > top){//checks if players is on the obstacle
+    if (left > pos[0]+character[0].width/2 && futureLeft < pos[0]+character[0].width/2 && right > pos[0]-character[0].width/2 && top<bottomOfPlayer)  pos[0]-= int(speed)/3+6;
+    if(left < pos[0]+character[0].width/2 && right > pos[0]-character[0].width/2 && bottomOfPlayer >= top && !onObstacle){
       onObstacle = true;
       topOfObstacle = top;
       rightOfObstacle = right;
       pos[1] = topOfObstacle - (character[0].height/3+character[2].height);//player can stand on obstacle
       vy=0;
     }
-    else if (left > pos[0]+character[0].width/2 && futureLeft < pos[0]+character[0].width/2 && right > pos[0]-character[0].width/2 && top<bottomOfPlayer)  pos[0]-= int(speed)/3+6;
+    
   }
-  if (rightOfObstacle < pos[0]-character[0].width/2 || bottomOfPlayer != topOfObstacle && onObstacle) onObstacle = false;
+  rightOfObstacle -= int(speed)/3+5;
+  if (rightOfObstacle <= pos[0]-character[0].width/2 || bottomOfPlayer != topOfObstacle && onObstacle) onObstacle = false;
   //apply gravity
 }
 
@@ -120,11 +129,15 @@ void initFont() {
   }
 }
 
-void initImgs() {//loading images
+void initImgs() {
+  armour = loadImage("Imgs/Armour.png");
+  armour.resize(armour.width*3/4, armour.height*3/4);
+
   character[0] = loadImage("Imgs/Character Body.png");
   character[1] = loadImage("Imgs/Character Arm.png");
   character[2] = loadImage("Imgs/Character Leg.png");
   character[3] = loadImage("Imgs/Jetpack.png");
+  character[4] = loadImage("Imgs/Fire.png");
   
   guns[0] = new PImage[2];
   guns[0][0] = loadImage("Imgs/Glock Shell.png");
@@ -134,6 +147,13 @@ void initImgs() {//loading images
   guns[1][0] = loadImage("Imgs/Deagle Shell.png");
   guns[1][1] = loadImage("Imgs/Deagle Slide.png");
   
+  for (int i = 2; i < guns.length; i++){
+    guns[i] = new PImage[1];
+    guns[i][0] = loadImage("Imgs/" + shopOptions[1][i] + ".png");
+  }
+  
+  guns[2][0].resize(guns[2][0].width*3/4, guns[2][0].height*3/4);
+  guns[3][0].resize(guns[2][0].width*3/4, guns[2][0].height*3/4);
   background[0] = loadImage("Imgs/Grass.png");
   background[1] = loadImage("Imgs/Clouds.png");
   background[2] = loadImage("Imgs/Blue Sky.png");
@@ -149,9 +169,9 @@ void initImgs() {//loading images
   robot[1] = loadImage("Imgs/Robot Arm.png");
   robot[2] = loadImage("Imgs/Robot Leg.png");
   
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < 5; i++) {
     character[i].resize(character[i].width*3/4, character[i].height*3/4);
-    if(i!=3){
+    if(i<3){
       robot[i].resize(robot[i].width*3/4, robot[i].height*3/4);
     }
   }
@@ -168,7 +188,6 @@ int[][] shopCosts = new int[2][];
 void setup() {
   size(1280, 720);
   initFont();
-  initImgs();
   if (loadStrings("data/saveData/saveGame.txt") != null) {
     saveData = loadStrings("data/saveData/saveGame.txt");
   }
@@ -184,6 +203,7 @@ void setup() {
       shopCosts[i] = intBuffer;
     }
   }
+  initImgs();
 }
 
 boolean[] buttons = {false, false, false, false};
@@ -270,8 +290,9 @@ void addTrail() {
 void jetpack() {
   boolean jetpackUse = false;
   if (keyPressed && key==32 && fuel >= 0) {
+    image(character[4], pos[0]-character[0].width/2-5,pos[1]+10+character[3].height/2 + character[4].height/2);
     if (pos[1] > -character[0].height/2){
-      vy=-3*gravity;
+      vy=-3*gravity-speedBoost;
       onGround = false;
       onObstacle = false;
     }
@@ -282,12 +303,9 @@ void jetpack() {
   if(jetpackUse && !onGround){
     fuel-=0.5;
   }
-  else if(fuel<100 && vy>=0 && !jetpackUse && onGround){
+  else if(fuel<maxFuel && vy>=0 && !jetpackUse && onGround){
     fuel+=0.5;
   }
-  fill(0);
-  rectMode(CORNER);
-  rect(600,140,fuel,20);
 }
 
 void updateTrail() {
@@ -312,7 +330,13 @@ void updateTrail() {
           break;
          case 1:
            image(guns[1][0], 5, character[1].height);
-           image(guns[1][1], guns[1][0].width/2+guns[1][1].width/4, character[1].height-recoil);
+           image(guns[1][1], guns[1][0].width/2+guns[1][1].width/4, character[1].height-trail.get(i).get(3));
+         case 2:
+           image(guns[2][0], 0, character[1].height);
+           break;
+         case 3:
+           image(guns[3][0], 0, character[1].height);
+           break;
       }
       image(character[1], 0, character[1].height/2);
       popMatrix();
@@ -329,6 +353,13 @@ void updateTrail() {
          case 1:
            image(guns[1][0], 5, character[1].height);
            image(guns[1][1], guns[1][0].width/2+guns[1][1].width/4, character[1].height-recoil);
+           break;
+         case 2:
+           image(guns[2][0], 0, character[1].height);
+           break;
+         case 3:
+           image(guns[3][0], 0, character[1].height);
+           break;
       }
       image(character[1], 0, character[1].height/2);
       popMatrix();
@@ -352,7 +383,20 @@ void addBullet(){
     case 0:
       newBullet.add(pos[0]+character[0].width/2);
       newBullet.add(pos[1]-character[1].width/2);
+      break;
     case 1:
+      newBullet.add(pos[0]+character[0].width/2);
+      newBullet.add(pos[1]-character[1].width/2);
+      break;
+    case 2:
+      newBullet.add(pos[0]+character[0].width/2);
+      newBullet.add(pos[1]-character[1].width/2);
+      break;
+    case 3:
+      newBullet.add(pos[0]+character[0].width/2);
+      newBullet.add(pos[1]-character[1].width/2);
+      break;
+    case 4:
       newBullet.add(pos[0]+character[0].width/2);
       newBullet.add(pos[1]-character[1].width/2);
   }
@@ -368,42 +412,63 @@ void drawBullet(){
   }
   for (int i = 0; i < enemyBullets.size(); i++){
     image(bullet, enemyBullets.get(i).get(0), enemyBullets.get(i).get(1));
-    enemyBullets.get(i).set(0, enemyBullets.get(i).get(0)-30);
+    enemyBullets.get(i).set(0, enemyBullets.get(i).get(0)-(int(speed)/3+40));
     if (enemyBullets.get(i).get(0)-bullet.width/2 < 0){
       enemyBullets.remove(i);
+    }
+    else if (enemyBullets.get(i).get(0) > pos[0]+character[0].width/2 && enemyBullets.get(i).get(0)-(int(speed)/3+40) <= pos[0]+character[0].width/2 && enemyBullets.get(i).get(1) > pos[1]-character[0].height/2 && enemyBullets.get(i).get(1) < pos[1]+character[0].height/3+character[2].height){
+      enemyBullets.remove(i);
+      health -= dmg[int(saveData[1])];
     }
   }
 }
 boolean reloading = false;
+int lastShot = 0;
+
 void drawArms() {
   rectMode(CENTER);
   pushMatrix();
   translate(pos[0], pos[1]);
-  if (mousePressed && !justFired && bulletsRemaining > 0) {
+  if (recoil < 0){
+    recoil = 0;
+    vRecoil = 0;
+  }
+  if (mousePressed && !justFired && bulletsRemaining > 0 && lastShot + fireRate[int(saveData[1])] <= millis()) {
     vRecoil = 2;
     recoil=2;
-    if (int(saveData[1]) <= 1) justFired = true;
+    lastShot = millis();
+    if (auto[int(saveData[1])] == false) justFired = true;
     bulletsRemaining--;
     if (bulletsRemaining == 0) reloadStart = millis();
     addBullet();
-  } else if (!mousePressed && recoil == 0) {
+  } else if (!mousePressed && (recoil == 0 || int(saveData[1]) <=1)) {
     justFired = false;
   }
   if (recoil >= 10) {
     vRecoil*=-1;
   }
-  if (recoil != 0 && pos[0] > 0 && !reloading) {
+  if ((recoil != 0) || (int(saveData[1]) >= 2 && ((mousePressed && auto[int(saveData[1])])) || (auto[int(saveData[1])] == false && justFired)) && pos[0] > 0 && !reloading) {
     recoil+=vRecoil;
     rotate(-PI/2);
   } else if(pos[0]>0) rotate(rotation);
   switch(int(saveData[1])){
     case 0:
-      image(guns[0][0], 5, character[1].height);
-      image(guns[0][1], guns[0][1].width/4+guns[0][0].width/2, character[1].height-recoil);
+      image(guns[1][0], 5, character[1].height);
+      image(guns[1][1], guns[1][0].width/2+guns[1][1].width/4, character[1].height-recoil);
       break;
     case 1:
       image(guns[1][0], 5, character[1].height);
       image(guns[1][1], guns[1][0].width/2+guns[1][1].width/4, character[1].height-recoil);
+      break;
+    case 2:
+      image(guns[2][0], 0, character[1].height);
+      break;
+    case 3:
+      image(guns[3][0], 0, character[1].height);
+      break;
+    case 4:
+      image(guns[4][0], 0, character[1].height+5);
+      break;
   }
   image(character[1], 0, character[1].height/2);
   rectMode(CENTER);
@@ -417,7 +482,6 @@ void drawArms() {
   else if (bulletsRemaining == 0){
     reloading = true;
   }
-  drawBullet();
 }
 
 void charInfo() {
@@ -428,6 +492,15 @@ void charInfo() {
   text(int(distTravelled)+" m", 100, 100);
   textAlign(RIGHT);
   text("Money: $" + String.format("%,d", int(saveData[3])), width-100, 48);
+  rectMode(CENTER);
+  fill(0);
+  rect(width/2, 40, 150, 30);
+  rect(width/2, 70, 150, 30);
+  fill(255, 0, 0);
+  rectMode(CORNER);
+  rect(width/2-70, 30, 140*(health/maxHealth), 20);
+  fill(0, 0, 255);
+  rect(width/2-70, 60, 140*(fuel/maxFuel), 20);
 }
 
 void drawChar() {
@@ -449,6 +522,7 @@ void drawChar() {
   popMatrix();
   image(character[3],pos[0]-character[0].width/2-5,pos[1]+10);
   image(character[0], pos[0], pos[1]);
+  if (int(saveData[2]) > 0) image(armour, pos[0], pos[1]+character[0].height/2-armour.height/2);
   drawArms();
 }
 float nextHeight;
@@ -483,6 +557,12 @@ void updateEnemies(){
       case 1:
         image(guns[1][0], 5, 0);
         image(guns[1][1], guns[1][0].width/2+guns[1][1].width/4, -enemies.get(i).get(4));
+        break;
+      case 2:
+        image(guns[2][0], 0, 0);
+        break;
+      case 3:
+        image(guns[3][0], 0, 0);
         break;
     }
     popMatrix();
@@ -572,6 +652,7 @@ void detectCollision(){
           value[1] = -1;
           closest = 100000;
           rightClosest = 100000;
+          saveData[3] = Integer.toString(int(saveData[3])+int(random(0, 11))*10);
         }
       }
       else{
@@ -602,12 +683,6 @@ void detectCollision(){
   }
 }
 
-void health(){
-  fill(255,0,0);
-  rectMode(CORNER);
-  rect(600,50,health,20);
-}
-
 void game() {
   imageMode(CENTER);
   image(background[2], width/2, height/2);
@@ -623,6 +698,7 @@ void game() {
       else skyX[i] = skyX[next]+background[1].width;
     }
   }
+  drawBullet();
   drawUpdateObstacle();
   imageMode(CORNER);
   for (int i = 0; i < groundPos.length; i++) {
@@ -677,7 +753,6 @@ void game() {
      }
     drawChar();
     jetpack();
-    health();
     //addCoins();
   }
   else {
@@ -702,25 +777,36 @@ void game() {
     textAlign(CENTER, CENTER);
     textFont(regular[1], 70);
     text("GAME OVER",width/2, height/2 - 50);
-    text("Distance: "+int(distTravelled)+"m",width/2,height/2 + 50);
+    text("Distance: "+int(distTravelled)+"m",width/2,height/2 + 30);
+    int highscore = int(saveData[0]);
+    if (int(distTravelled) > highscore) highscore = int(distTravelled);
+    text("High score: " + highscore+"m", width/2, height/2+100);
     textFont(regular[0], 48);
-    text("Press anywhere to return to main menu", width/2, height-100);
-    if (clicked){
-      currentScene = 0;
-      pos[0] = 500;
-      pos[1] = 0;
-      vy = 0;
-      bulletsRemaining = 0;
-      speed = 1;
-      speedUp = 0.1;
-      if (int(saveData[0]) < distTravelled) saveData[0] = Integer.toString(int(distTravelled));
-      distTravelled = 0;
-      obstacles.clear();
-      reloading = false;
-      health = 100;
-      enemies.clear();
-      //saveStrings("saveGame.txt", saveData);
+    if (mouseX > width/2-300 && mouseX < width/2 + 300 && mouseY > height-130 && mouseY < height-70){
+      fill(127);
+      if (clicked){
+        currentScene = 0;
+        pos[0] = 500;
+        pos[1] = 0;
+        vy = 0;
+        bulletsRemaining = 0;
+        speed = 1;
+        speedUp = 0.1;
+        saveData[0] = Integer.toString(highscore);
+        distTravelled = 0;
+        obstacles.clear();
+        reloading = false;
+        health = maxHealth;
+        fuel = maxFuel;
+        enemies.clear();
+        //saveStrings("data/saveData/saveGame.txt", saveData);
+      }
     }
+    else fill(255);
+    rect(width/2, height-100, 600, 60);
+    fill(0);
+    text("Return to main menu", width/2, height-105);
+    
   }
   else if (!firstTime) charInfo();
   if (justJumped) justJumped = false;
@@ -770,11 +856,22 @@ void shop(){
     textFont(light[0], 30);
     if (i!=2){
       String price;
-      if (selection[i] > int(saveData[i+4]))price = "$" + String.format("%,d", shopCosts[i][selection[i]]);
+      if (selection[i] > int(saveData[i+4])+1) price = "LOCKED";
+      else if (selection[i] > int(saveData[i+4]))price = "$" + String.format("%,d", shopCosts[i][selection[i]]);
+      else if (selection[i] == int(saveData[i+1]))price = "SELECTED";
       else price = "BOUGHT";
       text(shopOptions[i+1][selection[i]] + " (" + price + ")", width/2, i*170+310);
       if (mouseX >= width/2-40 && mouseX <= width/2+40 && mouseY >= i*170+210 && mouseY <= i*170+290){
         fill(127);
+        if (clicked){
+          if (selection[i] <= int(saveData[i+4]) || (int(saveData[3]) >= shopCosts[i][selection[i]] && selection[i] == int(saveData[i+4])+1))saveData[i+1] = Integer.toString(selection[i]);
+          if (int(saveData[3]) >= shopCosts[i][selection[i]] && selection[i] == int(saveData[i+4])+1){
+            saveData[3] = Integer.toString(int(saveData[3]) - shopCosts[i][selection[i]]);
+            saveData[i+4] = Integer.toString(int(saveData[i+4])+1);
+            maxHealth = 100 + int(saveData[2])*50;
+            health = maxHealth;
+          }
+        }
       }
       else fill(255);
       rect(width/2, i*170+250, 80, 80);
@@ -792,6 +889,10 @@ void shop(){
             case 1:
               image(guns[1][0], 0, 0);
               image(guns[1][1], guns[1][0].width/2-guns[1][1].width/2-1, -1);
+              break;
+            default:
+              scale(75.0/guns[selection[0]][0].height);
+              image(guns[selection[0]][0], 0, 0);
               break;
           }
           popMatrix();
@@ -811,7 +912,7 @@ void shop(){
       int[] areas1 = {abs(((width/2+50)-mouseX) * ((i*170+290)-mouseY) - ((width/2+50)-mouseX) * ((i*170+210)-mouseY)), abs(((width/2+50)-mouseX)*((i*170+250)-mouseY) - ((width/2+90) - mouseX) * ((i*170+290)-mouseY)), abs(((width/2+90)-mouseX)*((i*170+210)-mouseY) - ((width/2+50)-mouseX) * ((i*170+250)-mouseY))};
       if (areas1[0]  + areas1[1] + areas1[2]== abs(((width/2+50)-(width/2+50))*((i*170+250)-(i*170+210)) - ((width/2+90)-(width/2+50))*((i*170+290) - (i*170+210)))){
         fill(127);
-        if ((clicked && (selection[i] < shopOptions[i+1].length-1)||(i == 2 && selection[i]<int(saveData[6]))) && selection[i] <= int(saveData[i+4])) selection[i]++;
+        if (clicked && (selection[i] < shopOptions[i+1].length-1)||(i == 2 && selection[i]<int(saveData[6]))) selection[i]++;
       }
       else fill (255);
       beginShape();
@@ -822,36 +923,55 @@ void shop(){
     }
     else{
       textAlign(CENTER);
-      rect(width/2, i*170+250, 200, 80);
+      if (mouseX >= width/2-150 && mouseX <= width/2+150 && mouseY >= i*170+210 && mouseY <= i*170+290){
+        fill(127);
+        if (clicked){
+          if (selection[i] <= int(saveData[i+4]) || int(saveData[3]) >= selection[2]*5000){
+            saveData[7] = Integer.toString(selection[i]);
+            maxFuel = 100+((int(saveData[7])+1)/2)*50;
+            speedBoost = gravity*(int(saveData[7])/2.0);
+            fuel = maxFuel;
+          }
+          if (int(saveData[3]) >= selection[2]*5000 && selection[i] > int(saveData[i+4])){
+            saveData[3] = Integer.toString(int(saveData[3]) - 5000*selection[2]);
+            saveData[i+4] = Integer.toString(int(saveData[i+4])+1);
+          }
+        }
+      }
+      else fill(255);
+      rect(width/2, i*170+250, 300, 80);
       fill(0);
       if (selection[2] == 0){
         text("Stock", width/2, i*170+245);
-        text("(BOUGHT)", width/2, i*170+275);
       }
       else{
-        
+        if (selection[2]%2 == 1) text(shopOptions[i+1][selection[2]%2] + ((selection[2]+1)/2), width/2, i*170+245);
+        else text(shopOptions[i+1][selection[2]%2] + (selection[2]/2), width/2, i*170+245);
       }
-      int[] areas = {abs(((width/2-110)-mouseX) * ((i*170+290)-mouseY) - ((width/2-110)-mouseX) * ((i*170+210)-mouseY)), abs(((width/2-110)-mouseX)*((i*170+250)-mouseY) - ((width/2-150) - mouseX) * ((i*170+290)-mouseY)), abs(((width/2-150)-mouseX)*((i*170+210)-mouseY) - ((width/2-110)-mouseX) * ((i*170+250)-mouseY))};
-      if (areas[0]  + areas[1] + areas[2]== abs(((width/2-110)-(width/2-110))*((i*170+250)-(i*170+210)) - ((width/2-150)-(width/2-110))*((i*170+290) - (i*170+210)))){
+      if (selection[2] == int(saveData[7]) )text("(SELECTED)", width/2, i*170+275);
+      else if (selection[2] > int(saveData[i+4])) text("($" + String.format("%,d", selection[2]*5000) + ")", width/2, i*170+275);
+      else text("(BOUGHT)", width/2, i*170+275);
+      int[] areas = {abs(((width/2-160)-mouseX) * ((i*170+290)-mouseY) - ((width/2-160)-mouseX) * ((i*170+210)-mouseY)), abs(((width/2-160)-mouseX)*((i*170+250)-mouseY) - ((width/2-200) - mouseX) * ((i*170+290)-mouseY)), abs(((width/2-200)-mouseX)*((i*170+210)-mouseY) - ((width/2-160)-mouseX) * ((i*170+250)-mouseY))};
+      if (areas[0]  + areas[1] + areas[2]== abs(((width/2-160)-(width/2-160))*((i*170+250)-(i*170+210)) - ((width/2-200)-(width/2-160))*((i*170+290) - (i*170+210)))){
         fill(127);
         if (clicked && selection[i] > 0) selection[i]--;
       }
       else fill (255);
       beginShape();
-      vertex(width/2-110, i*170+210);
-      vertex(width/2-110, i*170+290);
-      vertex(width/2-150, i*170+250);
+      vertex(width/2-160, i*170+210);
+      vertex(width/2-160, i*170+290);
+      vertex(width/2-200, i*170+250);
       endShape();
-      int[] areas1 = {abs(((width/2+110)-mouseX) * ((i*170+290)-mouseY) - ((width/2+110)-mouseX) * ((i*170+210)-mouseY)), abs(((width/2+110)-mouseX)*((i*170+250)-mouseY) - ((width/2+150) - mouseX) * ((i*170+290)-mouseY)), abs(((width/2+150)-mouseX)*((i*170+210)-mouseY) - ((width/2+110)-mouseX) * ((i*170+250)-mouseY))};
-      if (areas1[0]  + areas1[1] + areas1[2]== abs(((width/2+110)-(width/2+110))*((i*170+250)-(i*170+210)) - ((width/2+150)-(width/2+110))*((i*170+290) - (i*170+210)))){
+      int[] areas1 = {abs(((width/2+160)-mouseX) * ((i*170+290)-mouseY) - ((width/2+160)-mouseX) * ((i*170+210)-mouseY)), abs(((width/2+160)-mouseX)*((i*170+250)-mouseY) - ((width/2+200) - mouseX) * ((i*170+290)-mouseY)), abs(((width/2+200)-mouseX)*((i*170+210)-mouseY) - ((width/2+160)-mouseX) * ((i*170+250)-mouseY))};
+      if (areas1[0]  + areas1[1] + areas1[2]== abs(((width/2+160)-(width/2+160))*((i*170+250)-(i*170+210)) - ((width/2+200)-(width/2+160))*((i*170+290) - (i*170+210)))){
         fill(127);
-        if ((clicked && (selection[i] < shopOptions[i+1].length-1)||(i == 2 && selection[i]<int(saveData[6]))) && selection[i] <= int(saveData[i+4])) selection[i]++;
+        if (clicked && selection[i] <= int(saveData[i+4]))selection[i]++;
       }
       else fill (255);
       beginShape();
-      vertex(width/2+110, i*170+210);
-      vertex(width/2+110, i*170+290);
-      vertex(width/2+150, i*170+250);
+      vertex(width/2+160, i*170+210);
+      vertex(width/2+160, i*170+290);
+      vertex(width/2+200, i*170+250);
       endShape();
     }
   }
