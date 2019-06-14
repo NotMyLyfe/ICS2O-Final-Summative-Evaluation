@@ -12,7 +12,7 @@ PFont[] xLight = new PFont[3];
 PFont[] thin = new PFont[3];
 
 
-String[] saveData = {"0", "0", "0", "500000", "0", "0", "0", "0"}; //0th value: past distance, 1st value: gun type, 2nd value: armour type, 3rd value: money, 4th value: top gun purchased, 5th value: top armour purchased, 6th value: top jetpack, 7th value: jetpack
+String[] saveData = {"0", "4", "0", "500000", "19", "0", "0", "0"}; //0th value: past distance, 1st value: gun type, 2nd value: armour type, 3rd value: money, 4th value: top gun purchased, 5th value: top armour purchased, 6th value: top jetpack, 7th value: jetpack
 //craeting image variables
 PImage[] character = new PImage[5];//player image
 PImage bullet;//bullet image
@@ -23,6 +23,7 @@ PImage[][] guns = new PImage[20][];
 PImage armour;
 
 int[] reloadTime = {1500, 2500, 2750, 2000, 3500, 3500, 4250, 3500, 3250, 3000, 2750, 2750, 2250, 2500, 4500, 4600, 6000, 6250, 10000, 10000};//shows reload time for all guns
+boolean[] auto = {false, false, true, true, false, false, true, true, false, true, true, true, true, true, false, false, true, true, false, false};
 
 //initializing gravity
 int JUMPPOWER=-12;
@@ -352,6 +353,13 @@ void updateTrail() {
          case 1:
            image(guns[1][0], 5, character[1].height);
            image(guns[1][1], guns[1][0].width/2+guns[1][1].width/4, character[1].height-recoil);
+           break;
+         case 2:
+           image(guns[2][0], 0, character[1].height);
+           break;
+         case 3:
+           image(guns[3][0], 0, character[1].height);
+           break;
       }
       image(character[1], 0, character[1].height/2);
       popMatrix();
@@ -388,6 +396,9 @@ void addBullet(){
       newBullet.add(pos[0]+character[0].width/2);
       newBullet.add(pos[1]-character[1].width/2);
       break;
+    case 4:
+      newBullet.add(pos[0]+character[0].width/2);
+      newBullet.add(pos[1]-character[1].width/2);
   }
   bulletPos.add(newBullet);
 }
@@ -418,28 +429,32 @@ void drawArms() {
   rectMode(CENTER);
   pushMatrix();
   translate(pos[0], pos[1]);
+  if (recoil < 0){
+    recoil = 0;
+    vRecoil = 0;
+  }
   if (mousePressed && !justFired && bulletsRemaining > 0 && lastShot + fireRate[int(saveData[1])] <= millis()) {
     vRecoil = 2;
     recoil=2;
     lastShot = millis();
-    if (int(saveData[1]) <= 1) justFired = true;
+    if (auto[int(saveData[1])] == false) justFired = true;
     bulletsRemaining--;
     if (bulletsRemaining == 0) reloadStart = millis();
     addBullet();
-  } else if (!mousePressed && recoil == 0) {
+  } else if (!mousePressed && (recoil == 0 || int(saveData[1]) <=1)) {
     justFired = false;
   }
   if (recoil >= 10) {
     vRecoil*=-1;
   }
-  if ((recoil != 0) || (int(saveData[1]) >= 2 && mousePressed) && pos[0] > 0 && !reloading) {
+  if ((recoil != 0) || (int(saveData[1]) >= 2 && ((mousePressed && auto[int(saveData[1])])) || (auto[int(saveData[1])] == false && justFired)) && pos[0] > 0 && !reloading) {
     recoil+=vRecoil;
     rotate(-PI/2);
   } else if(pos[0]>0) rotate(rotation);
   switch(int(saveData[1])){
     case 0:
-      image(guns[0][0], 5, character[1].height);
-      image(guns[0][1], guns[0][1].width/4+guns[0][0].width/2, character[1].height-recoil);
+      image(guns[1][0], 5, character[1].height);
+      image(guns[1][1], guns[1][0].width/2+guns[1][1].width/4, character[1].height-recoil);
       break;
     case 1:
       image(guns[1][0], 5, character[1].height);
@@ -450,6 +465,9 @@ void drawArms() {
       break;
     case 3:
       image(guns[3][0], 0, character[1].height);
+      break;
+    case 4:
+      image(guns[4][0], 0, character[1].height+5);
       break;
   }
   image(character[1], 0, character[1].height/2);
@@ -759,26 +777,36 @@ void game() {
     textAlign(CENTER, CENTER);
     textFont(regular[1], 70);
     text("GAME OVER",width/2, height/2 - 50);
-    text("Distance: "+int(distTravelled)+"m",width/2,height/2 + 50);
+    text("Distance: "+int(distTravelled)+"m",width/2,height/2 + 30);
+    int highscore = int(saveData[0]);
+    if (int(distTravelled) > highscore) highscore = int(distTravelled);
+    text("High score: " + highscore+"m", width/2, height/2+100);
     textFont(regular[0], 48);
-    text("Press anywhere to return to main menu", width/2, height-100);
-    if (clicked){
-      currentScene = 0;
-      pos[0] = 500;
-      pos[1] = 0;
-      vy = 0;
-      bulletsRemaining = 0;
-      speed = 1;
-      speedUp = 0.1;
-      if (int(saveData[0]) < distTravelled) saveData[0] = Integer.toString(int(distTravelled));
-      distTravelled = 0;
-      obstacles.clear();
-      reloading = false;
-      health = maxHealth;
-      fuel = maxFuel;
-      enemies.clear();
-      //saveStrings("saveGame.txt", saveData);
+    if (mouseX > width/2-300 && mouseX < width/2 + 300 && mouseY > height-130 && mouseY < height-70){
+      fill(127);
+      if (clicked){
+        currentScene = 0;
+        pos[0] = 500;
+        pos[1] = 0;
+        vy = 0;
+        bulletsRemaining = 0;
+        speed = 1;
+        speedUp = 0.1;
+        saveData[0] = Integer.toString(highscore);
+        distTravelled = 0;
+        obstacles.clear();
+        reloading = false;
+        health = maxHealth;
+        fuel = maxFuel;
+        enemies.clear();
+        //saveStrings("data/saveData/saveGame.txt", saveData);
+      }
     }
+    else fill(255);
+    rect(width/2, height-100, 600, 60);
+    fill(0);
+    text("Return to main menu", width/2, height-105);
+    
   }
   else if (!firstTime) charInfo();
   if (justJumped) justJumped = false;
