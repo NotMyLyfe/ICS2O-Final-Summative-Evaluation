@@ -4,7 +4,7 @@
 
 //Set memory limit to 2048, as this uses a lot of RAM
 
-int currentScene = 0;//shows what is on screen: 0 - main menu, 1 - game, 2 - shop, 3 -credits
+int currentScene = 0;//shows what is on screen: 0 - main menu, 1 - game, 2 - shop, 3 - credits, 4 - exit
 //initializing all fonts
 PFont[] regular = new PFont[3];
 PFont[] light = new PFont[3];
@@ -60,7 +60,6 @@ boolean gap = false;
 
 int health=100;//health of player
 float fuel=100;//fuel of player
-ArrayList<ArrayList<Float>> coins = new ArrayList<ArrayList<Float>>();//2D list for coins
 
 boolean onObstacle = false;//on or off obstacle
 float topOfObstacle = 0;
@@ -86,9 +85,9 @@ void movePlayer() {
     colliding = false;
   }
   if (pos[0] < 500 && pos[0]>0){
-    pos[0]++;
+    pos[0]++;//run back to oringinal position
   }
-  if (!onGround && bottomOfPlayer >= topOfGrass && !justJumped){
+  if (!onGround && bottomOfPlayer >= topOfGrass && !justJumped){//checking if on ground
     vy = 0;
     onGround = true;
   }
@@ -96,13 +95,13 @@ void movePlayer() {
     float top = obstacles.get(i).get(1);
     float left = obstacles.get(i).get(0)-obstacleImages[int(obstacles.get(i).get(2))].width/3;
     float right = obstacles.get(i).get(0)+obstacleImages[int(obstacles.get(i).get(2))].width/3;
-    float futureLeft = left-(int(speed)/3+5);
+    float futureLeft = left-(int(speed)/3+5);//moves obstacle
     top-=obstacleImages[int(obstacles.get(i).get(2))].height*((obstacles.get(i).get(2)+1)/2);
-    if(left <= pos[0]+character[0].width/2 && right >= pos[0]-character[0].width/2 && bottomOfPlayer > top){
+    if(left <= pos[0]+character[0].width/2 && right >= pos[0]-character[0].width/2 && bottomOfPlayer > top){//checks if players is on the obstacle
       onObstacle = true;
       topOfObstacle = top;
       rightOfObstacle = right;
-      pos[1] = topOfObstacle - (character[0].height/3+character[2].height);
+      pos[1] = topOfObstacle - (character[0].height/3+character[2].height);//player can stand on obstacle
       vy=0;
     }
     else if (left > pos[0]+character[0].width/2 && futureLeft < pos[0]+character[0].width/2 && right > pos[0]-character[0].width/2 && top<bottomOfPlayer)  pos[0]-= int(speed)/3+6;
@@ -121,7 +120,7 @@ void initFont() {
   }
 }
 
-void initImgs() {
+void initImgs() {//loading images
   character[0] = loadImage("Imgs/Character Body.png");
   character[1] = loadImage("Imgs/Character Arm.png");
   character[2] = loadImage("Imgs/Character Leg.png");
