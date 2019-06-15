@@ -100,15 +100,15 @@ void movePlayer() {
   topOfNextGrass = groundPos[nextGround][1]+(49*scaleFactor[1]);
   if (onGround) pos[1]=topOfGrass-(character[0].height/3+character[2].height);
   else if (onObstacle) pos[1] = topOfObstacle - (character[0].height/3+character[2].height);
-  else vy+=gravity;
-  if (groundPos[nextGround][0]-(int(speed)/3+1)*scaleFactor[1] <= pos[0]+character[0].width/2 && bottomOfPlayer-topOfNextGrass >= 10*scaleFactor[1] && groundPos[nextGround][0] > 0){
-    pos[0]-= (int(speed)/3+6)*scaleFactor[1];
+  else vy+=gravity*scaleFactor[0];
+  if (groundPos[nextGround][0]-int((int(speed)/3+1)*scaleFactor[1])*2 <= pos[0]+character[0].width/2 && bottomOfPlayer-topOfNextGrass >= 10*scaleFactor[1] && groundPos[nextGround][0] > 0){
+    pos[0]-= int((int(speed)/3+6)*scaleFactor[1])*2;
     colliding = true;
   }
   else{
     colliding = false;
   }
-  if (pos[0] < width*(500/1280) && pos[0]>0){
+  if (pos[0] < int(width*(500.0/1280)) && pos[0]>0){
     pos[0]++;//run back to original position
   }
   if (!onGround && bottomOfPlayer >= topOfGrass && !justJumped){//checking if on ground
@@ -119,9 +119,9 @@ void movePlayer() {
     float top = obstacles.get(i).get(1);//top of obstacle
     float left = obstacles.get(i).get(0)-obstacleImages[int(obstacles.get(i).get(2))].width/3;//left of obstacle
     float right = obstacles.get(i).get(0)+obstacleImages[int(obstacles.get(i).get(2))].width/3;//right of obstacle
-    float futureLeft = left-(int(speed)/3+5)*scaleFactor[1];//moves obstacle
-    top-=obstacleImages[int(obstacles.get(i).get(2))].height*((obstacles.get(i).get(2)+scaleFactor[0])/2);//top
-    if (left > pos[0]+character[0].width/2 && futureLeft < pos[0]+character[0].width/2 && right > pos[0]-character[0].width/2 && top<bottomOfPlayer)  pos[0]-= (int(speed)/3+6)*scaleFactor[1];//checking if colliding 
+    float futureLeft = left-int((int(speed)/3+5)*scaleFactor[1])*2;//moves obstacle
+    top-=obstacleImages[int(obstacles.get(i).get(2))].height*((obstacles.get(i).get(2)+1)/2);//top
+    if (left > pos[0]+character[0].width/2 && futureLeft < pos[0]+character[0].width/2 && right > pos[0]-character[0].width/2 && top<bottomOfPlayer)  pos[0]-= int((int(speed)/3+6)*scaleFactor[1])*2;//checking if colliding 
     if(left < pos[0]+character[0].width/2 && right > pos[0]-character[0].width/2 && bottomOfPlayer >= top && !onObstacle){//on top oof obstacle
       onObstacle = true;
       topOfObstacle = top;
@@ -129,9 +129,8 @@ void movePlayer() {
       pos[1] = topOfObstacle - (character[0].height/3+character[2].height);//player can stand on obstacle
       vy=0;
     }
-    
   }
-  rightOfObstacle -= (int(speed)/3+5)*scaleFactor[1];//finds the new position of right of obstacle
+  rightOfObstacle -= int((int(speed)/3+5)*scaleFactor[1])*2;//finds the new position of right of obstacle
   if (rightOfObstacle <= pos[0]-character[0].width/2 || bottomOfPlayer != topOfObstacle && onObstacle) onObstacle = false;//checks if off obstacle
 }
 
@@ -225,7 +224,7 @@ String[][] shopOptions = new String[4][];//create new 2D array of shop options
 int[][] shopCosts = new int[2][];//2D array for costs
 
 void setup() {
-  size(800, 600);//initializing size
+  fullScreen();//initializing size
   scaling();
   initFont();//initializing fonts
   if (loadStrings("data/saveData/saveGame.txt") != null) {
@@ -244,9 +243,9 @@ void setup() {
     }
   }
   initImgs();
-  pos[0]=width*(500.0/1280);
-  groundPos[0][1] = 500.0*scaleFactor[0];
-  groundPos[1][0] = background[0].width;
+  pos[0]=int(width*(500.0/1280));
+  groundPos[0][1] = int(500.0*scaleFactor[0]);
+  groundPos[1][0] = int(background[0].width);
   groundPos[1][1] = random(-70*scaleFactor[0], 70*scaleFactor[0])+500.0*scaleFactor[0];
 }
 
@@ -290,7 +289,7 @@ boolean holding = false;
 
 void keyPressed() {//checks if key was pressed
   if (keyCode == 87 && (onGround || onObstacle) && !justJumped && pos[0]>0 && !holding && currentScene == 1 && !firstTime) {//only jump if on ground
-    vy=JUMPPOWER*scaleFactor[0];//jumping power
+    vy=int(JUMPPOWER*scaleFactor[0]);//jumping power
     onGround = false;
     justJumped = true;
     holding = true;
@@ -316,7 +315,7 @@ void keyReleased() {//checks if key was released
 
 
 float rotation = 0;//finds rotation of arms and legs
-float vR = radians(8.5);//speed of rotation
+float vR = radians(12);//speed of rotation
 
 float recoil = 0;
 float vRecoil = 0;
@@ -435,7 +434,7 @@ void updateTrail() {
       image(character[1], 0, character[1].height/2);
       popMatrix();
     }
-    trail.get(i).set(0, trail.get(i).get(0)+(int(speed)/3-10)*scaleFactor[1]);
+    trail.get(i).set(0, trail.get(i).get(0)+int((int(speed)/3-10)*scaleFactor[1])*2);
     if (trail.get(i).get(0)+character[0].width < 0 || trail.get(i).get(0)/pos[0]*150 < 10) {
       trail.remove(i);
       i--;
@@ -463,17 +462,17 @@ void drawBullet(){//draws bullet
   for(int i = 0; i < bulletPos.size(); i++){
     if (int(saveData[1]) < 18) image(bullet, bulletPos.get(i).get(0), bulletPos.get(i).get(1));
     else image(rocket, bulletPos.get(i).get(0), bulletPos.get(i).get(1));
-    bulletPos.get(i).set(0, bulletPos.get(i).get(0)+30*scaleFactor[1]);
+    bulletPos.get(i).set(0, bulletPos.get(i).get(0)+60*scaleFactor[1]);
     if (bulletPos.get(i).get(0)-bullet.width/2 > width || (bulletPos.get(i).get(0)+bullet.width/2>groundPos[nextGround][0] && bulletPos.get(i).get(1) > topOfNextGrass && groundPos[nextGround][0] > 0)) bulletPos.remove(i);
   }
   for (int i = 0; i < enemyBullets.size(); i++){
     if (int(saveData[1]) < 18) image(bullet, enemyBullets.get(i).get(0), enemyBullets.get(i).get(1));
     else image(rocket, enemyBullets.get(i).get(0), enemyBullets.get(i).get(1));
-    enemyBullets.get(i).set(0, enemyBullets.get(i).get(0)-(int(speed)/3+40));
+    enemyBullets.get(i).set(0, enemyBullets.get(i).get(0)-int((int(speed)/3+40)*scaleFactor[1])*2);
     if (enemyBullets.get(i).get(0)-bullet.width/2 < 0){
       enemyBullets.remove(i);
     }
-    else if (enemyBullets.get(i).get(0) > pos[0]+character[0].width/2 && enemyBullets.get(i).get(0)-(int(speed)/3+40)*scaleFactor[1] <= pos[0]+character[0].width/2 && enemyBullets.get(i).get(1) > pos[1]-character[0].height/2 && enemyBullets.get(i).get(1) < pos[1]+character[0].height/3+character[2].height){
+    else if (enemyBullets.get(i).get(0) > pos[0]+character[0].width/2 && enemyBullets.get(i).get(0)-int((int(speed)/3+40)*scaleFactor[1])*2 <= pos[0]+character[0].width/2 && enemyBullets.get(i).get(1) > pos[1]-character[0].height/2 && enemyBullets.get(i).get(1) < pos[1]+character[0].height/3+character[2].height){
       enemyBullets.remove(i);
       health -= dmg[int(saveData[1])];
     }
@@ -661,7 +660,7 @@ void updateEnemies(){
     }
     image(robot[1], enemies.get(i).get(0)-robot[1].width/2, enemies.get(i).get(1));
     image(robot[2], enemies.get(i).get(0), enemies.get(i).get(1)+robot[0].height/3+robot[2].height/2);
-    if (!(enemies.get(i).get(0)-(int(speed)/3+10)*scaleFactor[1]>groundPos[nextGroundEnemy][0] && enemies.get(i).get(0)-(int(speed)/3+10)*scaleFactor[1] < groundPos[nextGroundEnemy][0]+background[0].width && bottomEnemy-nextTopGroundEnemy>5)) enemies.get(i).set(0, enemies.get(i).get(0)-(int(speed)/3+10)*scaleFactor[1]);
+    if (!(enemies.get(i).get(0)-int((int(speed)/3+10)*scaleFactor[1])*2>groundPos[nextGroundEnemy][0] && enemies.get(i).get(0)-int((int(speed)/3+10)*scaleFactor[1])*2 < groundPos[nextGroundEnemy][0]+background[0].width && bottomEnemy-nextTopGroundEnemy>5)) enemies.get(i).set(0, enemies.get(i).get(0)-int((int(speed)/3+10)*scaleFactor[1])*2);
     rectMode(CENTER);
     fill(0);
     rect(enemies.get(i).get(0), enemies.get(i).get(1)-robot[0].height/2 - 50*scaleFactor[0], 200*scaleFactor[0], 40*scaleFactor[0]);
@@ -676,7 +675,7 @@ void drawUpdateObstacle(){
   imageMode(CENTER);
   for(int i = 0; i < obstacles.size(); i++){
     image(obstacleImages[int(obstacles.get(i).get(2))], obstacles.get(i).get(0), obstacles.get(i).get(1)-obstacleImages[int(obstacles.get(i).get(2))].height/2);
-    obstacles.get(i).set(0, obstacles.get(i).get(0)-(int(speed)/3+5)*scaleFactor[1]);
+    obstacles.get(i).set(0, obstacles.get(i).get(0)-int((int(speed)/3+5)*scaleFactor[1])*2);
     if (obstacles.get(i).get(0)+obstacleImages[int(obstacles.get(i).get(2))].height/2 <= 0){
       obstacles.remove(i);
       i--;
@@ -766,7 +765,7 @@ void detectCollision(){
   }
   for (int i = 0; i < enemies.size(); i++){
     float right = enemies.get(i).get(0)+robot[0].width/2;
-    float futureLeft = enemies.get(i).get(0)-robot[0].width/2-(int(speed)/3+10);
+    float futureLeft = enemies.get(i).get(0)-robot[0].width/2-int((int(speed)/3+10)*scaleFactor[1])*2;
     float top = enemies.get(i).get(1)-robot[0].height/2;
     float bottom = enemies.get(i).get(1) + robot[0].height/3+robot[2].height;
     float bottomOfPlayer = pos[1]+character[0].height/3+character[2].height;
@@ -783,7 +782,7 @@ void updateCoins(){
   imageMode(CENTER);
   for (int i = 0; i < coins.size(); i++){
     image(coin, coins.get(i).get(0), coins.get(i).get(1));
-    coins.get(i).set(0, coins.get(i).get(0)-(int(speed)/3+5)*scaleFactor[1]);
+    coins.get(i).set(0, coins.get(i).get(0)-int((int(speed)/3+5)*scaleFactor[1])*2);
     if (coins.get(i).get(1)-25*scaleFactor[0]>pos[1]-character[0].height/2&& coins.get(i).get(0)<pos[0]+character[0].width/2 && coins.get(i).get(0) > pos[0]-character[0].width/2 && coins.get(i).get(1)-25 < pos[1]+character[0].height/3+character[2].height){
       coins.remove(i);
       i++;
@@ -799,7 +798,7 @@ void game() {
   imageMode(CORNER);
   for (int i = 0; i < skyX.length; i++){
     image(background[1], skyX[i], 0);
-    if (!firstTime) skyX[i]-=int(speed)/4+1;
+    if (!firstTime) skyX[i]-=int((int(speed)/4+1)*scaleFactor[1]);
     if (skyX[i] <= -background[1].width){
       if (i == 0) next = 1;
       else next = 0;
@@ -856,7 +855,7 @@ void game() {
         coins.add(newCoin);
       }
     }
-    if (!firstTime) groundPos[i][0]-=(int(speed)/3+5)*scaleFactor[1];
+    if (!firstTime) groundPos[i][0]-=int((int(speed)/3+5)*scaleFactor[1])*2;
   }
   updateCoins();
   updateEnemies();
@@ -884,7 +883,10 @@ void game() {
     text("and Left Click to shoot.", width/2, height/2-20*scaleFactor[0]);
     text("Go the furthest distance without dying!", width/2, height/2+40*scaleFactor[0]);
     text("Press anywhere to continue", width/2, height/2+150*scaleFactor[0]);
-    if (clicked) firstTime = false;
+    if (clicked){
+      firstTime = false;
+      bulletsRemaining++;
+    }
   }
   if(pos[0]<=0 || health <= 0){
     speed=0;
@@ -1106,6 +1108,7 @@ void shop(){
 }
 
 void draw() {
+  println(frameRate);
   if (currentScene == 0) mainMenu();
   else if (currentScene == 2) shop();
   else if (currentScene == 3) credits();
