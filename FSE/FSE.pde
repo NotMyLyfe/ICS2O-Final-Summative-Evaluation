@@ -12,7 +12,7 @@ PFont[] xLight = new PFont[3];
 PFont[] thin = new PFont[3];
 
 
-String[] saveData = {"0", "4", "0", "500000", "19", "0", "0", "0"}; //0th value: past distance, 1st value: gun type, 2nd value: armour type, 3rd value: money, 4th value: top gun purchased, 5th value: top armour purchased, 6th value: top jetpack, 7th value: jetpack
+String[] saveData = {"0", "0", "0", "0", "0", "0", "0", "0"}; //0th value: past distance, 1st value: gun type, 2nd value: armour type, 3rd value: money, 4th value: top gun purchased, 5th value: top armour purchased, 6th value: top jetpack, 7th value: jetpack
 //craeting image variables
 PImage[] character = new PImage[5];//player image
 PImage bullet;//bullet image
@@ -21,6 +21,8 @@ PImage[] robot = new PImage[3];//robot image
 PImage mainMenuPic;
 PImage[][] guns = new PImage[20][];
 PImage armour;
+PImage rocket;
+PImage coin;
 
 int[] reloadTime = {1500, 2500, 2750, 2000, 3500, 3500, 4250, 3500, 3250, 3000, 2750, 2750, 2250, 2500, 4500, 4600, 6000, 6250, 10000, 10000};//shows reload time for all guns
 boolean[] auto = {false, false, true, true, false, false, true, true, false, true, true, true, true, true, false, false, true, true, false, false};
@@ -38,7 +40,7 @@ float vy=0;//delta-y
 int[] fireRate = {0, 0, 250, 250, 100, 100, 250, 150, 100, 100, 100, 100, 50, 100, 0, 0, 100, 100, 0, 0};
 int[] bullets = {12, 7, 25, 32, 8, 8, 32, 50, 30, 30, 30, 30, 30, 30, 1, 10, 150, 150, 1, 1};//bullet capacity
 int[] dmg = {25, 40, 30, 25, 50, 55, 40, 35, 35, 40, 35, 40, 40, 50, 200, 250, 30, 40, 1000, 2000};//bullet damage
-int[] robotReload = {1500, 2250, 2500, 2000, 2750, 2750, 2800, 2500, 2250, 2250, 2250, 2250, 2250, 2750, 4750, 4800, 1500, 1500, 10000, 10000};//shows reload time for robots
+int[] robotReload = {1000, 1250, 500, 500, 250, 250, 500, 500, 750, 500, 500, 500, 500, 500, 4500, 1000, 350, 350, 10000, 10000};//shows reload time for robots
 int bulletsRemaining = 0;//bullets remaining
 
 ArrayList<ArrayList<Float>> trail = new ArrayList<ArrayList<Float>>();//2D list for trail
@@ -153,7 +155,12 @@ void initImgs() {
   }
   
   guns[2][0].resize(guns[2][0].width*3/4, guns[2][0].height*3/4);
-  guns[3][0].resize(guns[2][0].width*3/4, guns[2][0].height*3/4);
+  guns[3][0].resize(guns[3][0].width*3/4, guns[3][0].height*3/4);
+  guns[5][0].resize(guns[5][0].width*3/4, guns[5][0].height*3/4);
+  for (int i = 7; i <= 15; i++){
+    guns[i][0].resize(guns[i][0].width*3/4, guns[i][0].height*3/4);
+  }
+
   background[0] = loadImage("Imgs/Grass.png");
   background[1] = loadImage("Imgs/Clouds.png");
   background[2] = loadImage("Imgs/Blue Sky.png");
@@ -161,6 +168,8 @@ void initImgs() {
   
   bullet = loadImage("Imgs/Bullet.png");
   bullet.resize(bullet.width*5, bullet.height*5);
+  
+  rocket = loadImage("Imgs/RPG Ammo.png");
   
   obstacleImages[0] = loadImage("Imgs/Tree.png");
   obstacleImages[1] = loadImage("Imgs/Bricks.png");
@@ -180,6 +189,7 @@ void initImgs() {
   robot[1].resize(robot[1].width*3/4, robot[1].height*3/4);
   mainMenuPic = loadImage("Imgs/Main Menu Screen.png");
   mainMenuPic.resize(width, height);
+  coin = loadImage("Imgs/Coin.png");
 }
 
 String[][] shopOptions = new String[4][];
@@ -323,20 +333,34 @@ void updateTrail() {
       pushMatrix();
       translate(trail.get(i).get(0), trail.get(i).get(1));
       rotate(trail.get(i).get(2));
-      switch(int(saveData[1])){
-        case 0:
-          image(guns[0][0], 5, character[1].height);
-          image(guns[0][1], 2+guns[0][0].width/2, character[1].height-trail.get(i).get(3));
-          break;
-         case 1:
-           image(guns[1][0], 5, character[1].height);
-           image(guns[1][1], guns[1][0].width/2+guns[1][1].width/4, character[1].height-trail.get(i).get(3));
-         case 2:
-           image(guns[2][0], 0, character[1].height);
-           break;
-         case 3:
-           image(guns[3][0], 0, character[1].height);
-           break;
+      if (int(saveData[1]) <= 1){
+        image(guns[int(saveData[1])][0], guns[int(saveData[1])][0].width/5, character[1].height);
+        image(guns[int(saveData[1])][1], guns[int(saveData[1])][0].width/2+guns[int(saveData[1])][1].width/4, character[1].height-trail.get(i).get(3));
+      }
+      else if (int(saveData[1]) <= 3 || int(saveData[1]) == 8) image(guns[int(saveData[1])][0], 0, character[1].height);
+      else if (int(saveData[1]) == 4) image(guns[4][0], 0, character[1].height+guns[4][0].height/6);
+      else if (int(saveData[1]) == 5) image(guns[5][0], guns[5][0].width/5, guns[5][0].height/3 + character[1].height);
+      else if (int(saveData[1]) == 6) image(guns[6][0], 0, character[1].height+guns[6][0].height/4);
+      else if (int(saveData[1]) == 7) image(guns[7][0], guns[7][0].width/4, character[1].height-guns[7][0].width/6);
+      else if (int(saveData[1]) <=14) image(guns[int(saveData[1])][0], 0, character[1].height-guns[int(saveData[1])][0].height/10);
+      else{
+        switch(int(saveData[1])){
+          case 15:
+            image(guns[15][0], guns[15][0].width/4, character[1].height+guns[15][0].height/5);
+            break;
+          case 16:
+            image(guns[16][0], guns[16][0].width/6, character[1].height+guns[16][0].height/6);
+            break;
+          case 17:
+            image(guns[17][0], guns[17][0].width/6, character[1].height+guns[17][0].height/10);
+            break;
+          case 18:
+            image(guns[18][0], 0, character[1].height-guns[18][0].height/5);
+            break;
+          case 19:
+            image(guns[19][0], guns[17][0].width/6, character[1].height-guns[19][0].height/5);
+            break;
+        }
       }
       image(character[1], 0, character[1].height/2);
       popMatrix();
@@ -345,21 +369,34 @@ void updateTrail() {
       pushMatrix();
       translate(trail.get(i).get(0), trail.get(i).get(1));
       rotate(-PI/2);
-      switch(int(saveData[1])){
-        case 0:
-          image(guns[0][0], 5, character[1].height);
-          image(guns[0][1], 2+guns[0][0].width/2, character[1].height-trail.get(i).get(3));
-          break;
-         case 1:
-           image(guns[1][0], 5, character[1].height);
-           image(guns[1][1], guns[1][0].width/2+guns[1][1].width/4, character[1].height-recoil);
-           break;
-         case 2:
-           image(guns[2][0], 0, character[1].height);
-           break;
-         case 3:
-           image(guns[3][0], 0, character[1].height);
-           break;
+      if (int(saveData[1]) <= 1){
+        image(guns[int(saveData[1])][0], guns[int(saveData[1])][0].width/5, character[1].height);
+        image(guns[int(saveData[1])][1], guns[int(saveData[1])][0].width/2+guns[int(saveData[1])][1].width/4, character[1].height-trail.get(i).get(3));
+      }
+      else if (int(saveData[1]) <= 3 || int(saveData[1]) == 8) image(guns[int(saveData[1])][0], 0, character[1].height);
+      else if (int(saveData[1]) == 4) image(guns[4][0], 0, character[1].height+guns[4][0].height/6);
+      else if (int(saveData[1]) == 5) image(guns[5][0], guns[5][0].width/5, guns[5][0].height/3 + character[1].height);
+      else if (int(saveData[1]) == 6) image(guns[6][0], 0, character[1].height+guns[6][0].height/4);
+      else if (int(saveData[1]) == 7) image(guns[7][0], guns[7][0].width/4, character[1].height-guns[7][0].width/6);
+      else if (int(saveData[1]) <=14) image(guns[int(saveData[1])][0], 0, character[1].height-guns[int(saveData[1])][0].height/10);
+      else{
+        switch(int(saveData[1])){
+          case 15:
+            image(guns[15][0], guns[15][0].width/4, character[1].height+guns[15][0].height/5);
+            break;
+          case 16:
+            image(guns[16][0], guns[16][0].width/6, character[1].height+guns[16][0].height/6);
+            break;
+          case 17:
+            image(guns[17][0], guns[17][0].width/6, character[1].height+guns[17][0].height/10);
+            break;
+          case 18:
+            image(guns[18][0], 0, character[1].height-guns[18][0].height/5);
+            break;
+          case 19:
+            image(guns[19][0], guns[17][0].width/6, character[1].height-guns[19][0].height/5);
+            break;
+        }
       }
       image(character[1], 0, character[1].height/2);
       popMatrix();
@@ -379,39 +416,25 @@ ArrayList<ArrayList<Float>> bulletPos = new ArrayList<ArrayList<Float>>();
 
 void addBullet(){
   ArrayList<Float> newBullet = new ArrayList<Float>();
-  switch(int(saveData[1])){
-    case 0:
-      newBullet.add(pos[0]+character[0].width/2);
-      newBullet.add(pos[1]-character[1].width/2);
-      break;
-    case 1:
-      newBullet.add(pos[0]+character[0].width/2);
-      newBullet.add(pos[1]-character[1].width/2);
-      break;
-    case 2:
-      newBullet.add(pos[0]+character[0].width/2);
-      newBullet.add(pos[1]-character[1].width/2);
-      break;
-    case 3:
-      newBullet.add(pos[0]+character[0].width/2);
-      newBullet.add(pos[1]-character[1].width/2);
-      break;
-    case 4:
-      newBullet.add(pos[0]+character[0].width/2);
-      newBullet.add(pos[1]-character[1].width/2);
-  }
+  newBullet.add(pos[0]+character[0].width/2);
+  if (int(saveData[1]) < 16) newBullet.add(pos[1]-character[1].width/2);
+  else if (int(saveData[1]) <= 17) newBullet.add(pos[1]-character[1].width/2-guns[int(saveData[1])][0].width/5);
+  else newBullet.add(pos[1] - character[1].width/2);
+  newBullet.add(0.0);
   bulletPos.add(newBullet);
 }
 
 void drawBullet(){
   imageMode(CENTER);
   for(int i = 0; i < bulletPos.size(); i++){
-    image(bullet, bulletPos.get(i).get(0), bulletPos.get(i).get(1));
+    if (int(saveData[1]) < 18) image(bullet, bulletPos.get(i).get(0), bulletPos.get(i).get(1));
+    else image(rocket, bulletPos.get(i).get(0), bulletPos.get(i).get(1));
     bulletPos.get(i).set(0, bulletPos.get(i).get(0)+30);
     if (bulletPos.get(i).get(0)-bullet.width/2 > width || (bulletPos.get(i).get(0)+bullet.width/2>groundPos[nextGround][0] && bulletPos.get(i).get(1) > topOfNextGrass && groundPos[nextGround][0] > 0)) bulletPos.remove(i);
   }
   for (int i = 0; i < enemyBullets.size(); i++){
-    image(bullet, enemyBullets.get(i).get(0), enemyBullets.get(i).get(1));
+    if (int(saveData[1]) < 18) image(bullet, enemyBullets.get(i).get(0), enemyBullets.get(i).get(1));
+    else image(rocket, enemyBullets.get(i).get(0), enemyBullets.get(i).get(1));
     enemyBullets.get(i).set(0, enemyBullets.get(i).get(0)-(int(speed)/3+40));
     if (enemyBullets.get(i).get(0)-bullet.width/2 < 0){
       enemyBullets.remove(i);
@@ -451,32 +474,40 @@ void drawArms() {
     recoil+=vRecoil;
     rotate(-PI/2);
   } else if(pos[0]>0) rotate(rotation);
-  switch(int(saveData[1])){
-    case 0:
-      image(guns[1][0], 5, character[1].height);
-      image(guns[1][1], guns[1][0].width/2+guns[1][1].width/4, character[1].height-recoil);
-      break;
-    case 1:
-      image(guns[1][0], 5, character[1].height);
-      image(guns[1][1], guns[1][0].width/2+guns[1][1].width/4, character[1].height-recoil);
-      break;
-    case 2:
-      image(guns[2][0], 0, character[1].height);
-      break;
-    case 3:
-      image(guns[3][0], 0, character[1].height);
-      break;
-    case 4:
-      image(guns[4][0], 0, character[1].height+5);
-      break;
+  if (int(saveData[1]) <= 1){
+    image(guns[int(saveData[1])][0], guns[int(saveData[1])][0].width/5, character[1].height);
+    image(guns[int(saveData[1])][1], guns[int(saveData[1])][0].width/2+guns[int(saveData[1])][1].width/4, character[1].height-recoil);
+  }
+  else if (int(saveData[1]) <= 3 || int(saveData[1]) == 8) image(guns[int(saveData[1])][0], 0, character[1].height);
+  else if (int(saveData[1]) == 4) image(guns[4][0], 0, character[1].height+guns[4][0].height/6);
+  else if (int(saveData[1]) == 5) image(guns[5][0], guns[5][0].width/5, guns[5][0].height/3 + character[1].height);
+  else if (int(saveData[1]) == 6) image(guns[6][0], 0, character[1].height+guns[6][0].height/4);
+  else if (int(saveData[1]) == 7) image(guns[7][0], guns[7][0].width/4, character[1].height-guns[7][0].width/6);
+  else if (int(saveData[1]) <=14) image(guns[int(saveData[1])][0], 0, character[1].height-guns[int(saveData[1])][0].height/10);
+  else{
+    switch(int(saveData[1])){
+      case 15:
+        image(guns[15][0], guns[15][0].width/4, character[1].height+guns[15][0].height/5);
+        break;
+      case 16:
+        image(guns[16][0], guns[16][0].width/6, character[1].height+guns[16][0].height/6);
+        break;
+      case 17:
+        image(guns[17][0], guns[17][0].width/6, character[1].height+guns[17][0].height/10);
+        break;
+      case 18:
+        image(guns[18][0], 0, character[1].height-guns[18][0].height/5);
+        break;
+      case 19:
+        image(guns[19][0], guns[17][0].width/6, character[1].height-guns[19][0].height/5);
+        break;
+    }
   }
   image(character[1], 0, character[1].height/2);
   rectMode(CENTER);
   popMatrix();
   if (bulletsRemaining == 0 && millis()-reloadStart >= reloadTime[int(saveData[1])]) {
     bulletsRemaining = bullets[int(saveData[1])];
-    recoil = 2;
-    vRecoil = 2;
     reloading = false;
   }
   else if (bulletsRemaining == 0){
@@ -549,27 +580,42 @@ void updateEnemies(){
     translate(enemies.get(i).get(0)-robot[1].width, enemies.get(i).get(1));
     scale(-1, 1);
     rotate(-PI/2);
-    switch(int(saveData[1])){
-      case 0:
-        image(guns[0][0], 5, 0);
-        image(guns[0][1], guns[0][1].width/4+guns[0][0].width/2, -enemies.get(i).get(4));
-        break;
-      case 1:
-        image(guns[1][0], 5, 0);
-        image(guns[1][1], guns[1][0].width/2+guns[1][1].width/4, -enemies.get(i).get(4));
-        break;
-      case 2:
-        image(guns[2][0], 0, 0);
-        break;
-      case 3:
-        image(guns[3][0], 0, 0);
-        break;
+    if (int(saveData[1]) <= 1){
+      image(guns[int(saveData[1])][0], guns[int(saveData[1])][0].width/5, 0);
+      image(guns[int(saveData[1])][1], guns[int(saveData[1])][0].width/2+guns[int(saveData[1])][1].width/4, -enemies.get(i).get(4));
+    }
+    else if (int(saveData[1]) <= 3 || int(saveData[1]) == 8) image(guns[int(saveData[1])][0], 0, 0);
+    else if (int(saveData[1]) == 4) image(guns[4][0], 0, guns[4][0].height/6);
+    else if (int(saveData[1]) == 5) image(guns[5][0], guns[5][0].width/5, guns[5][0].height/3);
+    else if (int(saveData[1]) == 6) image(guns[6][0], 0, guns[6][0].height/4);
+    else if (int(saveData[1]) == 7) image(guns[7][0], guns[7][0].width/4, guns[7][0].width/6);
+    else if (int(saveData[1]) <=14) image(guns[int(saveData[1])][0], 0, guns[int(saveData[1])][0].height/10);
+    else{
+      switch(int(saveData[1])){
+        case 15:
+          image(guns[15][0], guns[15][0].width/4, guns[15][0].height/5);
+          break;
+        case 16:
+          image(guns[16][0], guns[16][0].width/6, guns[16][0].height/6);
+          break;
+        case 17:
+          image(guns[17][0], guns[17][0].width/6, guns[17][0].height/10);
+          break;
+        case 18:
+          image(guns[18][0], 0, guns[18][0].height/5);
+          break;
+        case 19:
+          image(guns[19][0], guns[17][0].width/6, guns[19][0].height/5);
+          break;
+      }
     }
     popMatrix();
     if (millis()-enemies.get(i).get(2) >= robotReload[int(saveData[1])]){
       ArrayList<Float> newBullet = new ArrayList<Float>();
-      newBullet.add(enemies.get(i).get(0)-robot[1].width);
-      newBullet.add(enemies.get(i).get(1)-2-guns[0][0].width/2);
+      newBullet.add(enemies.get(i).get(0)-robot[1].height);
+      if (int(saveData[1]) < 16)newBullet.add(enemies.get(i).get(1)-robot[1].width/6);
+      else if (int(saveData[1]) <= 17)newBullet.add(enemies.get(i).get(1)-robot[1].width/6-guns[int(saveData[1])][0].width/5);
+      else newBullet.add(enemies.get(i).get(1)-robot[1].width/6);
       enemyBullets.add(newBullet);
       enemies.get(i).set(4, 2.0);
       enemies.get(i).set(2, float(millis()));
@@ -643,7 +689,6 @@ void detectCollision(){
       rightClosest = 100000;
     }
     if (bulletPos.get(i).get(0)+30 >= closest && bulletPos.get(i).get(1) > topOfClosest && bulletPos.get(i).get(1) < bottomOfClosest){
-      bulletPos.remove(i);
       if (value[1] == 1){
         enemies.get(value[0]).set(3, enemies.get(value[0]).get(3)-dmg[int(saveData[1])]);
         if (enemies.get(value[0]).get(3) <= 0){
@@ -652,7 +697,7 @@ void detectCollision(){
           value[1] = -1;
           closest = 100000;
           rightClosest = 100000;
-          saveData[3] = Integer.toString(int(saveData[3])+int(random(0, 11))*10);
+          saveData[3] = Integer.toString(int(saveData[3])+int(random(0, 11))*100);
         }
       }
       else{
@@ -666,6 +711,24 @@ void detectCollision(){
           rightClosest = 100000;
         }
       }
+      if (int(saveData[1]) >= 18){
+        for (int j = 0; j < enemies.size(); j++){
+          float distToEnemy = dist(bulletPos.get(i).get(0), bulletPos.get(i).get(1), enemies.get(j).get(0), enemies.get(j).get(1));
+          if (400/distToEnemy >= 1){
+            enemies.remove(j);
+            j--;
+          }
+        }
+        for (int j = 0; j < obstacles.size(); j++){
+          float distToObstacles = dist(bulletPos.get(i).get(0), bulletPos.get(i).get(1), obstacles.get(j).get(0), obstacles.get(j).get(1));
+          if (400/distToObstacles >= 1){
+            obstacles.remove(j);
+            j--;
+          }
+        }
+      }
+      if ((int(saveData[1]) != 15 && int(saveData[1]) != 14) || (bulletPos.get(i).get(2) >= 3)) bulletPos.remove(i);
+      else bulletPos.get(i).set(2, bulletPos.get(i).get(2)+1);
     }
   }
   for (int i = 0; i < enemies.size(); i++){
@@ -679,6 +742,19 @@ void detectCollision(){
       health -= enemies.get(i).get(3)/4;
       enemies.remove(i);
       
+    }
+  }
+}
+
+void updateCoins(){
+  imageMode(CENTER);
+  for (int i = 0; i < coins.size(); i++){
+    image(coin, coins.get(i).get(0), coins.get(i).get(1));
+    coins.get(i).set(0, coins.get(i).get(0)-(int(speed)/3+5));
+    if (coins.get(i).get(1)-25>pos[1]-character[0].height/2&& coins.get(i).get(0)<pos[0]+character[0].width/2 && coins.get(i).get(0) > pos[0]-character[0].width/2 && coins.get(i).get(1)-25 < pos[1]+character[0].height/3+character[2].height){
+      coins.remove(i);
+      i++;
+      saveData[3] = Integer.toString(int(saveData[3])+int(random(5,11))*100);
     }
   }
 }
@@ -739,9 +815,17 @@ void game() {
         newEnemy.add(2.0);
         enemies.add(newEnemy);
       }
+      int numOfCoins = int(random(0, 4));
+      for (int a = 0; a < numOfCoins; a++){
+        ArrayList<Float> newCoin = new ArrayList<Float>();
+        newCoin.add(random(groundPos[i][0]+100, groundPos[i][0]+background[0].width-100));
+        newCoin.add(groundPos[i][1]+9);
+        coins.add(newCoin);
+      }
     }
     if (!firstTime) groundPos[i][0]-=int(speed)/3+5;
   }
+  updateCoins();
   updateEnemies();
   detectCollision();
   if (!firstTime){
@@ -753,7 +837,6 @@ void game() {
      }
     drawChar();
     jetpack();
-    //addCoins();
   }
   else {
     rectMode(CENTER);
@@ -776,11 +859,11 @@ void game() {
     fill(0);
     textAlign(CENTER, CENTER);
     textFont(regular[1], 70);
-    text("GAME OVER",width/2, height/2 - 50);
-    text("Distance: "+int(distTravelled)+"m",width/2,height/2 + 30);
+    text("GAME OVER",width/2, height/2 - 120);
+    text("Distance: "+int(distTravelled)+"m",width/2,height/2);
     int highscore = int(saveData[0]);
     if (int(distTravelled) > highscore) highscore = int(distTravelled);
-    text("High score: " + highscore+"m", width/2, height/2+100);
+    text("High score: " + highscore+"m", width/2, height/2+120);
     textFont(regular[0], 48);
     if (mouseX > width/2-300 && mouseX < width/2 + 300 && mouseY > height-130 && mouseY < height-70){
       fill(127);
@@ -799,6 +882,8 @@ void game() {
         health = maxHealth;
         fuel = maxFuel;
         enemies.clear();
+        bulletPos.clear();
+        enemyBullets.clear();
         //saveStrings("data/saveData/saveGame.txt", saveData);
       }
     }
@@ -871,6 +956,7 @@ void shop(){
             maxHealth = 100 + int(saveData[2])*50;
             health = maxHealth;
           }
+          //saveStrings("data/saveData/saveGame.txt", saveData);
         }
       }
       else fill(255);
@@ -936,6 +1022,7 @@ void shop(){
             saveData[3] = Integer.toString(int(saveData[3]) - 5000*selection[2]);
             saveData[i+4] = Integer.toString(int(saveData[i+4])+1);
           }
+          //saveStrings("data/saveData/saveGame.txt", saveData);
         }
       }
       else fill(255);
