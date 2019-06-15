@@ -94,20 +94,20 @@ void movePlayer() {
     colliding = false;
   }
   if (pos[0] < 500 && pos[0]>0){
-    pos[0]++;//run back to oringinal position
+    pos[0]++;//run back to original position
   }
   if (!onGround && bottomOfPlayer >= topOfGrass && !justJumped){//checking if on ground
     vy = 0;
     onGround = true;
   }
   for (int i = 0; i < obstacles.size(); i++){
-    float top = obstacles.get(i).get(1);
-    float left = obstacles.get(i).get(0)-obstacleImages[int(obstacles.get(i).get(2))].width/3;
-    float right = obstacles.get(i).get(0)+obstacleImages[int(obstacles.get(i).get(2))].width/3;
+    float top = obstacles.get(i).get(1);//top of obstacle
+    float left = obstacles.get(i).get(0)-obstacleImages[int(obstacles.get(i).get(2))].width/3;//left of obstacle
+    float right = obstacles.get(i).get(0)+obstacleImages[int(obstacles.get(i).get(2))].width/3;//right of obstacle
     float futureLeft = left-(int(speed)/3+5);//moves obstacle
-    top-=obstacleImages[int(obstacles.get(i).get(2))].height*((obstacles.get(i).get(2)+1)/2);
-    if (left > pos[0]+character[0].width/2 && futureLeft < pos[0]+character[0].width/2 && right > pos[0]-character[0].width/2 && top<bottomOfPlayer)  pos[0]-= int(speed)/3+6;
-    if(left < pos[0]+character[0].width/2 && right > pos[0]-character[0].width/2 && bottomOfPlayer >= top && !onObstacle){
+    top-=obstacleImages[int(obstacles.get(i).get(2))].height*((obstacles.get(i).get(2)+1)/2);//top
+    if (left > pos[0]+character[0].width/2 && futureLeft < pos[0]+character[0].width/2 && right > pos[0]-character[0].width/2 && top<bottomOfPlayer)  pos[0]-= int(speed)/3+6;//checking if colliding 
+    if(left < pos[0]+character[0].width/2 && right > pos[0]-character[0].width/2 && bottomOfPlayer >= top && !onObstacle){//on top oof obstacle
       onObstacle = true;
       topOfObstacle = top;
       rightOfObstacle = right;
@@ -116,13 +116,12 @@ void movePlayer() {
     }
     
   }
-  rightOfObstacle -= int(speed)/3+5;
-  if (rightOfObstacle <= pos[0]-character[0].width/2 || bottomOfPlayer != topOfObstacle && onObstacle) onObstacle = false;
-  //apply gravity
+  rightOfObstacle -= int(speed)/3+5;//finds the new position of right of obstacle
+  if (rightOfObstacle <= pos[0]-character[0].width/2 || bottomOfPlayer != topOfObstacle && onObstacle) onObstacle = false;//checks if off obstacle
 }
 
 
-void initFont() {
+void initFont() {//initializing fonts
   for (int i = 0; i < regular.length; i++) {
     regular[i] = createFont("Font/Montserrat-Regular.ttf", (i+1)*48);
     light[i] = createFont("Font/Montserrat-Light.ttf", (i+1)*48);
@@ -131,7 +130,7 @@ void initFont() {
   }
 }
 
-void initImgs() {
+void initImgs() {//adding all images and resizing to proper size
   armour = loadImage("Imgs/Armour.png");
   armour.resize(armour.width*3/4, armour.height*3/4);
 
@@ -192,16 +191,16 @@ void initImgs() {
   coin = loadImage("Imgs/Coin.png");
 }
 
-String[][] shopOptions = new String[4][];
-int[][] shopCosts = new int[2][];
+String[][] shopOptions = new String[4][];//create new 2D array of shop options
+int[][] shopCosts = new int[2][];//2D array for costs
 
 void setup() {
-  size(1280, 720);
-  initFont();
+  size(1280, 720);//initializing size
+  initFont();//initializing fonts
   if (loadStrings("data/saveData/saveGame.txt") != null) {
     saveData = loadStrings("data/saveData/saveGame.txt");
   }
-  frameRate(60);
+  frameRate(60);//initializing framerate
   for (int i = 0; i < shopOptions.length; i++){
     shopOptions[i] = loadStrings("data/gameData/shopOptions"+i+".txt");
     if (i < 2){
@@ -216,22 +215,22 @@ void setup() {
   initImgs();
 }
 
-boolean[] buttons = {false, false, false, false};
-String[] buttonText = {"Play Game", "Shop", "Credits", "Exit"};
-boolean firstTime;
+boolean[] buttons = {false, false, false, false};//array for buttons
+String[] buttonText = {"Play Game", "Shop", "Credits", "Exit"};//array for main menu options
+boolean firstTime;//checks if player is new
 
-void mainMenu() {
-  background(100);
-  imageMode(CENTER);
-  image(mainMenuPic, width/2, height/2);
-  fill(255);
-  textFont(regular[1], 96);
-  textAlign(CENTER, CENTER);
-  text("ZapZpeed", width/2, 100);
-  textFont(light[0], 48);
-  rectMode(CENTER);
+void mainMenu() {//initializing main menu
+  background(100);//initializing background
+  imageMode(CENTER);//changing image mode
+  image(mainMenuPic, width/2, height/2);//adding image
+  fill(255);//initializing fill
+  textFont(regular[1], 96);//initializing font
+  textAlign(CENTER, CENTER);//adjusting text alignment
+  text("ZapZpeed", width/2, 100);//title
+  textFont(light[0], 48);//light font
+  rectMode(CENTER);//adjusting rect mode
   for (int i = 0; i < 4; i++){
-    if (mouseX >= width/2-150 && mouseX <= width/2+150 && mouseY >= height/2-60+i*100 && mouseY <= height/2+20+i*100) buttons[i] = true;
+    if (mouseX >= width/2-150 && mouseX <= width/2+150 && mouseY >= height/2-60+i*100 && mouseY <= height/2+20+i*100) buttons[i] = true;//checks if any of the buttons have been pressed
     else buttons[i] = false;
     if (buttons[i]){
       fill(0);
@@ -254,7 +253,7 @@ void mainMenu() {
 boolean justJumped = false;
 boolean holding = false;
 
-void keyPressed() {
+void keyPressed() {//checks if key was pressed
   if (keyCode == 87 && (onGround || onObstacle) && !justJumped && pos[0]>0 && !holding && currentScene == 1 && !firstTime) {//only jump if on ground
     vy=JUMPPOWER;//jumping power
     onGround = false;
@@ -265,15 +264,15 @@ void keyPressed() {
 
 boolean clicked = false;
 
-void mousePressed(){
+void mousePressed(){//checks if mouse was pressed
   clicked = true;
 }
 
-void mouseReleased(){
+void mouseReleased(){//checks if mouse was released
   clicked = false;
 }
 
-void keyReleased() {
+void keyReleased() {//checks if key was released
   if (key == 'w'){
     justJumped = false;
     holding = false;
@@ -281,46 +280,46 @@ void keyReleased() {
 }
 
 
-float rotation = 0;
-float vR = radians(8.5);
+float rotation = 0;//finds rotation of arms and legs
+float vR = radians(8.5);//speed of rotation
 
 float recoil = 0;
 float vRecoil = 0;
 
-void addTrail() {
+void addTrail() {//adding trail
 
-  ArrayList<Float> newTrail = new ArrayList<Float>();
-  newTrail.add(pos[0]-20);
-  newTrail.add(pos[1]);
+  ArrayList<Float> newTrail = new ArrayList<Float>();//list for new trail
+  newTrail.add(pos[0]-20);//adds a new trail every 20 pixels
+  newTrail.add(pos[1]);//adds a trail on the same y axis as player
   newTrail.add(rotation);
   newTrail.add(recoil);
   trail.add(newTrail);
 }
 
-void jetpack() {
-  boolean jetpackUse = false;
-  if (keyPressed && key==32 && fuel >= 0) {
-    image(character[4], pos[0]-character[0].width/2-5,pos[1]+10+character[3].height/2 + character[4].height/2);
+void jetpack() {//adding jetpack
+  boolean jetpackUse = false;//not using jetpack
+  if (keyPressed && key==32 && fuel >= 0) {//checks if space key is pressed
+    image(character[4], pos[0]-character[0].width/2-5,pos[1]+10+character[3].height/2 + character[4].height/2);//image of the fire
     if (pos[1] > -character[0].height/2){
-      vy=-3*gravity-speedBoost;
+      vy=-3*gravity-speedBoost;//player goes up
       onGround = false;
       onObstacle = false;
     }
-    else vy = 0;
+    else vy = 0;//checks if its on the top of the screen and stops jetpack from flying higher
     jetpackUse = true;
   }
   else jetpackUse = false;
   if(jetpackUse && !onGround){
-    fuel-=0.5;
+    fuel-=0.5;//using fuel
   }
-  else if(fuel<maxFuel && vy>=0 && !jetpackUse && onGround){
-    fuel+=0.5;
+  else if(fuel<maxFuel && vy>=0 && !jetpackUse && onGround){//checks if fuel tank isnt full
+    fuel+=0.5;//regenarating fuel
   }
 }
 
 void updateTrail() {
   for (int i = 0; i < trail.size(); i++) {
-    tint(255, (trail.get(i).get(0) / pos[0])*150);
+    tint(255, (trail.get(i).get(0) / pos[0])*150);//adds transparency
     pushMatrix();
     translate(trail.get(i).get(0), trail.get(i).get(1)+character[0].height/3);
     rotate(trail.get(i).get(2));
@@ -412,7 +411,7 @@ void updateTrail() {
 boolean justFired = false;
 float reloadStart = 0;
 
-ArrayList<ArrayList<Float>> bulletPos = new ArrayList<ArrayList<Float>>();
+ArrayList<ArrayList<Float>> bulletPos = new ArrayList<ArrayList<Float>>();//2D arraylist of bullets
 
 void addBullet(){
   ArrayList<Float> newBullet = new ArrayList<Float>();
@@ -424,7 +423,7 @@ void addBullet(){
   bulletPos.add(newBullet);
 }
 
-void drawBullet(){
+void drawBullet(){//draws bullet
   imageMode(CENTER);
   for(int i = 0; i < bulletPos.size(); i++){
     if (int(saveData[1]) < 18) image(bullet, bulletPos.get(i).get(0), bulletPos.get(i).get(1));
@@ -448,23 +447,23 @@ void drawBullet(){
 boolean reloading = false;
 int lastShot = 0;
 
-void drawArms() {
-  rectMode(CENTER);
+void drawArms() {//adding arms on player
+  rectMode(CENTER);//changing rect mode
   pushMatrix();
-  translate(pos[0], pos[1]);
-  if (recoil < 0){
+  translate(pos[0], pos[1]);//attaching on character
+  if (recoil < 0){//resets recoil variables
     recoil = 0;
     vRecoil = 0;
   }
-  if (mousePressed && !justFired && bulletsRemaining > 0 && lastShot + fireRate[int(saveData[1])] <= millis()) {
-    vRecoil = 2;
+  if (mousePressed && !justFired && bulletsRemaining > 0 && lastShot + fireRate[int(saveData[1])] <= millis()) {//checks if able to to fire and player clicked
+    vRecoil = 2;//sets recoil
     recoil=2;
-    lastShot = millis();
-    if (auto[int(saveData[1])] == false) justFired = true;
-    bulletsRemaining--;
-    if (bulletsRemaining == 0) reloadStart = millis();
+    lastShot = millis();//last shot current time
+    if (auto[int(saveData[1])] == false) justFired = true;//checks if semi-automatic weapon
+    bulletsRemaining--;//bullets minus 1
+    if (bulletsRemaining == 0) reloadStart = millis();//relaod if no more bullets
     addBullet();
-  } else if (!mousePressed && (recoil == 0 || int(saveData[1]) <=1)) {
+  } else if (!mousePressed && (recoil == 0 || int(saveData[1]) <=1)) {//if released
     justFired = false;
   }
   if (recoil >= 10) {
@@ -510,37 +509,37 @@ void drawArms() {
     bulletsRemaining = bullets[int(saveData[1])];
     reloading = false;
   }
-  else if (bulletsRemaining == 0){
+  else if (bulletsRemaining == 0){//checks if reload is needed
     reloading = true;
   }
 }
 
 void charInfo() {
-  fill(0);
-  textFont(regular[0], 48);
-  textAlign(LEFT);
-  text("Bullets remaining: " + bulletsRemaining, 48, 48);
-  text(int(distTravelled)+" m", 100, 100);
-  textAlign(RIGHT);
-  text("Money: $" + String.format("%,d", int(saveData[3])), width-100, 48);
-  rectMode(CENTER);
-  fill(0);
-  rect(width/2, 40, 150, 30);
-  rect(width/2, 70, 150, 30);
-  fill(255, 0, 0);
-  rectMode(CORNER);
-  rect(width/2-70, 30, 140*(health/maxHealth), 20);
-  fill(0, 0, 255);
-  rect(width/2-70, 60, 140*(fuel/maxFuel), 20);
+  fill(0);//adding fill
+  textFont(regular[0], 48);//font type and size
+  textAlign(LEFT);//changing text align
+  text("Bullets remaining: " + bulletsRemaining, 48, 48);//show bullets remaining
+  text(int(distTravelled)+" m", 100, 100);//shows distance travelled
+  textAlign(RIGHT);//changing text align
+  text("Money: $" + String.format("%,d", int(saveData[3])), width-100, 48);//shows money the player has
+  rectMode(CENTER);//changing rect mode
+  fill(0);//adding fill
+  rect(width/2, 40, 150, 30);//outline for health
+  rect(width/2, 70, 150, 30);//outline for fuel
+  fill(255, 0, 0);//adding fill
+  rectMode(CORNER);//chaging rect mode
+  rect(width/2-70, 30, 140*(health/maxHealth), 20);//displays health
+  fill(0, 0, 255);//changing fill
+  rect(width/2-70, 60, 140*(fuel/maxFuel), 20);//displays fuel
 }
 
-void drawChar() {
-  if (trail.size() == 0 || trail.get(trail.size()-1).get(0) <= pos[0]-character[0].width*1.75 || trail.get(trail.size()-1).get(1) > pos[1]+character[0].height*1.75 || trail.get(trail.size()-1).get(1)+character[0].height*1.75 < pos[1]) addTrail();
-  imageMode(CENTER);
-  updateTrail();
-  tint(255, 255);
-  fill(0, 255, 0);
-  if (pos[0] > 0) {
+void drawChar() {//draws character
+  if (trail.size() == 0 || trail.get(trail.size()-1).get(0) <= pos[0]-character[0].width*1.75 || trail.get(trail.size()-1).get(1) > pos[1]+character[0].height*1.75 || trail.get(trail.size()-1).get(1)+character[0].height*1.75 < pos[1]) addTrail();//checks if able to add trail
+  imageMode(CENTER);//changing image mode
+  updateTrail();//updating trail
+  tint(255, 255);//adding tint
+  fill(0, 255, 0);//adding fill
+  if (pos[0] > 0) {//checks if rotation of arms are beyond a certain point
     if (rotation >= PI/4 || rotation <= -PI/4) vR*=-1;
     rotation+=vR;
   }
