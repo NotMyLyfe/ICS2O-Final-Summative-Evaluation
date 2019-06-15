@@ -74,26 +74,41 @@ boolean onObstacle = false;//on or off obstacle
 float topOfObstacle = 0;
 float rightOfObstacle = 0;
 
+float[] scaleFactor = {1, 1, 1, 1}; //0-main scaling factor, 1-scale for background and sky, 2-x scale, 3-y scale
+
+void scaling(){
+  scaleFactor[2] = float(width)/1280.0;
+  scaleFactor[3] = float(height)/720.0;
+  if (scaleFactor[2] > scaleFactor[3]){
+    scaleFactor[0] = scaleFactor[3];
+    scaleFactor[1] = scaleFactor[2];
+  }
+  else{
+    scaleFactor[0] = scaleFactor[2];
+    scaleFactor[1] = scaleFactor[3];
+  }
+}
+
 void movePlayer() {
   bottomOfPlayer = pos[1]+character[0].height/3+character[2].height;//finds bottom of player
-  pos[1]+=vy;//moving the player up/down
+  pos[1]+=vy*scaleFactor[0];//moving the player up/down
   for (int i = 0; i < 2; i++){
     if (pos[0]>= groundPos[i][0] && pos[0]<= groundPos[i][0]+background[0].width) current = i;//finds the ground the player's on
   }
   nextGround = (current+1)%2;
-  topOfGrass = groundPos[current][1]+49;
-  topOfNextGrass = groundPos[nextGround][1]+49;
+  topOfGrass = groundPos[current][1]+(49*scaleFactor[1]);
+  topOfNextGrass = groundPos[nextGround][1]+(49*scaleFactor[1]);
   if (onGround) pos[1]=topOfGrass-(character[0].height/3+character[2].height);
   else if (onObstacle) pos[1] = topOfObstacle - (character[0].height/3+character[2].height);
   else vy+=gravity;
-  if (groundPos[nextGround][0]-int(speed)/3+1 <= pos[0]+character[0].width/2 && bottomOfPlayer-topOfNextGrass >= 10 && groundPos[nextGround][0] > 0){
-    pos[0]-= int(speed)/3+6;
+  if (groundPos[nextGround][0]-(int(speed)/3+1)*scaleFactor[1] <= pos[0]+character[0].width/2 && bottomOfPlayer-topOfNextGrass >= 10*scaleFactor[1] && groundPos[nextGround][0] > 0){
+    pos[0]-= (int(speed)/3+6)*scaleFactor[1];
     colliding = true;
   }
   else{
     colliding = false;
   }
-  if (pos[0] < 500 && pos[0]>0){
+  if (pos[0] < width*(500/1280) && pos[0]>0){
     pos[0]++;//run back to original position
   }
   if (!onGround && bottomOfPlayer >= topOfGrass && !justJumped){//checking if on ground
@@ -104,9 +119,9 @@ void movePlayer() {
     float top = obstacles.get(i).get(1);//top of obstacle
     float left = obstacles.get(i).get(0)-obstacleImages[int(obstacles.get(i).get(2))].width/3;//left of obstacle
     float right = obstacles.get(i).get(0)+obstacleImages[int(obstacles.get(i).get(2))].width/3;//right of obstacle
-    float futureLeft = left-(int(speed)/3+5);//moves obstacle
-    top-=obstacleImages[int(obstacles.get(i).get(2))].height*((obstacles.get(i).get(2)+1)/2);//top
-    if (left > pos[0]+character[0].width/2 && futureLeft < pos[0]+character[0].width/2 && right > pos[0]-character[0].width/2 && top<bottomOfPlayer)  pos[0]-= int(speed)/3+6;//checking if colliding 
+    float futureLeft = left-(int(speed)/3+5)*scaleFactor[1];//moves obstacle
+    top-=obstacleImages[int(obstacles.get(i).get(2))].height*((obstacles.get(i).get(2)+scaleFactor[0])/2);//top
+    if (left > pos[0]+character[0].width/2 && futureLeft < pos[0]+character[0].width/2 && right > pos[0]-character[0].width/2 && top<bottomOfPlayer)  pos[0]-= (int(speed)/3+6)*scaleFactor[1];//checking if colliding 
     if(left < pos[0]+character[0].width/2 && right > pos[0]-character[0].width/2 && bottomOfPlayer >= top && !onObstacle){//on top oof obstacle
       onObstacle = true;
       topOfObstacle = top;
@@ -116,23 +131,23 @@ void movePlayer() {
     }
     
   }
-  rightOfObstacle -= int(speed)/3+5;//finds the new position of right of obstacle
+  rightOfObstacle -= (int(speed)/3+5)*scaleFactor[1];//finds the new position of right of obstacle
   if (rightOfObstacle <= pos[0]-character[0].width/2 || bottomOfPlayer != topOfObstacle && onObstacle) onObstacle = false;//checks if off obstacle
 }
 
 
 void initFont() {//initializing fonts
   for (int i = 0; i < regular.length; i++) {
-    regular[i] = createFont("Font/Montserrat-Regular.ttf", (i+1)*48);
-    light[i] = createFont("Font/Montserrat-Light.ttf", (i+1)*48);
-    xLight[i] = createFont("Font/Montserrat-ExtraLight.ttf", (i+1)*48);
-    thin[i] = createFont("Font/Montserrat-Thin.ttf", (i+1)*48);
+    regular[i] = createFont("Font/Montserrat-Regular.ttf", (i+1)*48*scaleFactor[0]);
+    light[i] = createFont("Font/Montserrat-Light.ttf", (i+1)*48*scaleFactor[0]);
+    xLight[i] = createFont("Font/Montserrat-ExtraLight.ttf", (i+1)*48*scaleFactor[0]);
+    thin[i] = createFont("Font/Montserrat-Thin.ttf", (i+1)*48*scaleFactor[0]);
   }
 }
 
 void initImgs() {//adding all images and resizing to proper size
   armour = loadImage("Imgs/Armour.png");
-  armour.resize(armour.width*3/4, armour.height*3/4);
+  armour.resize(int(armour.width*3/4*scaleFactor[0]), int(armour.height*3/4*scaleFactor[0]));
 
   character[0] = loadImage("Imgs/Character Body.png");
   character[1] = loadImage("Imgs/Character Arm.png");
@@ -159,48 +174,64 @@ void initImgs() {//adding all images and resizing to proper size
   for (int i = 7; i <= 15; i++){
     guns[i][0].resize(guns[i][0].width*3/4, guns[i][0].height*3/4);
   }
+  
+  for (int i = 0; i < guns.length; i++){
+    for (int j = 0; j < guns[i].length; j++){
+      guns[i][j].resize(int(guns[i][j].width*scaleFactor[0]), int(guns[i][j].height*scaleFactor[0]));
+    }
+  }
 
   background[0] = loadImage("Imgs/Grass.png");
   background[1] = loadImage("Imgs/Clouds.png");
   background[2] = loadImage("Imgs/Blue Sky.png");
-  background[0].resize(width, background[0].height*2/3);
+  background[0].resize(background[0].width, background[0].height*2/3);
+  
+  for(int i = 0; i < background.length; i++){
+    background[i].resize(int(background[i].width*scaleFactor[1]), int(background[i].height*scaleFactor[1]));
+  }
   
   bullet = loadImage("Imgs/Bullet.png");
-  bullet.resize(bullet.width*5, bullet.height*5);
+  bullet.resize(int(bullet.width*5*scaleFactor[0]), int(bullet.height*5*scaleFactor[0]));
   
   rocket = loadImage("Imgs/RPG Ammo.png");
+  rocket.resize(int(rocket.width*scaleFactor[0]), int(rocket.height*scaleFactor[0]));
   
   obstacleImages[0] = loadImage("Imgs/Tree.png");
   obstacleImages[1] = loadImage("Imgs/Bricks.png");
+  
+  obstacleImages[0].resize(int(obstacleImages[0].width*scaleFactor[0]), int(obstacleImages[0].height*scaleFactor[0]));
+  obstacleImages[1].resize(int(obstacleImages[1].width*scaleFactor[0]), int(obstacleImages[1].height*scaleFactor[0]));
   
   robot[0] = loadImage("Imgs/Robot.png");
   robot[1] = loadImage("Imgs/Robot Arm.png");
   robot[2] = loadImage("Imgs/Robot Leg.png");
   
   for (int i = 0; i < 5; i++) {
-    character[i].resize(character[i].width*3/4, character[i].height*3/4);
+    character[i].resize(int(character[i].width*3/4*scaleFactor[0]), int(character[i].height*3/4*scaleFactor[0]));
     if(i<3){
-      robot[i].resize(robot[i].width*3/4, robot[i].height*3/4);
+      robot[i].resize(int(robot[i].width*3/4*scaleFactor[0]), int(robot[i].height*3/4*scaleFactor[0]));
     }
   }
   
   character[1].resize(character[1].width*3/4, character[1].height*3/4);
   robot[1].resize(robot[1].width*3/4, robot[1].height*3/4);
   mainMenuPic = loadImage("Imgs/Main Menu Screen.png");
-  mainMenuPic.resize(width, height);
+  mainMenuPic.resize(int(float(mainMenuPic.width)*scaleFactor[0]*(1280.0/1920)), int(float(mainMenuPic.height)*scaleFactor[0]*(1280.0/1920)));
   coin = loadImage("Imgs/Coin.png");
+  coin.resize(int(coin.width*scaleFactor[0]), int(coin.height*scaleFactor[0]));
 }
 
 String[][] shopOptions = new String[4][];//create new 2D array of shop options
 int[][] shopCosts = new int[2][];//2D array for costs
 
 void setup() {
-  size(1280, 720);//initializing size
+  size(800, 600);//initializing size
+  scaling();
   initFont();//initializing fonts
   if (loadStrings("data/saveData/saveGame.txt") != null) {
     saveData = loadStrings("data/saveData/saveGame.txt");
   }
-  frameRate(60);//initializing framerate
+  frameRate(30);//initializing framerate
   for (int i = 0; i < shopOptions.length; i++){
     shopOptions[i] = loadStrings("data/gameData/shopOptions"+i+".txt");
     if (i < 2){
@@ -213,6 +244,10 @@ void setup() {
     }
   }
   initImgs();
+  pos[0]=width*(500.0/1280);
+  groundPos[0][1] = 500.0*scaleFactor[0];
+  groundPos[1][0] = background[0].width;
+  groundPos[1][1] = random(-70*scaleFactor[0], 70*scaleFactor[0])+500.0*scaleFactor[0];
 }
 
 boolean[] buttons = {false, false, false, false};//array for buttons
@@ -222,15 +257,15 @@ boolean firstTime;//checks if player is new
 void mainMenu() {//initializing main menu
   background(100);//initializing background
   imageMode(CENTER);//changing image mode
-  image(mainMenuPic, width/2, height/2);//adding image
+  image(mainMenuPic, width/2, height-mainMenuPic.height/2);//adding image
   fill(255);//initializing fill
-  textFont(regular[1], 96);//initializing font
+  textFont(regular[1], 96*scaleFactor[0]);//initializing font
   textAlign(CENTER, CENTER);//adjusting text alignment
-  text("ZapZpeed", width/2, 100);//title
-  textFont(light[0], 48);//light font
+  text("ZapZpeed", width/2, 100*scaleFactor[0]);//title
+  textFont(light[0], 48*scaleFactor[0]);//light font
   rectMode(CENTER);//adjusting rect mode
   for (int i = 0; i < 4; i++){
-    if (mouseX >= width/2-150 && mouseX <= width/2+150 && mouseY >= height/2-60+i*100 && mouseY <= height/2+20+i*100) buttons[i] = true;//checks if any of the buttons have been pressed
+    if (mouseX >= width/2-150*scaleFactor[0] && mouseX <= width/2+150*scaleFactor[0] && mouseY >= height/2-60*scaleFactor[0]+i*100*scaleFactor[0] && mouseY <= height/2+20*scaleFactor[0]+i*100*scaleFactor[0]) buttons[i] = true;//checks if any of the buttons have been pressed
     else buttons[i] = false;
     if (buttons[i]){
       fill(0);
@@ -240,10 +275,10 @@ void mainMenu() {//initializing main menu
       }
     }
     else fill(255,170);
-    rect(width/2, height/2-20+100*i, 300, 80);
+    rect(width/2, height/2-20*scaleFactor[0]+100*i*scaleFactor[0], 300*scaleFactor[0], 80*scaleFactor[0]);
     if(buttons[i]) fill(255);
     else fill(0);
-    text(buttonText[i], width/2, height/2-25+100*i);
+    text(buttonText[i], width/2, height/2-25*scaleFactor[0]+100*i*scaleFactor[0]);
   }
   if (int(saveData[0]) == 0){
     firstTime = true;
@@ -255,7 +290,7 @@ boolean holding = false;
 
 void keyPressed() {//checks if key was pressed
   if (keyCode == 87 && (onGround || onObstacle) && !justJumped && pos[0]>0 && !holding && currentScene == 1 && !firstTime) {//only jump if on ground
-    vy=JUMPPOWER;//jumping power
+    vy=JUMPPOWER*scaleFactor[0];//jumping power
     onGround = false;
     justJumped = true;
     holding = true;
@@ -289,7 +324,7 @@ float vRecoil = 0;
 void addTrail() {//adding trail
 
   ArrayList<Float> newTrail = new ArrayList<Float>();//list for new trail
-  newTrail.add(pos[0]-20);//adds a new trail every 20 pixels
+  newTrail.add(pos[0]-20*scaleFactor[0]);//adds a new trail every 20 pixels
   newTrail.add(pos[1]);//adds a trail on the same y axis as player
   newTrail.add(rotation);
   newTrail.add(recoil);
@@ -299,9 +334,9 @@ void addTrail() {//adding trail
 void jetpack() {//adding jetpack
   boolean jetpackUse = false;//not using jetpack
   if (keyPressed && key==32 && fuel >= 0) {//checks if space key is pressed
-    image(character[4], pos[0]-character[0].width/2-5,pos[1]+10+character[3].height/2 + character[4].height/2);//image of the fire
+    image(character[4], pos[0]-character[0].width/2-4*scaleFactor[0],pos[1]+8*scaleFactor[0]+character[3].height/2 + character[4].height/2);//image of the fire
     if (pos[1] > -character[0].height/2){
-      vy=-3*gravity-speedBoost;//player goes up
+      vy=(-3.0*gravity-speedBoost)*scaleFactor[0];//player goes up
       onGround = false;
       onObstacle = false;
     }
@@ -400,8 +435,8 @@ void updateTrail() {
       image(character[1], 0, character[1].height/2);
       popMatrix();
     }
-    trail.get(i).set(0, trail.get(i).get(0)-int(speed)/3-10);
-    if (trail.get(i).get(0)+character[0].width < 0 || trail.get(i).get(0)/pos[0]*200 < 10) {
+    trail.get(i).set(0, trail.get(i).get(0)+(int(speed)/3-10)*scaleFactor[1]);
+    if (trail.get(i).get(0)+character[0].width < 0 || trail.get(i).get(0)/pos[0]*150 < 10) {
       trail.remove(i);
       i--;
     }
@@ -428,7 +463,7 @@ void drawBullet(){//draws bullet
   for(int i = 0; i < bulletPos.size(); i++){
     if (int(saveData[1]) < 18) image(bullet, bulletPos.get(i).get(0), bulletPos.get(i).get(1));
     else image(rocket, bulletPos.get(i).get(0), bulletPos.get(i).get(1));
-    bulletPos.get(i).set(0, bulletPos.get(i).get(0)+30);
+    bulletPos.get(i).set(0, bulletPos.get(i).get(0)+30*scaleFactor[1]);
     if (bulletPos.get(i).get(0)-bullet.width/2 > width || (bulletPos.get(i).get(0)+bullet.width/2>groundPos[nextGround][0] && bulletPos.get(i).get(1) > topOfNextGrass && groundPos[nextGround][0] > 0)) bulletPos.remove(i);
   }
   for (int i = 0; i < enemyBullets.size(); i++){
@@ -438,7 +473,7 @@ void drawBullet(){//draws bullet
     if (enemyBullets.get(i).get(0)-bullet.width/2 < 0){
       enemyBullets.remove(i);
     }
-    else if (enemyBullets.get(i).get(0) > pos[0]+character[0].width/2 && enemyBullets.get(i).get(0)-(int(speed)/3+40) <= pos[0]+character[0].width/2 && enemyBullets.get(i).get(1) > pos[1]-character[0].height/2 && enemyBullets.get(i).get(1) < pos[1]+character[0].height/3+character[2].height){
+    else if (enemyBullets.get(i).get(0) > pos[0]+character[0].width/2 && enemyBullets.get(i).get(0)-(int(speed)/3+40)*scaleFactor[1] <= pos[0]+character[0].width/2 && enemyBullets.get(i).get(1) > pos[1]-character[0].height/2 && enemyBullets.get(i).get(1) < pos[1]+character[0].height/3+character[2].height){
       enemyBullets.remove(i);
       health -= dmg[int(saveData[1])];
     }
@@ -456,8 +491,8 @@ void drawArms() {//adding arms on player
     vRecoil = 0;
   }
   if (mousePressed && !justFired && bulletsRemaining > 0 && lastShot + fireRate[int(saveData[1])] <= millis()) {//checks if able to to fire and player clicked
-    vRecoil = 2;//sets recoil
-    recoil=2;
+    vRecoil = 2*scaleFactor[0];//sets recoil
+    recoil=2*scaleFactor[0];
     lastShot = millis();//last shot current time
     if (auto[int(saveData[1])] == false) justFired = true;//checks if semi-automatic weapon
     bulletsRemaining--;//bullets minus 1
@@ -466,7 +501,7 @@ void drawArms() {//adding arms on player
   } else if (!mousePressed && (recoil == 0 || int(saveData[1]) <=1)) {//if released
     justFired = false;
   }
-  if (recoil >= 10) {
+  if (recoil >= 10*scaleFactor[0]) {
     vRecoil*=-1;
   }
   if ((recoil != 0) || (int(saveData[1]) >= 2 && ((mousePressed && auto[int(saveData[1])])) || (auto[int(saveData[1])] == false && justFired)) && pos[0] > 0 && !reloading) {
@@ -516,21 +551,20 @@ void drawArms() {//adding arms on player
 
 void charInfo() {
   fill(0);//adding fill
-  textFont(regular[0], 48);//font type and size
+  textFont(regular[0], 48*scaleFactor[0]);//font type and size
   textAlign(LEFT);//changing text align
-  text("Bullets remaining: " + bulletsRemaining, 48, 48);//show bullets remaining
-  text(int(distTravelled)+" m", 100, 100);//shows distance travelled
+  text("Bullets remaining: " + bulletsRemaining, 48*scaleFactor[0], 48*scaleFactor[0]);//show bullets remaining
+  text(int(distTravelled)+" m", 100*scaleFactor[0], 100*scaleFactor[0]);//shows distance travelled
   textAlign(RIGHT);//changing text align
-  text("Money: $" + String.format("%,d", int(saveData[3])), width-100, 48);//shows money the player has
+  text("Money: $" + String.format("%,d", int(saveData[3])), width-100*scaleFactor[0], 48*scaleFactor[0]);//shows money the player has
   rectMode(CENTER);//changing rect mode
   fill(0);//adding fill
-  rect(width/2, 40, 150, 30);//outline for health
-  rect(width/2, 70, 150, 30);//outline for fuel
+  rect(width/2, 55*scaleFactor[0], 150*scaleFactor[0], 60*scaleFactor[0]);//outline for health and fuel
   fill(255, 0, 0);//adding fill
   rectMode(CORNER);//chaging rect mode
-  rect(width/2-70, 30, 140*(health/maxHealth), 20);//displays health
+  rect(width/2-70*scaleFactor[0], 30*scaleFactor[0], 140*(health/maxHealth)*scaleFactor[0], 20*scaleFactor[0]);//displays health
   fill(0, 0, 255);//changing fill
-  rect(width/2-70, 60, 140*(fuel/maxFuel), 20);//displays fuel
+  rect(width/2-70*scaleFactor[0], 60*scaleFactor[0], 140*(fuel/maxFuel)*scaleFactor[0], 20*scaleFactor[0]);//displays fuel
 }
 
 void drawChar() {//draws character
@@ -550,7 +584,7 @@ void drawChar() {//draws character
   rotate(-rotation*2);
   image(character[2], 0, character[2].height/2);
   popMatrix();
-  image(character[3],pos[0]-character[0].width/2-5,pos[1]+10);
+  image(character[3],pos[0]-character[0].width/2-4*scaleFactor[0],pos[1]+9*scaleFactor[0]);
   image(character[0], pos[0], pos[1]);
   if (int(saveData[2]) > 0) image(armour, pos[0], pos[1]+character[0].height/2-armour.height/2);
   drawArms();
@@ -571,8 +605,8 @@ void updateEnemies(){
       if (enemies.get(i).get(0)>= groundPos[j][0] && enemies.get(i).get(0)<= groundPos[j][0]+background[0].width) currentGroundEnemy = j;
     }
     int nextGroundEnemy = (currentGroundEnemy+1)%2;
-    float topGroundEnemy = groundPos[currentGroundEnemy][1]+49;
-    float nextTopGroundEnemy = groundPos[nextGroundEnemy][1]+49;
+    float topGroundEnemy = groundPos[currentGroundEnemy][1]+49*scaleFactor[0];
+    float nextTopGroundEnemy = groundPos[nextGroundEnemy][1]+49*scaleFactor[0];
     enemies.get(i).set(1, topGroundEnemy-(robot[0].height/3+robot[2].height));
     image(robot[0],enemies.get(i).get(0), enemies.get(i).get(1));
     pushMatrix();
@@ -609,7 +643,7 @@ void updateEnemies(){
       }
     }
     popMatrix();
-    if (millis()-enemies.get(i).get(2) >= robotReload[int(saveData[1])]){
+    if (millis()-enemies.get(i).get(2) >= robotReload[int(saveData[1])] && enemies.get(i).get(0) < width){
       ArrayList<Float> newBullet = new ArrayList<Float>();
       newBullet.add(enemies.get(i).get(0)-robot[1].height);
       if (int(saveData[1]) < 16)newBullet.add(enemies.get(i).get(1)-robot[1].width/6);
@@ -627,13 +661,13 @@ void updateEnemies(){
     }
     image(robot[1], enemies.get(i).get(0)-robot[1].width/2, enemies.get(i).get(1));
     image(robot[2], enemies.get(i).get(0), enemies.get(i).get(1)+robot[0].height/3+robot[2].height/2);
-    if (!(enemies.get(i).get(0)-(int(speed)/3+10)>groundPos[nextGroundEnemy][0] && enemies.get(i).get(0)-(int(speed)/3+10) < groundPos[nextGroundEnemy][0]+background[0].width && bottomEnemy-nextTopGroundEnemy>5)) enemies.get(i).set(0, enemies.get(i).get(0)-(int(speed)/3+10));
+    if (!(enemies.get(i).get(0)-(int(speed)/3+10)*scaleFactor[1]>groundPos[nextGroundEnemy][0] && enemies.get(i).get(0)-(int(speed)/3+10)*scaleFactor[1] < groundPos[nextGroundEnemy][0]+background[0].width && bottomEnemy-nextTopGroundEnemy>5)) enemies.get(i).set(0, enemies.get(i).get(0)-(int(speed)/3+10)*scaleFactor[1]);
     rectMode(CENTER);
     fill(0);
-    rect(enemies.get(i).get(0), enemies.get(i).get(1)-robot[0].height/2 - 50, 200, 40);
+    rect(enemies.get(i).get(0), enemies.get(i).get(1)-robot[0].height/2 - 50*scaleFactor[0], 200*scaleFactor[0], 40*scaleFactor[0]);
     fill(255, 0, 0);
     rectMode(CORNER);
-    rect(enemies.get(i).get(0)-90, enemies.get(i).get(1)-robot[0].height/2 - 50 - 10, 180*(enemies.get(i).get(3)/100), 20);
+    rect(enemies.get(i).get(0)-90*scaleFactor[0], enemies.get(i).get(1)-robot[0].height/2 - 60 * scaleFactor[0], 180*(enemies.get(i).get(3)/100)*scaleFactor[0], 20*scaleFactor[0]);
     if (enemies.get(i).get(0)+robot[2].width/2 <= 0) enemies.remove(i);
   }
 }
@@ -642,7 +676,7 @@ void drawUpdateObstacle(){
   imageMode(CENTER);
   for(int i = 0; i < obstacles.size(); i++){
     image(obstacleImages[int(obstacles.get(i).get(2))], obstacles.get(i).get(0), obstacles.get(i).get(1)-obstacleImages[int(obstacles.get(i).get(2))].height/2);
-    obstacles.get(i).set(0, obstacles.get(i).get(0)-(int(speed)/3+5));
+    obstacles.get(i).set(0, obstacles.get(i).get(0)-(int(speed)/3+5)*scaleFactor[1]);
     if (obstacles.get(i).get(0)+obstacleImages[int(obstacles.get(i).get(2))].height/2 <= 0){
       obstacles.remove(i);
       i--;
@@ -687,7 +721,7 @@ void detectCollision(){
       closest = 100000;
       rightClosest = 100000;
     }
-    if (bulletPos.get(i).get(0)+30 >= closest && bulletPos.get(i).get(1) > topOfClosest && bulletPos.get(i).get(1) < bottomOfClosest){
+    if (bulletPos.get(i).get(0)+30*scaleFactor[0] >= closest && bulletPos.get(i).get(1) > topOfClosest && bulletPos.get(i).get(1) < bottomOfClosest){
       if (value[1] == 1){
         enemies.get(value[0]).set(3, enemies.get(value[0]).get(3)-dmg[int(saveData[1])]);
         if (enemies.get(value[0]).get(3) <= 0){
@@ -713,7 +747,7 @@ void detectCollision(){
       if (int(saveData[1]) >= 18){
         for (int j = 0; j < enemies.size(); j++){
           float distToEnemy = dist(bulletPos.get(i).get(0), bulletPos.get(i).get(1), enemies.get(j).get(0), enemies.get(j).get(1));
-          if (400/distToEnemy >= 1){
+          if (400*scaleFactor[1]/distToEnemy >= 1){
             enemies.remove(j);
             j--;
           }
@@ -749,8 +783,8 @@ void updateCoins(){
   imageMode(CENTER);
   for (int i = 0; i < coins.size(); i++){
     image(coin, coins.get(i).get(0), coins.get(i).get(1));
-    coins.get(i).set(0, coins.get(i).get(0)-(int(speed)/3+5));
-    if (coins.get(i).get(1)-25>pos[1]-character[0].height/2&& coins.get(i).get(0)<pos[0]+character[0].width/2 && coins.get(i).get(0) > pos[0]-character[0].width/2 && coins.get(i).get(1)-25 < pos[1]+character[0].height/3+character[2].height){
+    coins.get(i).set(0, coins.get(i).get(0)-(int(speed)/3+5)*scaleFactor[1]);
+    if (coins.get(i).get(1)-25*scaleFactor[0]>pos[1]-character[0].height/2&& coins.get(i).get(0)<pos[0]+character[0].width/2 && coins.get(i).get(0) > pos[0]-character[0].width/2 && coins.get(i).get(1)-25 < pos[1]+character[0].height/3+character[2].height){
       coins.remove(i);
       i++;
       saveData[3] = Integer.toString(int(saveData[3])+int(random(5,11))*100);
@@ -761,7 +795,7 @@ void updateCoins(){
 void game() {
   imageMode(CENTER);
   image(background[2], width/2, height/2);
-  nextHeight = random(-75, 75);
+  nextHeight = random(-75*scaleFactor[0], 75*scaleFactor[0]);
   imageMode(CORNER);
   for (int i = 0; i < skyX.length; i++){
     image(background[1], skyX[i], 0);
@@ -777,7 +811,7 @@ void game() {
   drawUpdateObstacle();
   imageMode(CORNER);
   for (int i = 0; i < groundPos.length; i++) {
-    if(pos[1]>groundPos[i][1]-100 && pos[0]<groundPos[i][0]+305 && pos[0]>groundPos[i][0]+295){
+    if(pos[1]>groundPos[i][1]-100*scaleFactor[0] && pos[0]<groundPos[i][0]+305*scaleFactor[1] && pos[0]>groundPos[i][0]+295*scaleFactor[1]){
       colliding=true;
     }
     fill(0);
@@ -785,11 +819,11 @@ void game() {
     if (groundPos[i][0] <= -background[0].width) {
       if (i == 0) next = 1;
       else next = 0;
-      if (groundPos[next][1]+nextHeight > height-50) {
-        groundPos[i][1] = height-50;
+      if (groundPos[next][1]+nextHeight > height-50*scaleFactor[0]) {
+        groundPos[i][1] = height-50*scaleFactor[0];
       }
-      else if (groundPos[next][1]+nextHeight < height-400){
-        groundPos[i][1] = height-400;
+      else if (groundPos[next][1]+nextHeight < height-400*scaleFactor[0]){
+        groundPos[i][1] = height-400*scaleFactor[0];
       }
       else groundPos[i][1] = groundPos[next][1]+nextHeight;
       groundPos[i][0] = groundPos[next][0]+background[0].width;
@@ -798,7 +832,7 @@ void game() {
         ArrayList<Float> newObstacle = new ArrayList<Float>();
         float whatObstacle = int(random(0, 2));
         newObstacle.add(random(groundPos[i][0]+obstacleImages[0].width, groundPos[i][0]+background[0].width-obstacleImages[0].width));
-        newObstacle.add(groundPos[i][1]+34);
+        newObstacle.add(groundPos[i][1]+34*scaleFactor[1]);
         newObstacle.add(whatObstacle);
         newObstacle.add(100.0);
         obstacles.add(newObstacle);
@@ -807,7 +841,7 @@ void game() {
       for (int a = 0; a < numOfEnemies; a++){
         ArrayList<Float> newEnemy = new ArrayList<Float>();
         newEnemy.add(random(groundPos[i][0]+robot[2].width, groundPos[i][0]+background[0].width-robot[2].width));
-        newEnemy.add(groundPos[i][1]+34);
+        newEnemy.add(groundPos[i][1]+34*scaleFactor[1]);
         newEnemy.add(float(millis()));
         newEnemy.add(100.0);
         newEnemy.add(0.0);
@@ -817,12 +851,12 @@ void game() {
       int numOfCoins = int(random(0, 4));
       for (int a = 0; a < numOfCoins; a++){
         ArrayList<Float> newCoin = new ArrayList<Float>();
-        newCoin.add(random(groundPos[i][0]+100, groundPos[i][0]+background[0].width-100));
-        newCoin.add(groundPos[i][1]+9);
+        newCoin.add(random(groundPos[i][0]+100*scaleFactor[0], groundPos[i][0]+background[0].width-100*scaleFactor[0]));
+        newCoin.add(groundPos[i][1]+34*scaleFactor[1]-25*scaleFactor[0]);
         coins.add(newCoin);
       }
     }
-    if (!firstTime) groundPos[i][0]-=int(speed)/3+5;
+    if (!firstTime) groundPos[i][0]-=(int(speed)/3+5)*scaleFactor[1];
   }
   updateCoins();
   updateEnemies();
@@ -842,14 +876,14 @@ void game() {
     fill(0, 200);
     rect(width/2, height/2, width*0.8, height*0.8);
     fill(255);
-    textFont(regular[1], 70);
+    textFont(regular[1], 70*scaleFactor[0]);
     textAlign(CENTER, CENTER);
-    text("Rules to the game", width/2, height/2-height*0.4+100);
-    textFont(light[0], 48);
-    text("Press W to jump, Space to use jetpack,", width/2, height/2-80);
-    text("and Left Click to shoot.", width/2, height/2-20);
-    text("Go the furthest distance without dying!", width/2, height/2+40);
-    text("Press anywhere to continue", width/2, height/2+150);
+    text("Rules to the game", width/2, height/2-height*0.4+100*scaleFactor[0]);
+    textFont(light[0], 48*scaleFactor[0]);
+    text("Press W to jump, Space to use jetpack,", width/2, height/2-80*scaleFactor[0]);
+    text("and Left Click to shoot.", width/2, height/2-20*scaleFactor[0]);
+    text("Go the furthest distance without dying!", width/2, height/2+40*scaleFactor[0]);
+    text("Press anywhere to continue", width/2, height/2+150*scaleFactor[0]);
     if (clicked) firstTime = false;
   }
   if(pos[0]<=0 || health <= 0){
@@ -857,18 +891,18 @@ void game() {
     pos[0]=-1000;
     fill(0);
     textAlign(CENTER, CENTER);
-    textFont(regular[1], 70);
-    text("GAME OVER",width/2, height/2 - 120);
+    textFont(regular[1], 70*scaleFactor[0]);
+    text("GAME OVER",width/2, height/2 - 120*scaleFactor[0]);
     text("Distance: "+int(distTravelled)+"m",width/2,height/2);
     int highscore = int(saveData[0]);
     if (int(distTravelled) > highscore) highscore = int(distTravelled);
-    text("High score: " + highscore+"m", width/2, height/2+120);
-    textFont(regular[0], 48);
-    if (mouseX > width/2-300 && mouseX < width/2 + 300 && mouseY > height-130 && mouseY < height-70){
+    text("High score: " + highscore+"m", width/2, height/2+120*scaleFactor[0]);
+    textFont(regular[0], 48*scaleFactor[0]);
+    if (mouseX > width/2-300*scaleFactor[0] && mouseX < width/2 + 300*scaleFactor[0] && mouseY > height-130*scaleFactor[0] && mouseY < height-70*scaleFactor[0]){
       fill(127);
       if (clicked){
         currentScene = 0;
-        pos[0] = 500;
+        pos[0] = width*(500.0/1280);
         pos[1] = 0;
         vy = 0;
         bulletsRemaining = 0;
@@ -887,9 +921,9 @@ void game() {
       }
     }
     else fill(255);
-    rect(width/2, height-100, 600, 60);
+    rect(width/2, height-100*scaleFactor[0], 600*scaleFactor[0], 60*scaleFactor[0]);
     fill(0);
-    text("Return to main menu", width/2, height-105);
+    text("Return to main menu", width/2, height-105*scaleFactor[0]);
     
   }
   else if (!firstTime) charInfo();
@@ -900,22 +934,22 @@ void credits() {
   background(100);
   imageMode(CENTER);
   image(mainMenuPic, width/2, height/2);
-  textFont(regular[1], 96);
+  textFont(regular[1], 96*scaleFactor[0]);
   textAlign(CENTER, CENTER);
   fill(255);
-  text("Credits", width/2, 100);
-  textFont(light[0], 48);
-  text("Sprites made by: Gordon Lin", width/2, 200);
-  text("Code made by: Gordon Lin and Daniel Weng", width/2, 280);
-  text("Font made by: Montserrat Project Authors", width/2, 360);
-  boolean mouseOver = mouseX >= width/2-450 && mouseX <= width/2+450 && mouseY >= 400 && mouseY <= 480;
-  text("Press anywhere to return to main menu", width/2, height-100);
+  text("Credits", width/2, 100*scaleFactor[0]);
+  textFont(light[0], 48*scaleFactor[0]);
+  text("Sprites made by: Gordon Lin", width/2, 200*scaleFactor[0]);
+  text("Code made by: Gordon Lin and Daniel Weng", width/2, 280*scaleFactor[0]);
+  text("Font made by: Montserrat Project Authors", width/2, 360*scaleFactor[0]);
+  boolean mouseOver = mouseX >= width/2-450*scaleFactor[0] && mouseX <= width/2+450*scaleFactor[0] && mouseY >= 400*scaleFactor[0] && mouseY <= 480*scaleFactor[0];
+  text("Press anywhere to return to main menu", width/2, height-100*scaleFactor[0]);
   rectMode(CENTER);
   if (mouseOver) fill(0);
-  rect(width/2, 440, 900, 80);
+  rect(width/2, 440*scaleFactor[0], 900*scaleFactor[0], 80*scaleFactor[0]);
   if (!mouseOver) fill(0);
   else fill(255);
-  text("Click here to view license for font", width/2, 440);
+  text("Click here to view license for font", width/2, 440*scaleFactor[0]);
   if (mouseOver && clicked) link("https://raw.githubusercontent.com/JulietaUla/Montserrat/master/OFL.txt");
   else if (clicked) currentScene = 0;
 }
@@ -925,27 +959,27 @@ int[] selection = {int(saveData[1]), int(saveData[2]), int(saveData[6])};
 void shop(){
   background(0);
   fill(255);
-  textFont(regular[1], 96);
+  textFont(regular[1], 96*scaleFactor[0]);
   textAlign(CENTER, CENTER);
-  text("Shop",width/2, 70);
+  text("Shop",width/2, 70*scaleFactor[0]);
   rectMode(CENTER);
-  textFont(regular[0], 30);
+  textFont(regular[0], 30*scaleFactor[0]);
   textAlign(RIGHT, CENTER);
-  text("Money: $" + String.format("%,d", int(saveData[3])), width-70, 70);
+  text("Money: $" + String.format("%,d", int(saveData[3])), width-70*scaleFactor[0], 70*scaleFactor[0]);
   textAlign(CENTER, CENTER);
   for (int i = 0; i < shopOptions[0].length; i++){
-    textFont(light[0], 40);
+    textFont(light[0], 40*scaleFactor[0]);
     fill(255);
-    text(shopOptions[0][i], width/2, i*170 + 180);
-    textFont(light[0], 30);
+    text(shopOptions[0][i], width/2, i*170*scaleFactor[0] + 180*scaleFactor[0]);
+    textFont(light[0], 30*scaleFactor[0]);
     if (i!=2){
       String price;
       if (selection[i] > int(saveData[i+4])+1) price = "LOCKED";
       else if (selection[i] > int(saveData[i+4]))price = "$" + String.format("%,d", shopCosts[i][selection[i]]);
       else if (selection[i] == int(saveData[i+1]))price = "SELECTED";
       else price = "BOUGHT";
-      text(shopOptions[i+1][selection[i]] + " (" + price + ")", width/2, i*170+310);
-      if (mouseX >= width/2-40 && mouseX <= width/2+40 && mouseY >= i*170+210 && mouseY <= i*170+290){
+      text(shopOptions[i+1][selection[i]] + " (" + price + ")", width/2, i*170*scaleFactor[0]+310*scaleFactor[0]);
+      if (mouseX >= width/2-40*scaleFactor[0] && mouseX <= width/2+40*scaleFactor[0] && mouseY >= i*170*scaleFactor[0]+210*scaleFactor[0] && mouseY <= i*170*scaleFactor[0]+290*scaleFactor[0]){
         fill(127);
         if (clicked){
           if (selection[i] <= int(saveData[i+4]) || (int(saveData[3]) >= shopCosts[i][selection[i]] && selection[i] == int(saveData[i+4])+1))saveData[i+1] = Integer.toString(selection[i]);
@@ -959,56 +993,56 @@ void shop(){
         }
       }
       else fill(255);
-      rect(width/2, i*170+250, 80, 80);
+      rect(width/2, i*170*scaleFactor[0]+250*scaleFactor[0], 80*scaleFactor[0], 80*scaleFactor[0]);
       imageMode(CENTER);
       switch(i){
         case 0:
           pushMatrix();
-          translate(width/2, i*170+250);
+          translate(width/2, i*170*scaleFactor[0]+250*scaleFactor[0]);
           rotate(-PI/2);
           switch(selection[0]){
             case 0:
               image(guns[0][0], 0, 0);
-              image(guns[0][1], guns[0][0].width/2-guns[0][1].width/2-1, 0);
+              image(guns[0][1], guns[0][0].width/2-guns[0][1].width/2-scaleFactor[0], 0);
               break;
             case 1:
               image(guns[1][0], 0, 0);
               image(guns[1][1], guns[1][0].width/2-guns[1][1].width/2-1, -1);
               break;
             default:
-              scale(75.0/guns[selection[0]][0].height);
+              scale(75.0*scaleFactor[0]/guns[selection[0]][0].height);
               image(guns[selection[0]][0], 0, 0);
               break;
           }
           popMatrix();
           break;
       }
-      int[] areas = {abs(((width/2-50)-mouseX) * ((i*170+290)-mouseY) - ((width/2-50)-mouseX) * ((i*170+210)-mouseY)), abs(((width/2-50)-mouseX)*((i*170+250)-mouseY) - ((width/2-90) - mouseX) * ((i*170+290)-mouseY)), abs(((width/2-90)-mouseX)*((i*170+210)-mouseY) - ((width/2-50)-mouseX) * ((i*170+250)-mouseY))};
-      if (areas[0]  + areas[1] + areas[2]== abs(((width/2-50)-(width/2-50))*((i*170+250)-(i*170+210)) - ((width/2-90)-(width/2-50))*((i*170+290) - (i*170+210)))){
+      float[] areas = {abs(((width/2-50*scaleFactor[0])-mouseX) * ((i*170*scaleFactor[0]+290*scaleFactor[0])-mouseY) - ((width/2-50*scaleFactor[0])-mouseX) * ((i*170*scaleFactor[0]+210*scaleFactor[0])-mouseY)), abs(((width/2-50*scaleFactor[0])-mouseX)*((i*170*scaleFactor[0]+250*scaleFactor[0])-mouseY) - ((width/2-90*scaleFactor[0]) - mouseX) * ((i*170*scaleFactor[0]+290*scaleFactor[0])-mouseY)), abs(((width/2-90*scaleFactor[0])-mouseX)*((i*170*scaleFactor[0]+210*scaleFactor[0])-mouseY) - ((width/2-50*scaleFactor[0])-mouseX) * ((i*170*scaleFactor[0]+250*scaleFactor[0])-mouseY))};
+      if (areas[0]  + areas[1] + areas[2]== abs(((width/2-50*scaleFactor[0])-(width/2-50*scaleFactor[0]))*((i*170*scaleFactor[0]+250*scaleFactor[0])-(i*170*scaleFactor[0]+210*scaleFactor[0])) - ((width/2-90*scaleFactor[0])-(width/2-50*scaleFactor[0]))*((i*170*scaleFactor[0]+290*scaleFactor[0]) - (i*170*scaleFactor[0]+210*scaleFactor[0])))){
         fill(127);
         if (clicked && selection[i] > 0) selection[i]--;
       }
       else fill (255);
       beginShape();
-      vertex(width/2-50, i*170+210);
-      vertex(width/2-50, i*170+290);
-      vertex(width/2-90, i*170+250);
+      vertex(width/2-50*scaleFactor[0], i*170*scaleFactor[0]+210*scaleFactor[0]);
+      vertex(width/2-50*scaleFactor[0], i*170*scaleFactor[0]+290*scaleFactor[0]);
+      vertex(width/2-90*scaleFactor[0], i*170*scaleFactor[0]+250*scaleFactor[0]);
       endShape();
-      int[] areas1 = {abs(((width/2+50)-mouseX) * ((i*170+290)-mouseY) - ((width/2+50)-mouseX) * ((i*170+210)-mouseY)), abs(((width/2+50)-mouseX)*((i*170+250)-mouseY) - ((width/2+90) - mouseX) * ((i*170+290)-mouseY)), abs(((width/2+90)-mouseX)*((i*170+210)-mouseY) - ((width/2+50)-mouseX) * ((i*170+250)-mouseY))};
-      if (areas1[0]  + areas1[1] + areas1[2]== abs(((width/2+50)-(width/2+50))*((i*170+250)-(i*170+210)) - ((width/2+90)-(width/2+50))*((i*170+290) - (i*170+210)))){
+      float[] areas1 = {abs(((width/2+50*scaleFactor[0])-mouseX) * ((i*170*scaleFactor[0]+290*scaleFactor[0])-mouseY) - ((width/2+50*scaleFactor[0])-mouseX) * ((i*170*scaleFactor[0]+210*scaleFactor[0])-mouseY)), abs(((width/2+50*scaleFactor[0])-mouseX)*((i*170*scaleFactor[0]+250*scaleFactor[0])-mouseY) - ((width/2+90*scaleFactor[0]) - mouseX) * ((i*170*scaleFactor[0]+290*scaleFactor[0])-mouseY)), abs(((width/2+90*scaleFactor[0])-mouseX)*((i*170*scaleFactor[0]+210*scaleFactor[0])-mouseY) - ((width/2+50*scaleFactor[0])-mouseX) * ((i*170*scaleFactor[0]+250*scaleFactor[0])-mouseY))};
+      if (areas1[0]  + areas1[1] + areas1[2]== abs(((width/2+50*scaleFactor[0])-(width/2+50*scaleFactor[0]))*((i*170*scaleFactor[0]+250*scaleFactor[0])-(i*170*scaleFactor[0]+210*scaleFactor[0])) - ((width/2+90*scaleFactor[0])-(width/2+50*scaleFactor[0]))*((i*170*scaleFactor[0]+290*scaleFactor[0]) - (i*170*scaleFactor[0]+210*scaleFactor[0])))){
         fill(127);
         if (clicked && (selection[i] < shopOptions[i+1].length-1)||(i == 2 && selection[i]<int(saveData[6]))) selection[i]++;
       }
       else fill (255);
       beginShape();
-      vertex(width/2+50, i*170+210);
-      vertex(width/2+50, i*170+290);
-      vertex(width/2+90, i*170+250);
+      vertex(width/2+50*scaleFactor[0], i*170*scaleFactor[0]+210*scaleFactor[0]);
+      vertex(width/2+50*scaleFactor[0], i*170*scaleFactor[0]+290*scaleFactor[0]);
+      vertex(width/2+90*scaleFactor[0], i*170*scaleFactor[0]+250*scaleFactor[0]);
       endShape();
     }
     else{
       textAlign(CENTER);
-      if (mouseX >= width/2-150 && mouseX <= width/2+150 && mouseY >= i*170+210 && mouseY <= i*170+290){
+      if (mouseX >= width/2-150*scaleFactor[0] && mouseX <= width/2+150*scaleFactor[0] && mouseY >= i*170*scaleFactor[0]+210*scaleFactor[0] && mouseY <= i*170*scaleFactor[0]+290*scaleFactor[0]){
         fill(127);
         if (clicked){
           if (selection[i] <= int(saveData[i+4]) || int(saveData[3]) >= selection[2]*5000){
@@ -1025,50 +1059,50 @@ void shop(){
         }
       }
       else fill(255);
-      rect(width/2, i*170+250, 300, 80);
+      rect(width/2, i*170*scaleFactor[0]+250*scaleFactor[0], 300*scaleFactor[0], 80*scaleFactor[0]);
       fill(0);
       if (selection[2] == 0){
-        text("Stock", width/2, i*170+245);
+        text("Stock", width/2, i*170*scaleFactor[0]+245*scaleFactor[0]);
       }
       else{
-        if (selection[2]%2 == 1) text(shopOptions[i+1][selection[2]%2] + ((selection[2]+1)/2), width/2, i*170+245);
-        else text(shopOptions[i+1][selection[2]%2] + (selection[2]/2), width/2, i*170+245);
+        if (selection[2]%2 == 1) text(shopOptions[i+1][selection[2]%2] + ((selection[2]+1)/2), width/2, i*170*scaleFactor[0]+245*scaleFactor[0]);
+        else text(shopOptions[i+1][selection[2]%2] + (selection[2]/2), width/2, i*170*scaleFactor[0]+245*scaleFactor[0]);
       }
-      if (selection[2] == int(saveData[7]) )text("(SELECTED)", width/2, i*170+275);
-      else if (selection[2] > int(saveData[i+4])) text("($" + String.format("%,d", selection[2]*5000) + ")", width/2, i*170+275);
-      else text("(BOUGHT)", width/2, i*170+275);
-      int[] areas = {abs(((width/2-160)-mouseX) * ((i*170+290)-mouseY) - ((width/2-160)-mouseX) * ((i*170+210)-mouseY)), abs(((width/2-160)-mouseX)*((i*170+250)-mouseY) - ((width/2-200) - mouseX) * ((i*170+290)-mouseY)), abs(((width/2-200)-mouseX)*((i*170+210)-mouseY) - ((width/2-160)-mouseX) * ((i*170+250)-mouseY))};
-      if (areas[0]  + areas[1] + areas[2]== abs(((width/2-160)-(width/2-160))*((i*170+250)-(i*170+210)) - ((width/2-200)-(width/2-160))*((i*170+290) - (i*170+210)))){
+      if (selection[2] == int(saveData[7]) )text("(SELECTED)", width/2, i*170*scaleFactor[0]+275*scaleFactor[0]);
+      else if (selection[2] > int(saveData[i+4])) text("($" + String.format("%,d", selection[2]*5000) + ")", width/2, i*170*scaleFactor[0]+275*scaleFactor[0]);
+      else text("(BOUGHT)", width/2, i*170*scaleFactor[0]+275*scaleFactor[0]);
+      float[] areas = {abs(((width/2-160*scaleFactor[0])-mouseX) * ((i*170*scaleFactor[0]+290*scaleFactor[0])-mouseY) - ((width/2-160*scaleFactor[0])-mouseX) * ((i*170*scaleFactor[0]+210*scaleFactor[0])-mouseY)), abs(((width/2-160*scaleFactor[0])-mouseX)*((i*170*scaleFactor[0]+250*scaleFactor[0])-mouseY) - ((width/2-200*scaleFactor[0]) - mouseX) * ((i*170*scaleFactor[0]+290*scaleFactor[0])-mouseY)), abs(((width/2-200*scaleFactor[0])-mouseX)*((i*170*scaleFactor[0]+210*scaleFactor[0])-mouseY) - ((width/2-160*scaleFactor[0])-mouseX) * ((i*170*scaleFactor[0]+250*scaleFactor[0])-mouseY))};
+      if (areas[0]  + areas[1] + areas[2]== abs(((width/2-160*scaleFactor[0])-(width/2-160*scaleFactor[0]))*((i*170*scaleFactor[0]+250*scaleFactor[0])-(i*170*scaleFactor[0]+210*scaleFactor[0])) - ((width/2-200*scaleFactor[0])-(width/2-160*scaleFactor[0]))*((i*170*scaleFactor[0]+290*scaleFactor[0]) - (i*170*scaleFactor[0]+210*scaleFactor[0])))){
         fill(127);
         if (clicked && selection[i] > 0) selection[i]--;
       }
       else fill (255);
       beginShape();
-      vertex(width/2-160, i*170+210);
-      vertex(width/2-160, i*170+290);
-      vertex(width/2-200, i*170+250);
+      vertex(width/2-160*scaleFactor[0], i*170*scaleFactor[0]+210*scaleFactor[0]);
+      vertex(width/2-160*scaleFactor[0], i*170*scaleFactor[0]+290*scaleFactor[0]);
+      vertex(width/2-200*scaleFactor[0], i*170*scaleFactor[0]+250*scaleFactor[0]);
       endShape();
-      int[] areas1 = {abs(((width/2+160)-mouseX) * ((i*170+290)-mouseY) - ((width/2+160)-mouseX) * ((i*170+210)-mouseY)), abs(((width/2+160)-mouseX)*((i*170+250)-mouseY) - ((width/2+200) - mouseX) * ((i*170+290)-mouseY)), abs(((width/2+200)-mouseX)*((i*170+210)-mouseY) - ((width/2+160)-mouseX) * ((i*170+250)-mouseY))};
-      if (areas1[0]  + areas1[1] + areas1[2]== abs(((width/2+160)-(width/2+160))*((i*170+250)-(i*170+210)) - ((width/2+200)-(width/2+160))*((i*170+290) - (i*170+210)))){
+      float[] areas1 = {abs(((width/2+160*scaleFactor[0])-mouseX) * ((i*170*scaleFactor[0]+290*scaleFactor[0])-mouseY) - ((width/2+160*scaleFactor[0])-mouseX) * ((i*170*scaleFactor[0]+210*scaleFactor[0])-mouseY)), abs(((width/2+160*scaleFactor[0])-mouseX)*((i*170*scaleFactor[0]+250*scaleFactor[0])-mouseY) - ((width/2+200*scaleFactor[0]) - mouseX) * ((i*170*scaleFactor[0]+290*scaleFactor[0])-mouseY)), abs(((width/2+200*scaleFactor[0])-mouseX)*((i*170*scaleFactor[0]+210*scaleFactor[0])-mouseY) - ((width/2+160*scaleFactor[0])-mouseX) * ((i*170*scaleFactor[0]+250*scaleFactor[0])-mouseY))};
+      if (areas1[0]  + areas1[1] + areas1[2]== abs(((width/2+160*scaleFactor[0])-(width/2+160*scaleFactor[0]))*((i*170*scaleFactor[0]+250*scaleFactor[0])-(i*170*scaleFactor[0]+210*scaleFactor[0])) - ((width/2+200*scaleFactor[0])-(width/2+160*scaleFactor[0]))*((i*170*scaleFactor[0]+290*scaleFactor[0]) - (i*170*scaleFactor[0]+210*scaleFactor[0])))){
         fill(127);
         if (clicked && selection[i] <= int(saveData[i+4]))selection[i]++;
       }
       else fill (255);
       beginShape();
-      vertex(width/2+160, i*170+210);
-      vertex(width/2+160, i*170+290);
-      vertex(width/2+200, i*170+250);
+      vertex(width/2+160*scaleFactor[0], i*170*scaleFactor[0]+210*scaleFactor[0]);
+      vertex(width/2+160*scaleFactor[0], i*170*scaleFactor[0]+290*scaleFactor[0]);
+      vertex(width/2+200*scaleFactor[0], i*170*scaleFactor[0]+250*scaleFactor[0]);
       endShape();
     }
   }
-  if(mouseX>=width/2-175 && mouseX <= width/2+175 && mouseY >= height-75 && mouseY <= height-25){
+  if(mouseX>=width/2-175*scaleFactor[0] && mouseX <= width/2+175*scaleFactor[0] && mouseY >= height-75*scaleFactor[0] && mouseY <= height-25*scaleFactor[0]){
     fill(127);
     if(clicked) currentScene = 0;
   }
   else fill(255);
-  rect(width/2, height-50, 350, 50);
+  rect(width/2, height-50*scaleFactor[0], 350*scaleFactor[0], 50*scaleFactor[0]);
   fill(0);
-  text("Return to main menu", width/2, height-40);
+  text("Return to main menu", width/2, height-40*scaleFactor[0]);
 }
 
 void draw() {
