@@ -2,7 +2,7 @@
  By Gordon Lin and Daniel Weng
  */
 
-//Set memory limit to 2048, as this uses a lot of RAM
+//Set memory limit to 4096, as this uses a lot of RAM
 
 int currentScene = 0;//shows what is on screen: 0 - main menu, 1 - game, 2 - shop, 3 - credits, 4 - exit
 //initializing all fonts
@@ -13,7 +13,8 @@ PFont[] thin = new PFont[3];
 
 
 String[] saveData = {"0", "0", "0", "0", "0", "0", "0", "0"}; //0th value: past distance, 1st value: gun type, 2nd value: armour type, 3rd value: money, 4th value: top gun purchased, 5th value: top armour purchased, 6th value: top jetpack, 7th value: jetpack
-//craeting image variables
+
+//creating image variables
 PImage[] character = new PImage[5];//player image
 PImage bullet;//bullet image
 PImage[] obstacleImages = new PImage[2];//obsatcle image
@@ -25,7 +26,7 @@ PImage rocket;
 PImage coin;
 
 int[] reloadTime = {1500, 2500, 2750, 2000, 3500, 3500, 4250, 3500, 3250, 3000, 2750, 2750, 2250, 2500, 4500, 4600, 6000, 6250, 10000, 10000};//shows reload time for all guns
-boolean[] auto = {false, false, true, true, false, false, true, true, false, true, true, true, true, true, false, false, true, true, false, false};
+boolean[] auto = {false, false, true, true, false, false, true, true, false, true, true, true, true, true, false, false, true, true, false, false}; //if guns are either auto or semi-auto
 
 //initializing gravity
 int JUMPPOWER=-12;
@@ -35,9 +36,9 @@ boolean jump=false;
 //position of player
 float pos[] = {500.0, 0.0};
 
-float vy=0;//delta-y
+float vy=0;//vertical speed
 
-int[] fireRate = {0, 0, 250, 250, 100, 100, 250, 150, 100, 100, 100, 100, 50, 100, 0, 0, 100, 100, 0, 0};
+int[] fireRate = {0, 0, 250, 250, 100, 100, 250, 150, 100, 100, 100, 100, 50, 100, 0, 0, 100, 100, 0, 0}; //fire rate of each gun
 int[] bullets = {12, 7, 25, 32, 8, 8, 32, 50, 30, 30, 30, 30, 30, 30, 1, 10, 150, 150, 1, 1};//bullet capacity
 int[] dmg = {25, 40, 30, 25, 50, 55, 40, 35, 35, 40, 35, 40, 40, 50, 200, 250, 30, 40, 1000, 2000};//bullet damage
 int[] robotReload = {1000, 1250, 500, 500, 250, 250, 500, 500, 750, 500, 500, 500, 500, 500, 4500, 1000, 350, 350, 10000, 10000};//shows reload time for robots
@@ -53,7 +54,7 @@ PImage background[] = new PImage[3];//background image
 
 float[][] groundPos = {{0, height+400}, {1280, height+random(-75, 75)+400}};//shows ground position
 
-//initializing ground
+//initializing information about ground
 float topOfGrass = 0;
 float topOfNextGrass = 0;
 int nextGround = 0;
@@ -63,11 +64,11 @@ boolean onGround = true;
 boolean colliding = false;
 boolean gap = false;
 
-float speedBoost = gravity*float(int(saveData[7])/2);
-float maxFuel = 100+((int(saveData[7])+1)/2)*50;
-float maxHealth = 100 + int(saveData[2])*50;
-float health=maxHealth;//health of player
-float fuel=maxFuel;//fuel of player
+float speedBoost;
+float maxFuel;
+float maxHealth;
+float health;
+float fuel;
 ArrayList<ArrayList<Float>> coins = new ArrayList<ArrayList<Float>>();//2D list for coins
 
 boolean onObstacle = false;//on or off obstacle
@@ -248,6 +249,11 @@ void setup() {
   groundPos[0][1] = 500.0*scaleFactor[0];
   groundPos[1][0] = background[0].width;
   groundPos[1][1] = random(-70*scaleFactor[0], 70*scaleFactor[0])+500.0*scaleFactor[0];
+  speedBoost = gravity*float(int(saveData[7])/2);
+  maxFuel = 100+((int(saveData[7])+1)/2)*50;
+  maxHealth = 100 + int(saveData[2])*50;
+  health=maxHealth;//health of player
+  fuel=maxFuel;//fuel of player
 }
 
 boolean[] buttons = {false, false, false, false};//array for buttons
@@ -917,7 +923,8 @@ void game() {
         enemies.clear();
         bulletPos.clear();
         enemyBullets.clear();
-        //saveStrings("data/saveData/saveGame.txt", saveData);
+        coins.clear();
+        saveStrings("data/saveData/saveGame.txt", saveData);
       }
     }
     else fill(255);
@@ -982,14 +989,16 @@ void shop(){
       if (mouseX >= width/2-40*scaleFactor[0] && mouseX <= width/2+40*scaleFactor[0] && mouseY >= i*170*scaleFactor[0]+210*scaleFactor[0] && mouseY <= i*170*scaleFactor[0]+290*scaleFactor[0]){
         fill(127);
         if (clicked){
-          if (selection[i] <= int(saveData[i+4]) || (int(saveData[3]) >= shopCosts[i][selection[i]] && selection[i] == int(saveData[i+4])+1))saveData[i+1] = Integer.toString(selection[i]);
-          if (int(saveData[3]) >= shopCosts[i][selection[i]] && selection[i] == int(saveData[i+4])+1){
-            saveData[3] = Integer.toString(int(saveData[3]) - shopCosts[i][selection[i]]);
-            saveData[i+4] = Integer.toString(int(saveData[i+4])+1);
+          if (selection[i] <= int(saveData[i+4]) || (int(saveData[3]) >= shopCosts[i][selection[i]] && selection[i] == int(saveData[i+4])+1)){
+            saveData[i+1] = Integer.toString(selection[i]);
             maxHealth = 100 + int(saveData[2])*50;
             health = maxHealth;
           }
-          //saveStrings("data/saveData/saveGame.txt", saveData);
+          if (int(saveData[3]) >= shopCosts[i][selection[i]] && selection[i] == int(saveData[i+4])+1){
+            saveData[3] = Integer.toString(int(saveData[3]) - shopCosts[i][selection[i]]);
+            saveData[i+4] = Integer.toString(int(saveData[i+4])+1);
+          }
+          saveStrings("data/saveData/saveGame.txt", saveData);
         }
       }
       else fill(255);
@@ -1055,7 +1064,7 @@ void shop(){
             saveData[3] = Integer.toString(int(saveData[3]) - 5000*selection[2]);
             saveData[i+4] = Integer.toString(int(saveData[i+4])+1);
           }
-          //saveStrings("data/saveData/saveGame.txt", saveData);
+          saveStrings("data/saveData/saveGame.txt", saveData);
         }
       }
       else fill(255);
