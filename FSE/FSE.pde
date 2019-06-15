@@ -462,7 +462,7 @@ void drawBullet(){//draws bullet
   for(int i = 0; i < bulletPos.size(); i++){
     if (int(saveData[1]) < 18) image(bullet, bulletPos.get(i).get(0), bulletPos.get(i).get(1));
     else image(rocket, bulletPos.get(i).get(0), bulletPos.get(i).get(1));
-    bulletPos.get(i).set(0, bulletPos.get(i).get(0)+30*scaleFactor[1]);
+    bulletPos.get(i).set(0, bulletPos.get(i).get(0)+60*scaleFactor[1]);
     if (bulletPos.get(i).get(0)-bullet.width/2 > width || (bulletPos.get(i).get(0)+bullet.width/2>groundPos[nextGround][0] && bulletPos.get(i).get(1) > topOfNextGrass && groundPos[nextGround][0] > 0)) bulletPos.remove(i);
   }
   for (int i = 0; i < enemyBullets.size(); i++){
