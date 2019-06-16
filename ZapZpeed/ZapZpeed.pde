@@ -47,7 +47,7 @@ float vy=0;//vertical speed
 int[] fireRate = {50, 50, 250, 250, 100, 100, 250, 150, 100, 100, 100, 100, 50, 100, 50, 50, 100, 100, 50, 50}; //fire rate of each gun
 int[] bullets = {12, 7, 25, 32, 8, 8, 32, 50, 30, 30, 30, 30, 30, 30, 1, 10, 150, 150, 1, 1};//bullet capacity
 int[] dmg = {25, 40, 30, 25, 50, 55, 40, 35, 35, 40, 35, 40, 40, 50, 200, 250, 30, 40, 1000, 2000};//bullet damage
-int[] robotReload = {1000, 1250, 500, 500, 250, 250, 500, 500, 750, 500, 500, 500, 500, 500, 4500, 1000, 350, 350, 10000, 10000};//shows reload time for robots
+int[] robotReload = {1250, 1500, 750, 750, 1000, 1000, 750, 750, 750, 750, 750, 750, 750, 750, 4500, 1000, 750, 750, 10000, 10000};//shows reload time for robots
 int bulletsRemaining = 0;//bullets remaining
 
 ArrayList<ArrayList<Float>> trail = new ArrayList<ArrayList<Float>>();//2D list for trail
@@ -152,8 +152,8 @@ void movePlayer() {
   if (onGround) pos[1]=topOfGrass-(character[0].height/3+character[2].height); //determines if the player is on the ground, and puts player in right place
   else if (onObstacle) pos[1] = topOfObstacle - (character[0].height/3+character[2].height); //determines if the player is on an obstacle, and puts player above the obstacle
   else vy+=gravity*scaleFactor[0]; //determines if the player is not on an obstacle or ground, and adds gravity to the vertical speed
-  if (groundPos[nextGround][0]-int((int(speed)/3+1)*scaleFactor[1])*2 <= pos[0]+character[0].width/2 && bottomOfPlayer-topOfNextGrass >= 10*scaleFactor[1] && groundPos[nextGround][0] > 0){ //checks if the player is going to collide with the ground
-    pos[0]-= int((int(speed)/3+5)*scaleFactor[1])*4; //pushes the player back
+  if (groundPos[nextGround][0]-int((int(speed)/3+5)*scaleFactor[1]) <= pos[0]+character[0].width/2 && bottomOfPlayer-topOfNextGrass >= 10*scaleFactor[1] && groundPos[nextGround][0] > 0){ //checks if the player is going to collide with the ground
+    pos[0]-= int((int(speed)/3+6)*scaleFactor[1]); //pushes the player back
     colliding = true; //sets collision to true
   }
   else{
@@ -170,14 +170,14 @@ void movePlayer() {
     float top = obstacles.get(i).get(1) - obstacleImages[int(obstacles.get(i).get(2))].height*((obstacles.get(i).get(2)+1)/2);//
     float left = obstacles.get(i).get(0)-obstacleImages[int(obstacles.get(i).get(2))].width/3;//left of obstacle
     float right = obstacles.get(i).get(0)+obstacleImages[int(obstacles.get(i).get(2))].width/3;//right of obstacle
-    float futureLeft = left-(int((int(speed)/3+5)*scaleFactor[1])*2);//moves obstacle
+    float futureLeft = left-int((int(speed)/3+5)*scaleFactor[1]);//moves obstacle
     
     //checks if the obstacle will collide with the player, and push the character back
     if (left > pos[0]+character[0].width/2 && futureLeft <= pos[0]+character[0].width/2 && right > pos[0]-character[0].width/2 && (top < bottomOfPlayer || pos[1] > top || pos[1]-character[0].height/2 > top)){
-      pos[0] -= int((int(speed)/3+5)*scaleFactor[1])*4;
+      pos[0] -= int((int(speed)/3+6)*scaleFactor[1]);
     }
     else if (left < pos[0]+character[0].width/2 && right > pos[0]-character[0].width/2 && (pos[1] > top || pos[1]-character[0].height/2 > top)){
-      pos[0] -= int((int(speed)/3+5)*scaleFactor[1])*4;
+      pos[0] -= int((int(speed)/3+6)*scaleFactor[1]);
     }
     if(left < pos[0]+character[0].width/2 && right > pos[0]-character[0].width/2 && bottomOfPlayer >= top && !onObstacle){//on top oof obstacle
       onObstacle = true; //sets onObstacle to true
@@ -187,7 +187,7 @@ void movePlayer() {
       vy=0; //sets vertical speed to 0
     }
   }
-  rightOfObstacle -= int((int(speed)/3+5)*scaleFactor[1])*2;//finds the new position of right of obstacle
+  rightOfObstacle -= int((int(speed)/3+5)*scaleFactor[1]);//finds the new position of right of obstacle
   if (rightOfObstacle <= pos[0]-character[0].width/2 || bottomOfPlayer != topOfObstacle && onObstacle) onObstacle = false;//checks if off obstacle and sets onObstacle to false
 }
 
@@ -281,7 +281,7 @@ String[][] shopOptions = {{"Gun", "Armour", "Jetpack"}, {"Glock","Deagle","UMP-4
 int[][] shopCosts = {{0,5000,25000,50000,100000,150000,250000,400000,500000,750000,800000,900000,1000000,1015000,1025000,1040000,1050000,1060000,1075000,1150000}, {0,10000,25000,40000,60000,80000,95000,100000,125000,150000}};
 
 void setup() {
-  fullScreen();//initializing size
+  fullScreen(OPENGL);//initializing size
   
   orientation(LANDSCAPE); //makes orientation to landscape
   
@@ -289,7 +289,7 @@ void setup() {
   initFont();//initializing fonts
   loadSave(); //calls loadGame
   
-  frameRate(30);//initializing framerate
+  frameRate(60);//initializing framerate
   
   initImgs(); //intializes all the pictures
   
@@ -373,7 +373,7 @@ void mouseReleased(){//checks if mouse was released
 }
 
 float rotation = 0;//finds rotation of arms and legs
-float vR = radians(12);//speed of rotation
+float vR = radians(8.5);//speed of rotation
 
 float recoil = 0; 
 float vRecoil = 0;
@@ -413,10 +413,10 @@ void jetpack() {//adding jetpack
   textFont(regular[0], 20*scaleFactor[0]);
   text("JETPACK",200*scaleFactor[0], height-70*scaleFactor[0]);
   if(jetpackUse && !onGround){ //checks if jetpack is being used and not on ground
-    fuel--;//subtracts 0.5 from fuel
+    fuel-=0.5;//subtracts 0.5 from fuel
   }
   else if(fuel<maxFuel && vy>=0 && !jetpackUse && onGround){//checks if fuel tank isnt full and onGround
-    fuel++;//regenarating fuel
+    fuel+=0.5;//regenarating fuel
   }
 }
 
@@ -468,7 +468,7 @@ void updateTrail() { //updates trail and draws trail
     }
     image(character[1], 0, character[1].height/2); //draws arm trail
     popMatrix(); //ending of trail transformation
-    trail.get(i).set(0, trail.get(i).get(0)+int((int(speed)/3-10)*scaleFactor[1])*2); //moves trails back a bit
+    trail.get(i).set(0, trail.get(i).get(0)+int((int(speed)/3-10)*scaleFactor[1])); //moves trails back a bit
     if (trail.get(i).get(0)+character[0].width < 0 || trail.get(i).get(0)/pos[0]*150 < 10) { //checks if trail is almost transparent or trail is beyond the screen
       trail.remove(i); //removes trail
       i--; //moves i back one in order to properly update every trail
@@ -483,7 +483,7 @@ ArrayList<ArrayList<Float>> bulletPos = new ArrayList<ArrayList<Float>>();//2D a
 
 void addBullet(){ //function to add bullets
   ArrayList<Float> newBullet = new ArrayList<Float>(); //create new list on new bullet
-  newBullet.add(pos[0]+character[0].width/2); //adds bullet x position
+  newBullet.add(pos[0]); //adds bullet x position
   //adds bullet y position corresponding to the specific gun
   if (int(saveData[1]) < 16) newBullet.add(pos[1]-character[1].width/2);
   else if (int(saveData[1]) <= 17) newBullet.add(pos[1]-character[1].width/2-guns[int(saveData[1])][0].width/5);
@@ -503,11 +503,11 @@ void drawBullet(){//draws bullets
   for (int i = 0; i < enemyBullets.size(); i++){ //llops goes through every bullet in enemyBullets
     if (int(saveData[1]) < 18) image(bullet, enemyBullets.get(i).get(0), enemyBullets.get(i).get(1)); //checks if gun isn't an rpg, and shows a bullet
     else image(rocket, enemyBullets.get(i).get(0), enemyBullets.get(i).get(1)); //else shows a rocket
-    enemyBullets.get(i).set(0, enemyBullets.get(i).get(0)-int((int(speed)/3+40)*scaleFactor[1])*2); //moves bullet
+    enemyBullets.get(i).set(0, enemyBullets.get(i).get(0)-int((int(speed)/3+40)*scaleFactor[1])); //moves bullet
     if (enemyBullets.get(i).get(0)-bullet.width/2 < 0){ //check if bullet goes beyond screen
       enemyBullets.remove(i); //removes bullet
     }
-    else if (enemyBullets.get(i).get(0) > pos[0]+character[0].width/2 && enemyBullets.get(i).get(0)-int((int(speed)/3+40)*scaleFactor[1])*2 <= pos[0]+character[0].width/2 && enemyBullets.get(i).get(1) > pos[1]-character[0].height/2 && enemyBullets.get(i).get(1) < pos[1]+character[0].height/3+character[2].height){ //checks if bullet will hit player
+    else if (enemyBullets.get(i).get(0) > pos[0]+character[0].width/2 && enemyBullets.get(i).get(0)-int((int(speed)/3+40)*scaleFactor[1]) <= pos[0]+character[0].width/2 && enemyBullets.get(i).get(1) > pos[1]-character[0].height/2 && enemyBullets.get(i).get(1) < pos[1]+character[0].height/3+character[2].height){ //checks if bullet will hit player
       enemyBullets.remove(i); //removes bullet
       health -= dmg[int(saveData[1])]; //decrease health of player
     }
@@ -538,7 +538,7 @@ void drawArms() {//adding arms on player
     justFired = false; //sets justFired to false
     fill(255);
   }
-  //button for jetpack
+  //button for gun
   rectMode(CENTER);
   rect(width-70*scaleFactor[0], height-70*scaleFactor[0], 120*scaleFactor[0], 120*scaleFactor[0]);
   fill(0);
@@ -713,7 +713,7 @@ void updateEnemies(){ //update and draws Enemies
     }
     image(robot[1], enemies.get(i).get(0)-robot[1].width/2, enemies.get(i).get(1)); // draws arm
     image(robot[2], enemies.get(i).get(0), enemies.get(i).get(1)+robot[0].height/3+robot[2].height/2); //draw robot tracks
-    if (!(enemies.get(i).get(0)-int((int(speed)/3+10)*scaleFactor[1])*2>groundPos[nextGroundEnemy][0] && enemies.get(i).get(0)-int((int(speed)/3+10)*scaleFactor[1])*2 < groundPos[nextGroundEnemy][0]+background[0].width && bottomEnemy-nextTopGroundEnemy>5)) enemies.get(i).set(0, enemies.get(i).get(0)-int((int(speed)/3+10)*scaleFactor[1])*2); //checks if robot will collide with ground and pushes robot back
+    if (!(enemies.get(i).get(0)-int((int(speed)/3+10)*scaleFactor[1])>groundPos[nextGroundEnemy][0] && enemies.get(i).get(0)-int((int(speed)/3+10)*scaleFactor[1]) < groundPos[nextGroundEnemy][0]+background[0].width && bottomEnemy-nextTopGroundEnemy>5)) enemies.get(i).set(0, enemies.get(i).get(0)-int((int(speed)/3+10)*scaleFactor[1])); //checks if robot will collide with ground and pushes robot back
     rectMode(CENTER);
     //drawing robot health
     fill(0);
@@ -732,7 +732,7 @@ void drawUpdateObstacle(){ //drawing and updating obstacles
   imageMode(CENTER);
   for(int i = 0; i < obstacles.size(); i++){
     image(obstacleImages[int(obstacles.get(i).get(2))], obstacles.get(i).get(0), obstacles.get(i).get(1)-obstacleImages[int(obstacles.get(i).get(2))].height/2); //drawing obstacle according to what obstacle it is
-    obstacles.get(i).set(0, obstacles.get(i).get(0)-int((int(speed)/3+5)*scaleFactor[1])*2); //moves obstacle towards player
+    obstacles.get(i).set(0, obstacles.get(i).get(0)-int((int(speed)/3+5)*scaleFactor[1])); //moves obstacle towards player
     if (obstacles.get(i).get(0)+obstacleImages[int(obstacles.get(i).get(2))].height/2 <= 0){ //checks if obstacle is beyond screen and removes it
       obstacles.remove(i);
       i--;
@@ -841,7 +841,7 @@ void detectCollision(){ //detecting collisions
   for (int i = 0; i < enemies.size(); i++){ //goes through all enemy values
     //finds position of enemy
     float right = enemies.get(i).get(0)+robot[0].width/2;
-    float futureLeft = enemies.get(i).get(0)-robot[0].width/2-int((int(speed)/3+10)*scaleFactor[1])*2;
+    float futureLeft = enemies.get(i).get(0)-robot[0].width/2-int((int(speed)/3+10)*scaleFactor[1]);
     float top = enemies.get(i).get(1)-robot[0].height/2;
     float bottom = enemies.get(i).get(1) + robot[0].height/3+robot[2].height;
     float bottomOfPlayer = pos[1]+character[0].height/3+character[2].height;
@@ -859,7 +859,7 @@ void updateCoins(){ //function to update and draw coins
   imageMode(CENTER); //align coins to center
   for (int i = 0; i < coins.size(); i++){ //loop through all the coins
     image(coin, coins.get(i).get(0), coins.get(i).get(1)); //draw coins on screen
-    coins.get(i).set(0, coins.get(i).get(0)-int((int(speed)/3+5)*scaleFactor[1])*2); //moves coins back a bit
+    coins.get(i).set(0, coins.get(i).get(0)-int((int(speed)/3+5)*scaleFactor[1])); //moves coins back a bit
     //checks if coin will collide with player, then it will remove coin and add a random number of money
     if (coins.get(i).get(1)-25*scaleFactor[0]>pos[1]-character[0].height/2&& coins.get(i).get(0)<pos[0]+character[0].width/2 && coins.get(i).get(0) > pos[0]-character[0].width/2 && coins.get(i).get(1)-25 < pos[1]+character[0].height/3+character[2].height){
       coins.remove(i);
@@ -879,11 +879,11 @@ int next; //variable determining the next height
 void game() { //function for actual game
   imageMode(CENTER);
   image(background[2], width/2, height/2); //showing blue sky
-  nextHeight = random(-75*scaleFactor[0], 75*scaleFactor[0]); //creating random number for next heigt
+  nextHeight = random(-75*scaleFactor[3], 75*scaleFactor[3]); //creating random number for next heigt
   imageMode(CORNER);
   for (int i = 0; i < skyX.length; i++){ //going through all sky positions
     image(background[1], skyX[i], 0); //draws clouds
-    if (!firstTime) skyX[i]-=int((int(speed)/4+1)*scaleFactor[1]); //moves skyX back only if not firstTime
+    if (!firstTime) skyX[i]-=int((int(speed)/4+1)*scaleFactor[1])+1; //moves skyX back only if not firstTime
     if (skyX[i] <= -background[1].width){ //if skyX is completely off the screen, it moves to the right and off the screen
       if (i == 0) next = 1;
       else next = 0;
@@ -940,7 +940,7 @@ void game() { //function for actual game
         coins.add(newCoin);
       }
     }
-    if (!firstTime) groundPos[i][0]-=int((int(speed)/3+5)*scaleFactor[1])*2; //updates ground position if not first time, and moves ground back
+    if (!firstTime) groundPos[i][0]-=int((int(speed)/3+5)*scaleFactor[1]); //updates ground position if not first time, and moves ground back
   }
   updateCoins(); //calls on updateCoins
   updateEnemies(); //calls on updateEnemies
@@ -1208,6 +1208,7 @@ void shop(){ //game shop
 }
 
 void draw() {
+  println(frameRate);
   //currentScene selects which scene is being shown
   if (currentScene == 0) mainMenu();
   else if (currentScene == 2) shop();
