@@ -275,20 +275,26 @@ int[][] shopCosts = {{0,5000,25000,50000,100000,150000,250000,400000,500000,7500
 
 void setup() {
   fullScreen();//initializing size
+  
   orientation(LANDSCAPE); //makes orientation to landscape
+  
   scaling(); //finds the scaling size
   initFont();//initializing fonts
   loadSave(); //calls loadGame
+  
   frameRate(30);//initializing framerate
+  
   initImgs(); //intializes all the pictures
+  
   pos[0]=int(width*(500.0/1280)); //sets the position of player according the scaling of screen
   groundPos[0][1] = int(500.0*scaleFactor[0]); //sets vertical ground position of one grounds
   groundPos[1][0] = int(background[0].width); //sets the 2nd ground position to the length of the ground picture
   groundPos[1][1] = random(-70*scaleFactor[0], 70*scaleFactor[0])+500.0*scaleFactor[0]; //sets the vertical height of the 2nd ground position
   skyX[1] = width;
+  
   speedBoost = gravity*float(int(saveData[7])/2); //finds the speedboost for jetpack
-  maxFuel = 100+((int(saveData[7])+1)/2)*50;
-  maxHealth = 100 + int(saveData[2])*50;
+  maxFuel = 100+((int(saveData[7])+1)/2)*20;
+  maxHealth = 100 + int(saveData[2])*20;
   health=maxHealth;//health of player
   fuel=maxFuel;//fuel of player
 }
@@ -400,10 +406,10 @@ void jetpack() {//adding jetpack
   textFont(regular[0], 20*scaleFactor[0]);
   text("JETPACK",200*scaleFactor[0], height-70*scaleFactor[0]);
   if(jetpackUse && !onGround){ //checks if jetpack is being used and not on ground
-    fuel-=0.5;//subtracts 0.5 from fuel
+    fuel--;//subtracts 0.5 from fuel
   }
   else if(fuel<maxFuel && vy>=0 && !jetpackUse && onGround){//checks if fuel tank isnt full and onGround
-    fuel+=0.5;//regenarating fuel
+    fuel++;//regenarating fuel
   }
 }
 
@@ -954,9 +960,9 @@ void game() { //function for actual game
     textFont(regular[1], 70*scaleFactor[0]);
     textAlign(CENTER, CENTER);
     text("Rules to the game", width/2, height/2-height*0.4+100*scaleFactor[0]);
-    textFont(light[0], 48*scaleFactor[0]);
-    text("Press W to jump, Space to use jetpack,", width/2, height/2-80*scaleFactor[0]);
-    text("and Left Click to shoot.", width/2, height/2-20*scaleFactor[0]);
+    textFont(light[0], 40*scaleFactor[0]);
+    text("Press 'JUMP' to jump,", width/2, height/2-80*scaleFactor[0]);
+    text("'JETPACK' to use jetpack, and 'FIRE' to shoot.", width/2, height/2-20*scaleFactor[0]);
     text("Go the furthest distance without dying!", width/2, height/2+40*scaleFactor[0]);
     text("Press anywhere to continue", width/2, height/2+150*scaleFactor[0]);
     if (clicked){
@@ -1033,7 +1039,7 @@ void credits() { //loads credits, and license to font
   else if (clicked) currentScene = 0;
 }
 
-int[] selection = {int(saveData[1]), int(saveData[2]), int(saveData[6])}; //values of store selection
+int[] selection = {int(saveData[1]), int(saveData[2]), int(saveData[7])}; //values of store selection
 
 void shop(){ //game shop
   //shows title and money
@@ -1066,7 +1072,7 @@ void shop(){ //game shop
         if (clicked){ //shows if it's being clicked
           if (selection[i] <= int(saveData[i+4]) || (int(saveData[3]) >= shopCosts[i][selection[i]] && selection[i] == int(saveData[i+4])+1)){ //switches item if it's avaliable 
             saveData[i+1] = Integer.toString(selection[i]);
-            maxHealth = 100 + int(saveData[2])*50;
+            maxHealth = 100 + int(saveData[2])*20;
             health = maxHealth;
           }
           if (int(saveData[3]) >= shopCosts[i][selection[i]] && selection[i] == int(saveData[i+4])+1){ //removes money if item is purchasable
@@ -1132,7 +1138,7 @@ void shop(){ //game shop
         if (clicked){ //checks if button is pressed
           if (selection[i] <= int(saveData[i+4]) || int(saveData[3]) >= selection[2]*5000){ //if item is avaliable, it switches item
             saveData[7] = Integer.toString(selection[i]);
-            maxFuel = 100+((int(saveData[7])+1)/2)*50;
+            maxFuel = 100+((int(saveData[7])+1)/2)*20;
             speedBoost = gravity*(int(saveData[7])/2.0);
             fuel = maxFuel;
           }

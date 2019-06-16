@@ -254,8 +254,8 @@ void setup() {
   groundPos[1][1] = random(-70*scaleFactor[0], 70*scaleFactor[0])+500.0*scaleFactor[0]; //sets the vertical height of the 2nd ground position
   skyX[1] = width;
   speedBoost = gravity*float(int(saveData[7])/2); //finds the speedboost for jetpack
-  maxFuel = 100+((int(saveData[7])+1)/2)*50;
-  maxHealth = 100 + int(saveData[2])*50;
+  maxFuel = 100+((int(saveData[7])+1)/2)*20;
+  maxHealth = 100 + int(saveData[2])*20;
   health=maxHealth;//health of player
   fuel=maxFuel;//fuel of player
 }
@@ -355,10 +355,10 @@ void jetpack() {//adding jetpack
   }
   else jetpackUse = false; //sets using jetpakc to false is space key isn't pressed
   if(jetpackUse && !onGround){ //checks if jetpack is being used and not on ground
-    fuel-=0.5;//subtracts 0.5 from fuel
+    fuel--;//subtracts 0.5 from fuel
   }
   else if(fuel<maxFuel && vy>=0 && !jetpackUse && onGround){//checks if fuel tank isnt full and onGround
-    fuel+=0.5;//regenarating fuel
+    fuel++;//regenarating fuel
   }
 }
 
@@ -977,7 +977,7 @@ void credits() { //loads credits, and license to font
   else if (clicked) currentScene = 0;
 }
 
-int[] selection = {int(saveData[1]), int(saveData[2]), int(saveData[6])}; //values of store selection
+int[] selection = {int(saveData[1]), int(saveData[2]), int(saveData[7])}; //values of store selection
 
 void shop(){ //game shop
   //shows title and money
@@ -1010,7 +1010,7 @@ void shop(){ //game shop
         if (clicked){ //shows if it's being clicked
           if (selection[i] <= int(saveData[i+4]) || (int(saveData[3]) >= shopCosts[i][selection[i]] && selection[i] == int(saveData[i+4])+1)){ //switches item if it's avaliable 
             saveData[i+1] = Integer.toString(selection[i]);
-            maxHealth = 100 + int(saveData[2])*50;
+            maxHealth = 100 + int(saveData[2])*20;
             health = maxHealth;
           }
           if (int(saveData[3]) >= shopCosts[i][selection[i]] && selection[i] == int(saveData[i+4])+1){ //removes money if item is purchasable
@@ -1076,7 +1076,7 @@ void shop(){ //game shop
         if (clicked){ //checks if button is pressed
           if (selection[i] <= int(saveData[i+4]) || int(saveData[3]) >= selection[2]*5000){ //if item is avaliable, it switches item
             saveData[7] = Integer.toString(selection[i]);
-            maxFuel = 100+((int(saveData[7])+1)/2)*50;
+            maxFuel = 100+((int(saveData[7])+1)/2)*20;
             speedBoost = gravity*(int(saveData[7])/2.0);
             fuel = maxFuel;
           }
