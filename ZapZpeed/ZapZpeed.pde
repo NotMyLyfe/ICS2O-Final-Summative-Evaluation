@@ -153,7 +153,7 @@ void movePlayer() {
   else if (onObstacle) pos[1] = topOfObstacle - (character[0].height/3+character[2].height); //determines if the player is on an obstacle, and puts player above the obstacle
   else vy+=gravity*scaleFactor[0]; //determines if the player is not on an obstacle or ground, and adds gravity to the vertical speed
   if (groundPos[nextGround][0]-int((int(speed)/3+1)*scaleFactor[1])*2 <= pos[0]+character[0].width/2 && bottomOfPlayer-topOfNextGrass >= 10*scaleFactor[1] && groundPos[nextGround][0] > 0){ //checks if the player is going to collide with the ground
-    pos[0]-= int((int(speed)/3+5)*scaleFactor[1])*3; //pushes the player back
+    pos[0]-= int((int(speed)/3+5)*scaleFactor[1])*4; //pushes the player back
     colliding = true; //sets collision to true
   }
   else{
@@ -171,7 +171,14 @@ void movePlayer() {
     float left = obstacles.get(i).get(0)-obstacleImages[int(obstacles.get(i).get(2))].width/3;//left of obstacle
     float right = obstacles.get(i).get(0)+obstacleImages[int(obstacles.get(i).get(2))].width/3;//right of obstacle
     float futureLeft = left-(int((int(speed)/3+5)*scaleFactor[1])*2);//moves obstacle
-    if (left >= pos[0]+character[0].width/2 && futureLeft <= pos[0]+character[0].width/2 && right > pos[0]-character[0].width/2 && top<bottomOfPlayer) pos[0]-= int((int(speed)/3+5)*scaleFactor[1])*3;//checking if colliding with obstacle, and pushes back the player 
+    
+    //checks if the obstacle will collide with the player, and push the character back
+    if (left > pos[0]+character[0].width/2 && futureLeft <= pos[0]+character[0].width/2 && right > pos[0]-character[0].width/2 && (top < bottomOfPlayer || pos[1] > top || pos[1]-character[0].height/2 > top)){
+      pos[0] -= int((int(speed)/3+5)*scaleFactor[1])*4;
+    }
+    else if (left < pos[0]+character[0].width/2 && right > pos[0]-character[0].width/2 && (pos[1] > top || pos[1]-character[0].height/2 > top)){
+      pos[0] -= int((int(speed)/3+5)*scaleFactor[1])*4;
+    }
     if(left < pos[0]+character[0].width/2 && right > pos[0]-character[0].width/2 && bottomOfPlayer >= top && !onObstacle){//on top oof obstacle
       onObstacle = true; //sets onObstacle to true
       topOfObstacle = top; //sets the current topOfObstacle to the top of the current obstacle
