@@ -42,7 +42,7 @@ float vy=0;//vertical speed
 int[] fireRate = {50, 50, 250, 250, 100, 100, 250, 150, 100, 100, 100, 100, 50, 100, 50, 50, 100, 100, 50, 50}; //fire rate of each gun
 int[] bullets = {12, 7, 25, 32, 8, 8, 32, 50, 30, 30, 30, 30, 30, 30, 1, 10, 150, 150, 1, 1};//bullet capacity
 int[] dmg = {25, 40, 30, 25, 50, 55, 40, 35, 35, 40, 35, 40, 40, 50, 200, 250, 30, 40, 1000, 2000};//bullet damage
-int[] robotReload = {1000, 1250, 500, 500, 250, 250, 500, 500, 750, 500, 500, 500, 500, 500, 4500, 1000, 350, 350, 10000, 10000};//shows reload time for robots
+int[] robotReload = {1250, 1500, 750, 750, 1000, 1000, 750, 750, 750, 750, 750, 750, 750, 750, 4500, 1000, 750, 750, 10000, 10000};//shows reload time for robots
 int bulletsRemaining = 0;//bullets remaining
 
 ArrayList<ArrayList<Float>> trail = new ArrayList<ArrayList<Float>>();//2D list for trail
@@ -107,15 +107,15 @@ void movePlayer() {
   if (onGround) pos[1]=topOfGrass-(character[0].height/3+character[2].height); //determines if the player is on the ground, and puts player in right place
   else if (onObstacle) pos[1] = topOfObstacle - (character[0].height/3+character[2].height); //determines if the player is on an obstacle, and puts player above the obstacle
   else vy+=gravity*scaleFactor[0]; //determines if the player is not on an obstacle or ground, and adds gravity to the vertical speed
-  if (groundPos[nextGround][0]-int((int(speed)/3+1)*scaleFactor[1])*2 <= pos[0]+character[0].width/2 && bottomOfPlayer-topOfNextGrass >= 10*scaleFactor[1] && groundPos[nextGround][0] > 0){ //checks if the player is going to collide with the ground
-    pos[0]-= int((int(speed)/3+5)*scaleFactor[1])*4; //pushes the player back
+  if (groundPos[nextGround][0]-int((int(speed)/3+5)*scaleFactor[1])*2 <= pos[0]+character[0].width/2 && bottomOfPlayer-topOfNextGrass >= 10*scaleFactor[1] && groundPos[nextGround][0] > 0){ //checks if the player is going to collide with the ground
+    pos[0]-= int((int(speed)/3+6)*scaleFactor[1])*2; //pushes the player back
     colliding = true; //sets collision to true
   }
   else{
     colliding = false; //sets collision to false
   }
   if (pos[0] < int(width*(500.0/1280)) && pos[0]>0){ //finds if the player was pushed back
-    pos[0]+= 0.2*scaleFactor[1];//run back to original position
+    pos[0]+= scaleFactor[1]/2;//run back to original position
   }
   if (!onGround && bottomOfPlayer >= topOfGrass && !justJumped){//checking if on ground and falling
     vy = 0; //sets vertical speed to 0
@@ -129,10 +129,10 @@ void movePlayer() {
     
     //checks if the obstacle will collide with the player, and push the character back
     if (left > pos[0]+character[0].width/2 && futureLeft <= pos[0]+character[0].width/2 && right > pos[0]-character[0].width/2 && (top < bottomOfPlayer || pos[1] > top || pos[1]-character[0].height/2 > top)){
-      pos[0] -= int((int(speed)/3+5)*scaleFactor[1])*4;
+      pos[0] -= int((int(speed)/3+6)*scaleFactor[1])*3;
     }
     else if (left < pos[0]+character[0].width/2 && right > pos[0]-character[0].width/2 && (pos[1] > top || pos[1]-character[0].height/2 > top)){
-      pos[0] -= int((int(speed)/3+5)*scaleFactor[1])*4;
+      pos[0] -= int((int(speed)/3+6)*scaleFactor[1])*3;
     }
     else if(left < pos[0]+character[0].width/2 && right > pos[0]-character[0].width/2 && bottomOfPlayer > top && pos[1] < top && pos[1]-character[0].height/2 < top && !onObstacle){//on top oof obstacle
       onObstacle = true; //sets onObstacle to true
@@ -362,7 +362,7 @@ void jetpack() {//adding jetpack
   }
   else jetpackUse = false; //sets using jetpakc to false is space key isn't pressed
   if(jetpackUse && !onGround){ //checks if jetpack is being used and not on ground
-    fuel--;//subtracts 0.5 from fuel
+    fuel--;//subtracts 1 from fuel
   }
   else if(fuel<maxFuel && vy>=0 && !jetpackUse && onGround){//checks if fuel tank isnt full and onGround
     fuel++;//regenarating fuel
@@ -817,11 +817,11 @@ int next; //variable determining the next height
 void game() { //function for actual game
   imageMode(CENTER);
   image(background[2], width/2, height/2); //showing blue sky
-  nextHeight = random(-75*scaleFactor[0], 75*scaleFactor[0]); //creating random number for next heigt
+  nextHeight = random(-75*scaleFactor[3], 75*scaleFactor[3]); //creating random number for next heigt
   imageMode(CORNER);
   for (int i = 0; i < skyX.length; i++){ //going through all sky positions
     image(background[1], skyX[i], 0); //draws clouds
-    if (!firstTime) skyX[i]-=int((int(speed)/4+1)*scaleFactor[1]); //moves skyX back only if not firstTime
+    if (!firstTime) skyX[i]-=int((int(speed)/4+1)*scaleFactor[1])+1; //moves skyX back only if not firstTime
     if (skyX[i] <= -background[1].width){ //if skyX is completely off the screen, it moves to the right and off the screen
       if (i == 0) next = 1;
       else next = 0;
