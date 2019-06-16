@@ -4,6 +4,11 @@
 
 //Set memory limit to 4096, as this uses a lot of RAM
 
+//importing necessary library
+import java.io.*;
+import android.content.Context;
+import android.app.Activity;
+
 int currentScene = 0;//shows what is on screen: 0 - main menu, 1 - game, 2 - shop, 3 - credits, 4 - exit
 
 //initializing all fonts
@@ -30,7 +35,7 @@ int[] reloadTime = {1500, 2500, 2750, 2000, 3500, 3500, 4250, 3500, 3250, 3000, 
 boolean[] auto = {false, false, true, true, false, false, true, true, false, true, true, true, true, true, false, false, true, true, false, false}; //if guns are either auto or semi-auto
 
 //initializing gravity
-int JUMPPOWER=-12;
+int JUMPPOWER=-8;
 float gravity=0.6;
 boolean jump=false;
 
@@ -92,6 +97,46 @@ void scaling(){ //find scale factors
   else{
     scaleFactor[0] = scaleFactor[2];
     scaleFactor[1] = scaleFactor[3];
+  }
+}
+
+void saveGame(){ //saves gameData
+  Activity activity = this.getActivity(); //creates new variable activity, using android.app.Activity, getting interaction from player
+  Context context = activity.getApplicationContext(); //creates new variable context, with android.content.Context, branching off activity
+  FileOutputStream output; //creates a new variable output, with FileOutputStream
+  String out = ""; //creates a String to store data
+  for (int i = 0; i < saveData.length; i++){ //adds all values of saveData to out
+    out+=saveData[i]+" ";
+  }
+  try{ //attempt to write and save data
+    output = context.openFileOutput("saveGame.txt", Context.MODE_PRIVATE);
+    output.write(out.getBytes());
+    output.close();
+  }
+  catch (Exception e){ //if unable to save, output error
+    println(e);
+  }
+}
+
+void loadSave(){ //load gameData
+  Activity activity = this.getActivity(); //creates new variable activity, using android.app.Activity, getting interaction from player
+  Context context = activity.getApplicationContext(); //creates new variable context, with android.content.Context, branching off activity
+  FileInputStream input; //creates a new variable input, with FileInputStream
+  BufferedReader buffer; //create a new variable buffer, with BufferedReader
+  String string; //creates a new string
+  try{ //attempt to read data from file, and push it to saveData
+    StringBuilder text = new StringBuilder();
+    input = context.openFileInput("saveGame.txt");
+    buffer = createReader(input);
+    while((string=buffer.readLine()) != null){
+      text.append(string);
+      text.append('\n');
+    }
+    buffer.close();
+    saveData = text.toString().split(" ");
+  }
+  catch (Exception e){ //if unable to read, output error
+    println(e);
   }
 }
 
@@ -225,28 +270,16 @@ void initImgs() {//adding all images and resizing to proper size and scaled to t
   coin.resize(int(coin.width*scaleFactor[0]), int(coin.height*scaleFactor[0]));
 }
 
-String[][] shopOptions = new String[4][];//create new 2D array of shop options
-int[][] shopCosts = new int[2][];//2D array for costs
+String[][] shopOptions = {{"Gun", "Armour", "Jetpack"}, {"Glock","Deagle","UMP-45","UZI","Remington 870","SPAS-12","AA-12","P90","AR-15","SA80","AUG","C7","AK-47","FN SCAR","M99", "AWP", "Negev", "M249", "SMAW", "Carl Gustaf"}, {"Nothing","Basic","Light","Moderate","Medium","Heavy","Kevlar","Carbon Nanotube","Nuclear","Antimatter"}, {"Speed Boost Mk","Fuel Boost Mk"}};
+int[][] shopCosts = {{0,5000,25000,50000,100000,150000,250000,400000,500000,750000,800000,900000,1000000,1015000,1025000,1040000,1050000,1060000,1075000,1150000}, {0,10000,25000,40000,60000,80000,95000,100000,125000,150000}};
 
 void setup() {
   fullScreen();//initializing size
+  orientation(LANDSCAPE); //makes orientation to landscape
   scaling(); //finds the scaling size
   initFont();//initializing fonts
-  if (loadStrings("data/saveData/saveGame.txt") != null) { //checks if saveGame file exists
-    saveData = loadStrings("data/saveData/saveGame.txt"); //loads saveGame file
-  }
+  loadSave(); //calls loadGame
   frameRate(30);//initializing framerate
-  for (int i = 0; i < shopOptions.length; i++){
-    shopOptions[i] = loadStrings("data/gameData/shopOptions"+i+".txt"); //loads all shop options
-    if (i < 2){ //checks if i is less than 2
-      String[] buffer = loadStrings("data/gameData/shopPrice"+i+".txt"); //loads all prices of shop options, in a buffered string array
-      int[] intBuffer = new int[buffer.length]; //intializes a new int array
-      for (int j = 0; j < buffer.length; j++){
-        intBuffer[j]=int(buffer[j]); //converts string to int
-      }
-      shopCosts[i] = intBuffer; //stores store prices
-    }
-  }
   initImgs(); //intializes all the pictures
   pos[0]=int(width*(500.0/1280)); //sets the position of player according the scaling of screen
   groundPos[0][1] = int(500.0*scaleFactor[0]); //sets vertical ground position of one grounds
@@ -296,15 +329,24 @@ void mainMenu() {//initializing main menu
 }
 
 boolean justJumped = false; //checks if just jumped
-boolean holding = false; // checks if still holding w button
 
-void keyPressed() {//checks if key was pressed
-  if (keyCode == 87 && (onGround || onObstacle) && !justJumped && pos[0]>0 && !holding && currentScene == 1 && !firstTime) {//only jump if on ground
+void jump() {//checks if key was pressed
+  boolean jumpButton = mouseX>10*scaleFactor[0] && mouseX < 130*scaleFactor[0] && mouseY<height-130*scaleFactor[0] && mouseY > height-260*scaleFactor[0]; //check if finger is above button
+  if (jumpButton && clicked && (onGround || onObstacle) && !justJumped && pos[0]>0 && currentScene == 1 && !firstTime) {//only jump if on ground
     vy=int(JUMPPOWER*scaleFactor[3]);//jumping power
+    pos[1]+=vy; //add vy to pos[1] to a give a little boost
     onGround = false; //sets onGround to false
     justJumped = true; //sets justJumped to true
-    holding = true; //sets holding to true
+    fill(0); //sets button to black
   }
+  else fill(255); //sets button to white
+  rectMode(CENTER);
+  rect(70*scaleFactor[0], height-200*scaleFactor[0], 120*scaleFactor[0], 120*scaleFactor[0]); //shows button of jump
+  fill(0);
+  //displays JUMP on button
+  textAlign(CENTER, CENTER);
+  textFont(regular[0], 20*scaleFactor[0]);
+  text("JUMP",70*scaleFactor[0], height-200*scaleFactor[0]);
 }//end keyPressed
 
 boolean clicked = false; //creates new boolean clicked, and sets false
@@ -316,14 +358,6 @@ void mousePressed(){//checks if mouse was pressed
 void mouseReleased(){//checks if mouse was released
   clicked = false;
 }
-
-void keyReleased() {//checks if key was released
-  if (key == 'w'){
-    justJumped = false;
-    holding = false;
-  }
-}
-
 
 float rotation = 0;//finds rotation of arms and legs
 float vR = radians(12);//speed of rotation
@@ -342,18 +376,29 @@ void addTrail() {//adding trail
 }
 
 void jetpack() {//adding jetpack
+  boolean jetpackButton = mouseX> 140*scaleFactor[0] && mouseX < 260*scaleFactor[0] && mouseY > height-130*scaleFactor[0] && mouseY < height-10*scaleFactor[0]; //checks if finger is over button
   boolean jetpackUse = false;//not using jetpack
-  if (keyPressed && key==32 && fuel >= 0) {//checks if space key is pressed
+  if (jetpackButton && mousePressed && fuel >= 0) {//checks if button is pressed
     image(character[4], pos[0]-character[0].width/2-4*scaleFactor[0],pos[1]+8*scaleFactor[0]+character[3].height/2 + character[4].height/2);//image of the fire
     if (pos[1] > -character[0].height/2){ //checks if weapon is lower than the top of the screen
-      vy=(-3.0*gravity-speedBoost)*scaleFactor[0];//player goes up
+      vy=(-3.0*gravity-speedBoost)*scaleFactor[3];//player goes up
       onGround = false; //sets onGround to false
       onObstacle = false; //sets onObstacle to false
     }
     else vy = 0;//checks if its on the top of the screen and stops jetpack from flying higher
     jetpackUse = true; //sets using jetpack to true
+    fill(0);
   }
-  else jetpackUse = false; //sets using jetpakc to false is space key isn't pressed
+  else{//sets using jetpack to false if button isn't pressed
+    jetpackUse = false;
+    fill(255);
+  }
+  rect(200*scaleFactor[0], height-70*scaleFactor[0], 120*scaleFactor[0], 120*scaleFactor[0]); //shows button of jetpack
+  fill(0);
+  //displays JETPACK on button
+  textAlign(CENTER, CENTER);
+  textFont(regular[0], 20*scaleFactor[0]);
+  text("JETPACK",200*scaleFactor[0], height-70*scaleFactor[0]);
   if(jetpackUse && !onGround){ //checks if jetpack is being used and not on ground
     fuel-=0.5;//subtracts 0.5 from fuel
   }
@@ -459,14 +504,13 @@ boolean reloading = false; //boolean for reloading
 int lastShot = 0; //time for when did it last shoot
 
 void drawArms() {//adding arms on player
-  rectMode(CENTER);//changing rect mode
-  pushMatrix(); //begins image transformation
-  translate(pos[0], pos[1]);//attaching on character
+  rectMode(CENTER);//changing rect mod
   if (recoil < 0){//resets recoil variables
     recoil = 0;
     vRecoil = 0;
   }
-  if (mousePressed && !justFired && bulletsRemaining > 0 && lastShot + fireRate[int(saveData[1])] <= millis()) {//checks if able to to fire and player clicked
+  boolean fireButton = mouseX > width-130*scaleFactor[0] && mouseX < width-10*scaleFactor[0] && mouseY > height-130*scaleFactor[0] && mouseY < height-10*scaleFactor[0]; ///checks if fire button is pressed
+  if (fireButton && mousePressed && !justFired && bulletsRemaining > 0 && lastShot + fireRate[int(saveData[1])] <= millis()) {//checks if able to to fire and button pressed
     vRecoil = 2*scaleFactor[0];//sets recoil
     recoil=2*scaleFactor[0];
     lastShot = millis();//last shot current time
@@ -474,13 +518,26 @@ void drawArms() {//adding arms on player
     bulletsRemaining--;//removes one from bulletsRemaining
     if (bulletsRemaining == 0) reloadStart = millis();//relaod if no more bullets
     addBullet(); //calls addBullet function
-  } else if (!mousePressed && !auto[int(saveData[1])]) {//checks if mouse is released and is semi auto
-    justFired = false; //sets justFired to false
+    fill(0);
   }
+  else fill(255);
+  if (!mousePressed && !auto[int(saveData[1])]) {//checks if button is released and is semi auto
+    justFired = false; //sets justFired to false
+    fill(255);
+  }
+  //button for jetpack
+  rectMode(CENTER);
+  rect(width-70*scaleFactor[0], height-70*scaleFactor[0], 120*scaleFactor[0], 120*scaleFactor[0]);
+  fill(0);
+  textAlign(CENTER, CENTER);
+  textFont(regular[0], 25*scaleFactor[0]);
+  text("FIRE", width-70*scaleFactor[0], height-70*scaleFactor[0]);
+  pushMatrix();//begining arm transformation
+  translate(pos[0], pos[1]);//attaching on character
   if (recoil >= 10*scaleFactor[0]) { //checks if recoil is greater or equal to 10
     vRecoil*=-1; //sets speed of recoil to inverse
   }
-  if ((recoil != 0) || (int(saveData[1]) >= 2 && ((mousePressed && auto[int(saveData[1])])) || (auto[int(saveData[1])] == false && justFired)) && pos[0] > 0 && !reloading) { //checks if gun was just shot or recoil is not 0 and character is on screen
+  if ((recoil != 0) || (int(saveData[1]) >= 2 && ((mousePressed && auto[int(saveData[1])] && fireButton)) || (auto[int(saveData[1])] == false && justFired)) && pos[0] > 0 && !reloading) { //checks if gun was just shot or recoil is not 0 and character is on screen
     recoil+=vRecoil; //adds recoil speed to recoil
     rotate(-PI/2); //rotates arm perpindicular to player
   } else if(pos[0]>0) rotate(rotation); // else rotate to arm swing
@@ -550,7 +607,6 @@ void drawChar() {//draws character
   imageMode(CENTER);//changing image mode
   updateTrail();//updating trail
   tint(255, 255);//adding tint
-  fill(0, 255, 0);//adding fill
   if (pos[0] > 0) {//checks if rotation of arms are beyond a certain point
     if (rotation >= PI/4 || rotation <= -PI/4) vR*=-1; //switches rotation to other direction
     rotation+=vR; //adds rotation speed to rotation
@@ -883,10 +939,11 @@ void game() { //function for actual game
     if(colliding){
       distTravelled=distTravelled-0.04*speed;
      }
+    if(pos[0]>0 && health > 0){
+    drawChar();
     jetpack();
-    if (pos[0] > 0 && health > 0){
-      charInfo();
-      drawChar();
+    charInfo();
+    jump();
     }
   }
   else { //if first time, shows all controls
@@ -904,7 +961,6 @@ void game() { //function for actual game
     text("Press anywhere to continue", width/2, height/2+150*scaleFactor[0]);
     if (clicked){
       firstTime = false;
-      bulletsRemaining++;
     }
   }
   if(pos[0]<=0 || health <= 0){ //shows player stats if dead or beyond screen
@@ -940,7 +996,7 @@ void game() { //function for actual game
         bulletPos.clear();
         enemyBullets.clear();
         coins.clear();
-        saveStrings("data/saveData/saveGame.txt", saveData);
+        saveGame(); //calls saveGame
       }
     }
     else fill(255);
@@ -1017,7 +1073,7 @@ void shop(){ //game shop
             saveData[3] = Integer.toString(int(saveData[3]) - shopCosts[i][selection[i]]);
             saveData[i+4] = Integer.toString(int(saveData[i+4])+1);
           }
-          saveStrings("data/saveData/saveGame.txt", saveData); //updates saveData and saves
+          saveGame(); //calls saveGame
         }
       }
       else fill(255);
@@ -1084,7 +1140,7 @@ void shop(){ //game shop
             saveData[3] = Integer.toString(int(saveData[3]) - 5000*selection[2]);
             saveData[i+4] = Integer.toString(int(saveData[i+4])+1);
           }
-          saveStrings("data/saveData/saveGame.txt", saveData); //updates saveData and saves it
+          saveGame(); //calls saveGame
         }
       }
       else fill(255);
