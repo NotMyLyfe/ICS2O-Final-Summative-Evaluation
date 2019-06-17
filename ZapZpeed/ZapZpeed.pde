@@ -85,57 +85,56 @@ float rightOfObstacle = 0; //find the right of obstacle
 //array for scaling
 float[] scaleFactor = {1, 1, 1, 1}; //0-main scaling factor, 1-scale for background and sky, 2-x scale, 3-y scale
 
-void scaling(){ //find scale factors
+void scaling() { //find scale factors
   scaleFactor[2] = float(width)/1280.0; //scaling on x axis
   scaleFactor[3] = float(height)/720.0; //scaling on y axis
-  
+
   //determining main scaling factors
-  if (scaleFactor[2] > scaleFactor[3]){
+  if (scaleFactor[2] > scaleFactor[3]) {
     scaleFactor[0] = scaleFactor[3];
     scaleFactor[1] = scaleFactor[2];
-  }
-  else{
+  } else {
     scaleFactor[0] = scaleFactor[2];
     scaleFactor[1] = scaleFactor[3];
   }
 }
 
-void saveGame(){ //saves gameData
+void saveGame() { //saves gameData
   Activity activity = this.getActivity(); //creates new variable activity, using android.app.Activity, getting interaction from player
   Context context = activity.getApplicationContext(); //creates new variable context, with android.content.Context, branching off activity
   FileOutputStream output; //creates a new variable output, with FileOutputStream
   String out = ""; //creates a String to store data
-  for (int i = 0; i < saveData.length; i++){ //adds all values of saveData to out
+  for (int i = 0; i < saveData.length; i++) { //adds all values of saveData to out
     out+=saveData[i]+" ";
   }
-  try{ //attempt to write and save data
+  try { //attempt to write and save data
     output = context.openFileOutput("saveGame.txt", Context.MODE_PRIVATE);
     output.write(out.getBytes());
     output.close();
   }
-  catch (Exception e){ //if unable to save, output error
+  catch (Exception e) { //if unable to save, output error
     println(e);
   }
 }
 
-void loadSave(){ //load gameData
+void loadSave() { //load gameData
   Activity activity = this.getActivity(); //creates new variable activity, using android.app.Activity, getting interaction from player
   Context context = activity.getApplicationContext(); //creates new variable context, with android.content.Context, branching off activity
   FileInputStream input; //creates a new variable input, with FileInputStream
   BufferedReader buffer; //create a new variable buffer, with BufferedReader
   String string; //creates a new string
-  try{ //attempt to read data from file, and push it to saveData
+  try { //attempt to read data from file, and push it to saveData
     StringBuilder text = new StringBuilder();
     input = context.openFileInput("saveGame.txt");
     buffer = createReader(input);
-    while((string=buffer.readLine()) != null){
+    while ((string=buffer.readLine()) != null) {
       text.append(string);
       text.append('\n');
     }
     buffer.close();
     saveData = text.toString().split(" ");
   }
-  catch (Exception e){ //if unable to read, output error
+  catch (Exception e) { //if unable to read, output error
     println(e);
   }
 }
@@ -143,7 +142,7 @@ void loadSave(){ //load gameData
 void movePlayer() {
   bottomOfPlayer = pos[1]+character[0].height/3+character[2].height;//finds bottom of player
   pos[1]+=vy*scaleFactor[0];//moving the player up/down
-  for (int i = 0; i < 2; i++){
+  for (int i = 0; i < 2; i++) {
     if (pos[0]>= groundPos[i][0] && pos[0]<= groundPos[i][0]+background[0].width) current = i;//finds the ground the player's on
   }
   nextGround = (current+1)%2; //finds the next ground position
@@ -152,34 +151,32 @@ void movePlayer() {
   if (onGround) pos[1]=topOfGrass-(character[0].height/3+character[2].height); //determines if the player is on the ground, and puts player in right place
   else if (onObstacle) pos[1] = topOfObstacle - (character[0].height/3+character[2].height); //determines if the player is on an obstacle, and puts player above the obstacle
   else vy+=gravity*scaleFactor[0]; //determines if the player is not on an obstacle or ground, and adds gravity to the vertical speed
-  if (groundPos[nextGround][0]-int((int(speed)/3+5)*scaleFactor[1]) <= pos[0]+character[0].width/2 && bottomOfPlayer-topOfNextGrass >= 10*scaleFactor[1] && groundPos[nextGround][0] > 0){ //checks if the player is going to collide with the ground
+  if (groundPos[nextGround][0]-int((int(speed)/3+5)*scaleFactor[1]) <= pos[0]+character[0].width/2 && bottomOfPlayer-topOfNextGrass >= 10*scaleFactor[1] && groundPos[nextGround][0] > 0) { //checks if the player is going to collide with the ground
     pos[0]-= int((int(speed)/3+6)*scaleFactor[1]); //pushes the player back
     colliding = true; //sets collision to true
-  }
-  else{
+  } else {
     colliding = false; //sets collision to false
   }
-  if (pos[0] < int(width*(500.0/1280)) && pos[0]>0){ //finds if the player was pushed back
+  if (pos[0] < int(width*(500.0/1280)) && pos[0]>0) { //finds if the player was pushed back
     pos[0]+= 0.2*scaleFactor[1];//run back to original position
   }
-  if (!onGround && bottomOfPlayer >= topOfGrass && !justJumped){//checking if on ground and falling
+  if (!onGround && bottomOfPlayer >= topOfGrass && !justJumped) {//checking if on ground and falling
     vy = 0; //sets vertical speed to 0
     onGround = true; //sets onGround to true
   }
-  for (int i = 0; i < obstacles.size(); i++){ //goes through every obstacle to detect collisions
+  for (int i = 0; i < obstacles.size(); i++) { //goes through every obstacle to detect collisions
     float top = obstacles.get(i).get(1) - obstacleImages[int(obstacles.get(i).get(2))].height*((obstacles.get(i).get(2)+1)/2);//
     float left = obstacles.get(i).get(0)-obstacleImages[int(obstacles.get(i).get(2))].width/3;//left of obstacle
     float right = obstacles.get(i).get(0)+obstacleImages[int(obstacles.get(i).get(2))].width/3;//right of obstacle
     float futureLeft = left-int((int(speed)/3+5)*scaleFactor[1]);//moves obstacle
-    
+
     //checks if the obstacle will collide with the player, and push the character back
-    if (left > pos[0]+character[0].width/2 && futureLeft <= pos[0]+character[0].width/2 && right > pos[0]-character[0].width/2 && (top < bottomOfPlayer || pos[1] > top || pos[1]-character[0].height/2 > top)){
-      pos[0] -= int((int(speed)/3+6)*scaleFactor[1]);
+    if (left > pos[0]+character[0].width/2 && futureLeft <= pos[0]+character[0].width/2 && right > pos[0]-character[0].width/2 && (top < bottomOfPlayer || pos[1] > top || pos[1]-character[0].height/2 > top)) {
+      pos[0] -= int((int(speed)/3+6)*scaleFactor[1])*5;
+    } else if (left < pos[0]+character[0].width/2 && right > pos[0]-character[0].width/2 && (pos[1] > top || pos[1]-character[0].height/2 > top)) {
+      pos[0] -= int((int(speed)/3+6)*scaleFactor[1])*5;
     }
-    else if (left < pos[0]+character[0].width/2 && right > pos[0]-character[0].width/2 && (pos[1] > top || pos[1]-character[0].height/2 > top)){
-      pos[0] -= int((int(speed)/3+6)*scaleFactor[1]);
-    }
-    if(left < pos[0]+character[0].width/2 && right > pos[0]-character[0].width/2 && bottomOfPlayer >= top && !onObstacle){//on top oof obstacle
+    if (left < pos[0]+character[0].width/2 && right > pos[0]-character[0].width/2 && bottomOfPlayer >= top && !onObstacle) {//on top oof obstacle
       onObstacle = true; //sets onObstacle to true
       topOfObstacle = top; //sets the current topOfObstacle to the top of the current obstacle
       rightOfObstacle = right; //sets the current rightOfObstacle to the right of the current obstacle
@@ -210,29 +207,29 @@ void initImgs() {//adding all images and resizing to proper size and scaled to t
   character[2] = loadImage("Imgs/Character Leg.png");
   character[3] = loadImage("Imgs/Jetpack.png");
   character[4] = loadImage("Imgs/Fire.png");
-  
+
   guns[0] = new PImage[2];
   guns[0][0] = loadImage("Imgs/Glock Shell.png");
   guns[0][1] = loadImage("Imgs/Glock Side.png");
-  
+
   guns[1] = new PImage[2];
   guns[1][0] = loadImage("Imgs/Deagle Shell.png");
   guns[1][1] = loadImage("Imgs/Deagle Slide.png");
-  
-  for (int i = 2; i < guns.length; i++){
+
+  for (int i = 2; i < guns.length; i++) {
     guns[i] = new PImage[1];
     guns[i][0] = loadImage("Imgs/" + shopOptions[1][i] + ".png");
   }
-  
+
   guns[2][0].resize(guns[2][0].width*3/4, guns[2][0].height*3/4);
   guns[3][0].resize(guns[3][0].width*3/4, guns[3][0].height*3/4);
   guns[5][0].resize(guns[5][0].width*3/4, guns[5][0].height*3/4);
-  for (int i = 7; i <= 15; i++){
+  for (int i = 7; i <= 15; i++) {
     guns[i][0].resize(guns[i][0].width*3/4, guns[i][0].height*3/4);
   }
-  
-  for (int i = 0; i < guns.length; i++){
-    for (int j = 0; j < guns[i].length; j++){
+
+  for (int i = 0; i < guns.length; i++) {
+    for (int j = 0; j < guns[i].length; j++) {
       guns[i][j].resize(int(guns[i][j].width*scaleFactor[0]), int(guns[i][j].height*scaleFactor[0]));
     }
   }
@@ -241,34 +238,34 @@ void initImgs() {//adding all images and resizing to proper size and scaled to t
   background[1] = loadImage("Imgs/Clouds.png");
   background[2] = loadImage("Imgs/Blue Sky.png");
   background[0].resize(background[0].width, background[0].height*2/3);
-  
-  for(int i = 0; i < background.length; i++){
+
+  for (int i = 0; i < background.length; i++) {
     background[i].resize(int(background[i].width*scaleFactor[1]), int(background[i].height*scaleFactor[1]));
   }
-  
+
   bullet = loadImage("Imgs/Bullet.png");
   bullet.resize(int(bullet.width*5*scaleFactor[0]), int(bullet.height*5*scaleFactor[0]));
-  
+
   rocket = loadImage("Imgs/RPG Ammo.png");
   rocket.resize(int(rocket.width*scaleFactor[0]), int(rocket.height*scaleFactor[0]));
-  
+
   obstacleImages[0] = loadImage("Imgs/Tree.png");
   obstacleImages[1] = loadImage("Imgs/Bricks.png");
-  
+
   obstacleImages[0].resize(int(obstacleImages[0].width*scaleFactor[0]), int(obstacleImages[0].height*scaleFactor[0]));
   obstacleImages[1].resize(int(obstacleImages[1].width*scaleFactor[0]), int(obstacleImages[1].height*scaleFactor[0]));
-  
+
   robot[0] = loadImage("Imgs/Robot.png");
   robot[1] = loadImage("Imgs/Robot Arm.png");
   robot[2] = loadImage("Imgs/Robot Leg.png");
-  
+
   for (int i = 0; i < 5; i++) {
     character[i].resize(int(character[i].width*3/4*scaleFactor[0]), int(character[i].height*3/4*scaleFactor[0]));
-    if(i<3){
+    if (i<3) {
       robot[i].resize(int(robot[i].width*3/4*scaleFactor[0]), int(robot[i].height*3/4*scaleFactor[0]));
     }
   }
-  
+
   character[1].resize(character[1].width*3/4, character[1].height*3/4);
   robot[1].resize(robot[1].width*3/4, robot[1].height*3/4);
   mainMenuPic = loadImage("Imgs/Main Menu Screen.png");
@@ -277,28 +274,28 @@ void initImgs() {//adding all images and resizing to proper size and scaled to t
   coin.resize(int(coin.width*scaleFactor[0]), int(coin.height*scaleFactor[0]));
 }
 
-String[][] shopOptions = {{"Gun", "Armour", "Jetpack"}, {"Glock","Deagle","UMP-45","UZI","Remington 870","SPAS-12","AA-12","P90","AR-15","SA80","AUG","C7","AK-47","FN SCAR","M99", "AWP", "Negev", "M249", "SMAW", "Carl Gustaf"}, {"Nothing","Basic","Light","Moderate","Medium","Heavy","Kevlar","Carbon Nanotube","Nuclear","Antimatter"}, {"Speed Boost Mk","Fuel Boost Mk"}};
-int[][] shopCosts = {{0,5000,25000,50000,100000,150000,250000,400000,500000,750000,800000,900000,1000000,1015000,1025000,1040000,1050000,1060000,1075000,1150000}, {0,10000,25000,40000,60000,80000,95000,100000,125000,150000}};
+String[][] shopOptions = {{"Gun", "Armour", "Jetpack"}, {"Glock", "Deagle", "UMP-45", "UZI", "Remington 870", "SPAS-12", "AA-12", "P90", "AR-15", "SA80", "AUG", "C7", "AK-47", "FN SCAR", "M99", "AWP", "Negev", "M249", "SMAW", "Carl Gustaf"}, {"Nothing", "Basic", "Light", "Moderate", "Medium", "Heavy", "Kevlar", "Carbon Nanotube", "Nuclear", "Antimatter"}, {"Speed Boost Mk", "Fuel Boost Mk"}};
+int[][] shopCosts = {{0, 5000, 25000, 50000, 100000, 150000, 250000, 400000, 500000, 750000, 800000, 900000, 1000000, 1015000, 1025000, 1040000, 1050000, 1060000, 1075000, 1150000}, {0, 10000, 25000, 40000, 60000, 80000, 95000, 100000, 125000, 150000}};
 
 void setup() {
   fullScreen(OPENGL);//initializing size
-  
+
   orientation(LANDSCAPE); //makes orientation to landscape
-  
+
   scaling(); //finds the scaling size
   initFont();//initializing fonts
   loadSave(); //calls loadGame
-  
+
   frameRate(60);//initializing framerate
-  
+
   initImgs(); //intializes all the pictures
-  
+
   pos[0]=int(width*(500.0/1280)); //sets the position of player according the scaling of screen
   groundPos[0][1] = int(500.0*scaleFactor[0]); //sets vertical ground position of one grounds
   groundPos[1][0] = int(background[0].width); //sets the 2nd ground position to the length of the ground picture
   groundPos[1][1] = random(-70*scaleFactor[0], 70*scaleFactor[0])+500.0*scaleFactor[0]; //sets the vertical height of the 2nd ground position
   skyX[1] = width;
-  
+
   speedBoost = gravity*float(int(saveData[7])/2); //finds the speedboost for jetpack
   maxFuel = 100+((int(saveData[7])+1)/2)*20;
   maxHealth = 100 + int(saveData[2])*20;
@@ -320,23 +317,22 @@ void mainMenu() {//initializing main menu
   text("ZapZpeed", width/2, 100*scaleFactor[0]);//title
   textFont(light[0], 48*scaleFactor[0]);//light font
   rectMode(CENTER);//adjusting rect mode
-  for (int i = 0; i < 4; i++){
+  for (int i = 0; i < 4; i++) {
     if (mouseX >= width/2-150*scaleFactor[0] && mouseX <= width/2+150*scaleFactor[0] && mouseY >= height/2-60*scaleFactor[0]+i*100*scaleFactor[0] && mouseY <= height/2+20*scaleFactor[0]+i*100*scaleFactor[0]) buttons[i] = true;//checks if any of the buttons have been pressed
     else buttons[i] = false; //checks if mouse is not over button and sets button to false
-    if (buttons[i]){ //checks if mouse is over button
+    if (buttons[i]) { //checks if mouse is over button
       fill(0); //sets the button to black
-      if(clicked){ //checks if button is clicked
+      if (clicked) { //checks if button is clicked
         currentScene = i+1; //sets scene to corresponding button
-        if(i == 0) bulletsRemaining = bullets[int(saveData[1])]; //sets bullets remaining to the current weapon
+        if (i == 0) bulletsRemaining = bullets[int(saveData[1])]; //sets bullets remaining to the current weapon
       }
-    }
-    else fill(255,170); //sets the button to translucent
+    } else fill(255, 170); //sets the button to translucent
     rect(width/2, height/2-20*scaleFactor[0]+100*i*scaleFactor[0], 300*scaleFactor[0], 80*scaleFactor[0]); //add buttons
-    if(buttons[i]) fill(255); //checks if mouse is over button and sets text to white
+    if (buttons[i]) fill(255); //checks if mouse is over button and sets text to white
     else fill(0); //else sets text to black
     text(buttonText[i], width/2, height/2-25*scaleFactor[0]+100*i*scaleFactor[0]); //adds text of each button
   }
-  if (int(saveData[0]) == 0){ //checks if the distance travelled is 0
+  if (int(saveData[0]) == 0) { //checks if the distance travelled is 0
     firstTime = true; //sets firstTime to true
   }
 }
@@ -351,24 +347,23 @@ void jump() {//checks if key was pressed
     onGround = false; //sets onGround to false
     justJumped = true; //sets justJumped to true
     fill(0); //sets button to black
-  }
-  else fill(255); //sets button to white
+  } else fill(255); //sets button to white
   rectMode(CENTER);
   rect(70*scaleFactor[0], height-200*scaleFactor[0], 120*scaleFactor[0], 120*scaleFactor[0]); //shows button of jump
   fill(0);
   //displays JUMP on button
   textAlign(CENTER, CENTER);
   textFont(regular[0], 20*scaleFactor[0]);
-  text("JUMP",70*scaleFactor[0], height-200*scaleFactor[0]);
+  text("JUMP", 70*scaleFactor[0], height-200*scaleFactor[0]);
 }//end keyPressed
 
 boolean clicked = false; //creates new boolean clicked, and sets false
 
-void mousePressed(){//checks if mouse was pressed
+void mousePressed() {//checks if mouse was pressed
   clicked = true;
 }
 
-void mouseReleased(){//checks if mouse was released
+void mouseReleased() {//checks if mouse was released
   clicked = false;
 }
 
@@ -392,17 +387,15 @@ void jetpack() {//adding jetpack
   boolean jetpackButton = mouseX> 140*scaleFactor[0] && mouseX < 260*scaleFactor[0] && mouseY > height-130*scaleFactor[0] && mouseY < height-10*scaleFactor[0]; //checks if finger is over button
   boolean jetpackUse = false;//not using jetpack
   if (jetpackButton && mousePressed && fuel >= 0) {//checks if button is pressed
-    image(character[4], pos[0]-character[0].width/2-4*scaleFactor[0],pos[1]+8*scaleFactor[0]+character[3].height/2 + character[4].height/2);//image of the fire
-    if (pos[1] > -character[0].height/2){ //checks if weapon is lower than the top of the screen
+    image(character[4], pos[0]-character[0].width/2-4*scaleFactor[0], pos[1]+8*scaleFactor[0]+character[3].height/2 + character[4].height/2);//image of the fire
+    if (pos[1] > -character[0].height/2) { //checks if weapon is lower than the top of the screen
       vy=(-3.0*gravity-speedBoost)*scaleFactor[3];//player goes up
       onGround = false; //sets onGround to false
       onObstacle = false; //sets onObstacle to false
-    }
-    else vy = 0;//checks if its on the top of the screen and stops jetpack from flying higher
+    } else vy = 0;//checks if its on the top of the screen and stops jetpack from flying higher
     jetpackUse = true; //sets using jetpack to true
     fill(0);
-  }
-  else{//sets using jetpack to false if button isn't pressed
+  } else {//sets using jetpack to false if button isn't pressed
     jetpackUse = false;
     fill(255);
   }
@@ -411,11 +404,10 @@ void jetpack() {//adding jetpack
   //displays JETPACK on button
   textAlign(CENTER, CENTER);
   textFont(regular[0], 20*scaleFactor[0]);
-  text("JETPACK",200*scaleFactor[0], height-70*scaleFactor[0]);
-  if(jetpackUse && !onGround){ //checks if jetpack is being used and not on ground
+  text("JETPACK", 200*scaleFactor[0], height-70*scaleFactor[0]);
+  if (jetpackUse && !onGround) { //checks if jetpack is being used and not on ground
     fuel-=0.5;//subtracts 0.5 from fuel
-  }
-  else if(fuel<maxFuel && vy>=0 && !jetpackUse && onGround){//checks if fuel tank isnt full and onGround
+  } else if (fuel<maxFuel && vy>=0 && !jetpackUse && onGround) {//checks if fuel tank isnt full and onGround
     fuel+=0.5;//regenarating fuel
   }
 }
@@ -435,35 +427,34 @@ void updateTrail() { //updates trail and draws trail
     translate(trail.get(i).get(0), trail.get(i).get(1)); //moves 0,0 to position
     if (trail.get(i).get(3)==0 || reloading) rotate(trail.get(i).get(2)); // rotates image to angle if image was not shot or reloading
     else rotate(-PI/2); //roates trailed image to perpindicular to body if gun was shot
-    
+
     //draws trails of selected gun
-    if (int(saveData[1]) <= 1){
+    if (int(saveData[1]) <= 1) {
       image(guns[int(saveData[1])][0], guns[int(saveData[1])][0].width/5, character[1].height);
       image(guns[int(saveData[1])][1], guns[int(saveData[1])][0].width/2+guns[int(saveData[1])][1].width/4, character[1].height-trail.get(i).get(3));
-    }
-    else if (int(saveData[1]) <= 3 || int(saveData[1]) == 8) image(guns[int(saveData[1])][0], 0, character[1].height);
+    } else if (int(saveData[1]) <= 3 || int(saveData[1]) == 8) image(guns[int(saveData[1])][0], 0, character[1].height);
     else if (int(saveData[1]) == 4) image(guns[4][0], 0, character[1].height+guns[4][0].height/6);
     else if (int(saveData[1]) == 5) image(guns[5][0], guns[5][0].width/5, guns[5][0].height/3 + character[1].height);
     else if (int(saveData[1]) == 6) image(guns[6][0], 0, character[1].height+guns[6][0].height/4);
     else if (int(saveData[1]) == 7) image(guns[7][0], guns[7][0].width/4, character[1].height-guns[7][0].width/6);
     else if (int(saveData[1]) <=14) image(guns[int(saveData[1])][0], 0, character[1].height-guns[int(saveData[1])][0].height/10);
-    else{
-      switch(int(saveData[1])){
-        case 15:
-          image(guns[15][0], guns[15][0].width/4, character[1].height+guns[15][0].height/5);
-          break;
-        case 16:
-          image(guns[16][0], guns[16][0].width/6, character[1].height+guns[16][0].height/6);
-          break;
-        case 17:
-          image(guns[17][0], guns[17][0].width/6, character[1].height+guns[17][0].height/10);
-          break;
-        case 18:
-          image(guns[18][0], 0, character[1].height-guns[18][0].height/5);
-          break;
-        case 19:
-          image(guns[19][0], guns[17][0].width/6, character[1].height-guns[19][0].height/5);
-          break;
+    else {
+      switch(int(saveData[1])) {
+      case 15:
+        image(guns[15][0], guns[15][0].width/4, character[1].height+guns[15][0].height/5);
+        break;
+      case 16:
+        image(guns[16][0], guns[16][0].width/6, character[1].height+guns[16][0].height/6);
+        break;
+      case 17:
+        image(guns[17][0], guns[17][0].width/6, character[1].height+guns[17][0].height/10);
+        break;
+      case 18:
+        image(guns[18][0], 0, character[1].height-guns[18][0].height/5);
+        break;
+      case 19:
+        image(guns[19][0], guns[17][0].width/6, character[1].height-guns[19][0].height/5);
+        break;
       }
     }
     image(character[1], 0, character[1].height/2); //draws arm trail
@@ -481,7 +472,7 @@ float reloadStart = 0; // float of when did it start reloading
 
 ArrayList<ArrayList<Float>> bulletPos = new ArrayList<ArrayList<Float>>();//2D arraylist of bullets
 
-void addBullet(){ //function to add bullets
+void addBullet() { //function to add bullets
   ArrayList<Float> newBullet = new ArrayList<Float>(); //create new list on new bullet
   newBullet.add(pos[0]); //adds bullet x position
   //adds bullet y position corresponding to the specific gun
@@ -492,22 +483,21 @@ void addBullet(){ //function to add bullets
   bulletPos.add(newBullet); //adds newBullet to bulletPos
 }
 
-void drawBullet(){//draws bullets
+void drawBullet() {//draws bullets
   imageMode(CENTER); //aligns the images to center of image
-  for(int i = 0; i < bulletPos.size(); i++){ //loop goes through every bullet in bulletPos
+  for (int i = 0; i < bulletPos.size(); i++) { //loop goes through every bullet in bulletPos
     if (int(saveData[1]) < 18) image(bullet, bulletPos.get(i).get(0), bulletPos.get(i).get(1)); //checks if gun isn't an rpg, and shows a bullet
     else image(rocket, bulletPos.get(i).get(0), bulletPos.get(i).get(1)); //else shows a rocket
     bulletPos.get(i).set(0, bulletPos.get(i).get(0)+60*scaleFactor[1]); //moves bullet
     if (bulletPos.get(i).get(0)-bullet.width/2 > width || (bulletPos.get(i).get(0)+bullet.width/2>groundPos[nextGround][0] && bulletPos.get(i).get(1) > topOfNextGrass && groundPos[nextGround][0] > 0)) bulletPos.remove(i); //checks if bullet hits ground or beyond screen
   }
-  for (int i = 0; i < enemyBullets.size(); i++){ //llops goes through every bullet in enemyBullets
+  for (int i = 0; i < enemyBullets.size(); i++) { //llops goes through every bullet in enemyBullets
     if (int(saveData[1]) < 18) image(bullet, enemyBullets.get(i).get(0), enemyBullets.get(i).get(1)); //checks if gun isn't an rpg, and shows a bullet
     else image(rocket, enemyBullets.get(i).get(0), enemyBullets.get(i).get(1)); //else shows a rocket
     enemyBullets.get(i).set(0, enemyBullets.get(i).get(0)-int((int(speed)/3+40)*scaleFactor[1])); //moves bullet
-    if (enemyBullets.get(i).get(0)-bullet.width/2 < 0){ //check if bullet goes beyond screen
+    if (enemyBullets.get(i).get(0)-bullet.width/2 < 0) { //check if bullet goes beyond screen
       enemyBullets.remove(i); //removes bullet
-    }
-    else if (enemyBullets.get(i).get(0) > pos[0]+character[0].width/2 && enemyBullets.get(i).get(0)-int((int(speed)/3+40)*scaleFactor[1]) <= pos[0]+character[0].width/2 && enemyBullets.get(i).get(1) > pos[1]-character[0].height/2 && enemyBullets.get(i).get(1) < pos[1]+character[0].height/3+character[2].height){ //checks if bullet will hit player
+    } else if (enemyBullets.get(i).get(0) > pos[0]+character[0].width/2 && enemyBullets.get(i).get(0)-int((int(speed)/3+40)*scaleFactor[1]) <= pos[0]+character[0].width/2 && enemyBullets.get(i).get(1) > pos[1]-character[0].height/2 && enemyBullets.get(i).get(1) < pos[1]+character[0].height/3+character[2].height) { //checks if bullet will hit player
       enemyBullets.remove(i); //removes bullet
       health -= dmg[int(saveData[1])]; //decrease health of player
     }
@@ -518,7 +508,7 @@ int lastShot = 0; //time for when did it last shoot
 
 void drawArms() {//adding arms on player
   rectMode(CENTER);//changing rect mod
-  if (recoil < 0){//resets recoil variables
+  if (recoil < 0) {//resets recoil variables
     recoil = 0;
     vRecoil = 0;
   }
@@ -532,8 +522,7 @@ void drawArms() {//adding arms on player
     if (bulletsRemaining == 0) reloadStart = millis();//relaod if no more bullets
     addBullet(); //calls addBullet function
     fill(0);
-  }
-  else fill(255);
+  } else fill(255);
   if (!mousePressed && !auto[int(saveData[1])]) {//checks if button is released and is semi auto
     justFired = false; //sets justFired to false
     fill(255);
@@ -553,46 +542,44 @@ void drawArms() {//adding arms on player
   if ((recoil != 0) || (int(saveData[1]) >= 2 && ((mousePressed && auto[int(saveData[1])] && fireButton)) || (auto[int(saveData[1])] == false && justFired)) && pos[0] > 0 && !reloading) { //checks if gun was just shot or recoil is not 0 and character is on screen
     recoil+=vRecoil; //adds recoil speed to recoil
     rotate(-PI/2); //rotates arm perpindicular to player
-  } else if(pos[0]>0) rotate(rotation); // else rotate to arm swing
-  
+  } else if (pos[0]>0) rotate(rotation); // else rotate to arm swing
+
   //draw guns
-  if (int(saveData[1]) <= 1){
+  if (int(saveData[1]) <= 1) {
     image(guns[int(saveData[1])][0], guns[int(saveData[1])][0].width/5, character[1].height);
     image(guns[int(saveData[1])][1], guns[int(saveData[1])][0].width/2+guns[int(saveData[1])][1].width/4, character[1].height-recoil);
-  }
-  else if (int(saveData[1]) <= 3 || int(saveData[1]) == 8) image(guns[int(saveData[1])][0], 0, character[1].height);
+  } else if (int(saveData[1]) <= 3 || int(saveData[1]) == 8) image(guns[int(saveData[1])][0], 0, character[1].height);
   else if (int(saveData[1]) == 4) image(guns[4][0], 0, character[1].height+guns[4][0].height/6);
   else if (int(saveData[1]) == 5) image(guns[5][0], guns[5][0].width/5, guns[5][0].height/3 + character[1].height);
   else if (int(saveData[1]) == 6) image(guns[6][0], 0, character[1].height+guns[6][0].height/4);
   else if (int(saveData[1]) == 7) image(guns[7][0], guns[7][0].width/4, character[1].height-guns[7][0].width/6);
   else if (int(saveData[1]) <=14) image(guns[int(saveData[1])][0], 0, character[1].height-guns[int(saveData[1])][0].height/10);
-  else{
-    switch(int(saveData[1])){
-      case 15:
-        image(guns[15][0], guns[15][0].width/4, character[1].height+guns[15][0].height/5);
-        break;
-      case 16:
-        image(guns[16][0], guns[16][0].width/6, character[1].height+guns[16][0].height/6);
-        break;
-      case 17:
-        image(guns[17][0], guns[17][0].width/6, character[1].height+guns[17][0].height/10);
-        break;
-      case 18:
-        image(guns[18][0], 0, character[1].height-guns[18][0].height/5);
-        break;
-      case 19:
-        image(guns[19][0], guns[17][0].width/6, character[1].height-guns[19][0].height/5);
-        break;
+  else {
+    switch(int(saveData[1])) {
+    case 15:
+      image(guns[15][0], guns[15][0].width/4, character[1].height+guns[15][0].height/5);
+      break;
+    case 16:
+      image(guns[16][0], guns[16][0].width/6, character[1].height+guns[16][0].height/6);
+      break;
+    case 17:
+      image(guns[17][0], guns[17][0].width/6, character[1].height+guns[17][0].height/10);
+      break;
+    case 18:
+      image(guns[18][0], 0, character[1].height-guns[18][0].height/5);
+      break;
+    case 19:
+      image(guns[19][0], guns[17][0].width/6, character[1].height-guns[19][0].height/5);
+      break;
     }
   }
-  
+
   image(character[1], 0, character[1].height/2); //draw arms
   popMatrix();//ends transformation
   if (bulletsRemaining == 0 && millis()-reloadStart >= reloadTime[int(saveData[1])]) { //checks if bulletsRemaining is none and checks if finished reloading
     bulletsRemaining = bullets[int(saveData[1])]; //bulletsRemaing
     reloading = false; //sets reloading false
-  }
-  else if (bulletsRemaining == 0){//checks if reload is needed
+  } else if (bulletsRemaining == 0) {//checks if reload is needed
     reloading = true; //sets reloading true
   }
 }
@@ -631,7 +618,7 @@ void drawChar() {//draws character
   rotate(-rotation*2); //rotates opposite to rotation
   image(character[2], 0, character[2].height/2); //displays leg
   popMatrix(); //ends transformation
-  image(character[3],pos[0]-character[0].width/2-4*scaleFactor[0],pos[1]+9*scaleFactor[0]); //shows jetpack
+  image(character[3], pos[0]-character[0].width/2-4*scaleFactor[0], pos[1]+9*scaleFactor[0]); //shows jetpack
   image(character[0], pos[0], pos[1]); //shows body
   if (int(saveData[2]) > 0) image(armour, pos[0], pos[1]+character[0].height/2-armour.height/2); //if armour is bought, it shows armour
   drawArms(); //calls function drawArms
@@ -642,78 +629,77 @@ ArrayList<ArrayList<Float>> obstacles = new ArrayList<ArrayList<Float>>();
 ArrayList<ArrayList<Float>> enemies = new ArrayList<ArrayList<Float>>(); 
 ArrayList<ArrayList<Float>> enemyBullets = new ArrayList<ArrayList<Float>>();
 
-void updateEnemies(){ //update and draws Enemies
+void updateEnemies() { //update and draws Enemies
   imageMode(CENTER); //allignsd all images to center of position
-  for (int i = 0; i < enemies.size(); i++){ //loops through all list of enemies
+  for (int i = 0; i < enemies.size(); i++) { //loops through all list of enemies
     int currentGroundEnemy=0; //creates to int for determining which ground is the enemy on
     float bottomEnemy = enemies.get(i).get(1)+robot[0].height/3+robot[2].height; //position of bottom of enemy
-    for(int j = 0; j < 2; j++){ //loops through all the groundPos
+    for (int j = 0; j < 2; j++) { //loops through all the groundPos
       if (enemies.get(i).get(0)>= groundPos[j][0] && enemies.get(i).get(0)<= groundPos[j][0]+background[0].width) currentGroundEnemy = j; //checks if the enemy is on a groundPosition
     }
     int nextGroundEnemy = (currentGroundEnemy+1)%2; //finds the next ground position
     float topGroundEnemy = groundPos[currentGroundEnemy][1]+49*scaleFactor[0]; //finds the top of the ground of where the enemy is on
     float nextTopGroundEnemy = groundPos[nextGroundEnemy][1]+49*scaleFactor[0]; //finds the next top of the ground of where the enemy will be on
     enemies.get(i).set(1, topGroundEnemy-(robot[0].height/3+robot[2].height)); //sets the enemy to be on the ground
-    image(robot[0],enemies.get(i).get(0), enemies.get(i).get(1)); //draws the robot
+    image(robot[0], enemies.get(i).get(0), enemies.get(i).get(1)); //draws the robot
     pushMatrix(); //begins robot transformation
     translate(enemies.get(i).get(0)-robot[1].width, enemies.get(i).get(1)); //moves to top of arm position
     scale(-1, 1); //flips image
     rotate(-PI/2); //rotates arm
-    
+
     //draws gun
-    if (int(saveData[1]) <= 1){
+    if (int(saveData[1]) <= 1) {
       image(guns[int(saveData[1])][0], guns[int(saveData[1])][0].width/5, 0);
       image(guns[int(saveData[1])][1], guns[int(saveData[1])][0].width/2+guns[int(saveData[1])][1].width/4, -enemies.get(i).get(4));
-    }
-    else if (int(saveData[1]) <= 3 || int(saveData[1]) == 8) image(guns[int(saveData[1])][0], 0, 0);
+    } else if (int(saveData[1]) <= 3 || int(saveData[1]) == 8) image(guns[int(saveData[1])][0], 0, 0);
     else if (int(saveData[1]) == 4) image(guns[4][0], 0, guns[4][0].height/6);
     else if (int(saveData[1]) == 5) image(guns[5][0], guns[5][0].width/5, guns[5][0].height/3);
     else if (int(saveData[1]) == 6) image(guns[6][0], 0, guns[6][0].height/4);
     else if (int(saveData[1]) == 7) image(guns[7][0], guns[7][0].width/4, guns[7][0].width/6);
     else if (int(saveData[1]) <=14) image(guns[int(saveData[1])][0], 0, guns[int(saveData[1])][0].height/10);
-    else{
-      switch(int(saveData[1])){
-        case 15:
-          image(guns[15][0], guns[15][0].width/4, guns[15][0].height/5);
-          break;
-        case 16:
-          image(guns[16][0], guns[16][0].width/6, guns[16][0].height/6);
-          break;
-        case 17:
-          image(guns[17][0], guns[17][0].width/6, guns[17][0].height/10);
-          break;
-        case 18:
-          image(guns[18][0], 0, guns[18][0].height/5);
-          break;
-        case 19:
-          image(guns[19][0], guns[17][0].width/6, guns[19][0].height/5);
-          break;
+    else {
+      switch(int(saveData[1])) {
+      case 15:
+        image(guns[15][0], guns[15][0].width/4, guns[15][0].height/5);
+        break;
+      case 16:
+        image(guns[16][0], guns[16][0].width/6, guns[16][0].height/6);
+        break;
+      case 17:
+        image(guns[17][0], guns[17][0].width/6, guns[17][0].height/10);
+        break;
+      case 18:
+        image(guns[18][0], 0, guns[18][0].height/5);
+        break;
+      case 19:
+        image(guns[19][0], guns[17][0].width/6, guns[19][0].height/5);
+        break;
       }
     }
     popMatrix(); //ends transformation
-    
-    if (millis()-enemies.get(i).get(2) >= robotReload[int(saveData[1])] && enemies.get(i).get(0) < width){ //checks if gun is able to shoot and enemy is on screen
+
+    if (millis()-enemies.get(i).get(2) >= robotReload[int(saveData[1])] && enemies.get(i).get(0) < width) { //checks if gun is able to shoot and enemy is on screen
       ArrayList<Float> newBullet = new ArrayList<Float>(); //create to list for new bullet
-      
+
       //puts x and y position of bullet to desired location
       newBullet.add(enemies.get(i).get(0)-robot[1].height); 
       if (int(saveData[1]) < 16)newBullet.add(enemies.get(i).get(1)-robot[1].width/6);
       else if (int(saveData[1]) <= 17)newBullet.add(enemies.get(i).get(1)-robot[1].width/6-guns[int(saveData[1])][0].width/5);
       else newBullet.add(enemies.get(i).get(1)-robot[1].width/6);
-      
+
       enemyBullets.add(newBullet); //adds newBullet to enemyBullets
       enemies.get(i).set(4, 2.0); //add recoil and gun shot
       enemies.get(i).set(2, float(millis())); //record time last shot
     }
-    if (enemies.get(i).get(4)!=0){ //updating recoil
+    if (enemies.get(i).get(4)!=0) { //updating recoil
       enemies.get(i).set(4, enemies.get(i).get(4)-enemies.get(i).get(5));
     }
-    if (enemies.get(i).get(4) >= 10 || enemies.get(i).get(4) <= 0){ //reverses direction of recoil
+    if (enemies.get(i).get(4) >= 10 || enemies.get(i).get(4) <= 0) { //reverses direction of recoil
       enemies.get(i).set(5, enemies.get(i).get(5)*-1);
     }
     image(robot[1], enemies.get(i).get(0)-robot[1].width/2, enemies.get(i).get(1)); // draws arm
     image(robot[2], enemies.get(i).get(0), enemies.get(i).get(1)+robot[0].height/3+robot[2].height/2); //draw robot tracks
-    if (!(enemies.get(i).get(0)-int((int(speed)/3+10)*scaleFactor[1])>groundPos[nextGroundEnemy][0] && enemies.get(i).get(0)-int((int(speed)/3+10)*scaleFactor[1]) < groundPos[nextGroundEnemy][0]+background[0].width && bottomEnemy-nextTopGroundEnemy>5)) enemies.get(i).set(0, enemies.get(i).get(0)-int((int(speed)/3+10)*scaleFactor[1])); //checks if robot will collide with ground and pushes robot back
+    if (!(enemies.get(i).get(0)-int((int(speed)/3+10)*scaleFactor[1])>groundPos[nextGroundEnemy][0] && enemies.get(i).get(0)-int((int(speed)/3+10)*scaleFactor[3]) < groundPos[nextGroundEnemy][0]+background[0].width && bottomEnemy-nextTopGroundEnemy>5)) enemies.get(i).set(0, enemies.get(i).get(0)-int((int(speed)/3+10)*scaleFactor[1])); //checks if robot will collide with ground and pushes robot back
     rectMode(CENTER);
     //drawing robot health
     fill(0);
@@ -721,40 +707,40 @@ void updateEnemies(){ //update and draws Enemies
     fill(255, 0, 0);
     rectMode(CORNER);
     rect(enemies.get(i).get(0)-90*scaleFactor[0], enemies.get(i).get(1)-robot[0].height/2 - 60 * scaleFactor[0], 180*(enemies.get(i).get(3)/100)*scaleFactor[0], 20*scaleFactor[0]);
-    if (enemies.get(i).get(0)+robot[2].width/2 <= 0){//checks if enemies is dead, and removes enemy
+    if (enemies.get(i).get(0)+robot[2].width/2 <= 0) {//checks if enemies is dead, and removes enemy
       enemies.remove(i);
       i--;
     }
   }
 }
 
-void drawUpdateObstacle(){ //drawing and updating obstacles
+void drawUpdateObstacle() { //drawing and updating obstacles
   imageMode(CENTER);
-  for(int i = 0; i < obstacles.size(); i++){
+  for (int i = 0; i < obstacles.size(); i++) {
     image(obstacleImages[int(obstacles.get(i).get(2))], obstacles.get(i).get(0), obstacles.get(i).get(1)-obstacleImages[int(obstacles.get(i).get(2))].height/2); //drawing obstacle according to what obstacle it is
     obstacles.get(i).set(0, obstacles.get(i).get(0)-int((int(speed)/3+5)*scaleFactor[1])); //moves obstacle towards player
-    if (obstacles.get(i).get(0)+obstacleImages[int(obstacles.get(i).get(2))].height/2 <= 0){ //checks if obstacle is beyond screen and removes it
+    if (obstacles.get(i).get(0)+obstacleImages[int(obstacles.get(i).get(2))].height/2 <= 0) { //checks if obstacle is beyond screen and removes it
       obstacles.remove(i);
       i--;
     }
   }
 }
 
-void detectCollision(){ //detecting collisions
-  for(int i = 0; i < bulletPos.size(); i++){//loops going through bullets
+void detectCollision() { //detecting collisions
+  for (int i = 0; i < bulletPos.size(); i++) {//loops going through bullets
     int[] value = {-1, -1}; //create new array of determining closest object
     float closest = 1000000; //x position of closest
     float topOfClosest = 100000; //y top of closest
     float bottomOfClosest = 100000; //y bottom of closest
     float rightClosest = 1000000; //x right position of closest
-    for (int j = 0; j < obstacles.size(); j++){ //loops through all obstacles
+    for (int j = 0; j < obstacles.size(); j++) { //loops through all obstacles
       //finding position of obstacles
       float top = obstacles.get(j).get(1) - obstacleImages[int(obstacles.get(j).get(2))].height;
       float left = obstacles.get(j).get(0) - obstacleImages[int(obstacles.get(j).get(2))].width/2;
       float right = obstacles.get(j).get(0) + obstacleImages[int(obstacles.get(j).get(2))].width/2;
-      
+
       //checking if obstacle is closer
-      if (left < closest && right < rightClosest && bulletPos.get(i).get(0) < right && bulletPos.get(i).get(1) > top&& bulletPos.get(i).get(1)<obstacles.get(j).get(1)){
+      if (left < closest && right < rightClosest && bulletPos.get(i).get(0) < right && bulletPos.get(i).get(1) > top&& bulletPos.get(i).get(1)<obstacles.get(j).get(1)) {
         //sets positions to closest
         closest = left;
         rightClosest = right;
@@ -765,15 +751,15 @@ void detectCollision(){ //detecting collisions
         value[1] = 0;
       }
     }
-    for (int j = 0; j < enemies.size(); j++){ //loops through all enemies
+    for (int j = 0; j < enemies.size(); j++) { //loops through all enemies
       //finding position of enemies
       float bottom = enemies.get(j).get(1)+robot[0].height/3+robot[2].height;
       float top = enemies.get(j).get(1)-robot[0].height/2;
       float left = enemies.get(j).get(0)-robot[0].width/2;
       float right = enemies.get(j).get(0)+robot[0].width/2;
-      
+
       //checking if enemy is closer
-      if (left < closest && right < rightClosest && bulletPos.get(i).get(0) < right && bulletPos.get(i).get(1) > top && bulletPos.get(i).get(1) < bottom){
+      if (left < closest && right < rightClosest && bulletPos.get(i).get(0) < right && bulletPos.get(i).get(1) > top && bulletPos.get(i).get(1) < bottom) {
         //sets positions to closest
         closest = left;
         rightClosest = right;
@@ -784,19 +770,19 @@ void detectCollision(){ //detecting collisions
         value[1] = 1;
       }
     }
-    
+
     //checks if bullet is beyond closest object and resets values
-    if (closest <= bulletPos.get(i).get(0) && rightClosest <= bulletPos.get(i).get(0)  || closest <= pos[0]-character[0].width/2){
+    if (closest <= bulletPos.get(i).get(0) && rightClosest <= bulletPos.get(i).get(0)  || closest <= pos[0]-character[0].width/2) {
       closest = 100000;
       rightClosest = 100000;
       value[0] = -1;
       value[1] = -1;
     }
     //checks if bullet is going to collide with closest object
-    if (bulletPos.get(i).get(0)+60*scaleFactor[0] >= closest && bulletPos.get(i).get(1) > topOfClosest && bulletPos.get(i).get(1) < bottomOfClosest){
-      if (value[1] == 1){ //checks if colliding with an enemy
+    if (bulletPos.get(i).get(0)+60*scaleFactor[0] >= closest && bulletPos.get(i).get(1) > topOfClosest && bulletPos.get(i).get(1) < bottomOfClosest) {
+      if (value[1] == 1) { //checks if colliding with an enemy
         enemies.get(value[0]).set(3, enemies.get(value[0]).get(3)-dmg[int(saveData[1])]); //subtracts damage from enemy health
-        if (enemies.get(value[0]).get(3) <= 0){ //checks if enemy health is below zero, and remove enemy and reset all values
+        if (enemies.get(value[0]).get(3) <= 0) { //checks if enemy health is below zero, and remove enemy and reset all values
           enemies.remove(value[0]);
           value[0] = -1;
           value[1] = -1;
@@ -804,11 +790,10 @@ void detectCollision(){ //detecting collisions
           rightClosest = 100000;
           saveData[3] = Integer.toString(int(saveData[3])+int(random(0, 11))*100);
         }
-      }
-      else{ //since it's not enemy, it must be colliding with an obstacle
+      } else { //since it's not enemy, it must be colliding with an obstacle
         obstacles.get(value[0]).set(3, obstacles.get(value[0]).get(3)-dmg[int(saveData[1])]); //removes damage from obstacle health
         obstacles.get(value[0]).set(1, obstacles.get(value[0]).get(1)+obstacleImages[int(obstacles.get(value[0]).get(2))].height*(dmg[int(saveData[1])])/100); //lowers obstacle a bit
-        if (obstacles.get(value[0]).get(3) <= 0){ //checks if obstacle health is below zero, and remove obstacle and reset all values
+        if (obstacles.get(value[0]).get(3) <= 0) { //checks if obstacle health is below zero, and remove obstacle and reset all values
           obstacles.remove(value[0]);
           value[0] = -1;
           value[1] = -1;
@@ -816,19 +801,19 @@ void detectCollision(){ //detecting collisions
           rightClosest = 100000;
         }
       }
-      if (int(saveData[1]) >= 18){ //checks if weapon is rpg
-        for (int j = 0; j < enemies.size(); j++){ //searches all enemy values
+      if (int(saveData[1]) >= 18) { //checks if weapon is rpg
+        for (int j = 0; j < enemies.size(); j++) { //searches all enemy values
           //finds distance to all enemies
           float distToEnemy = dist(bulletPos.get(i).get(0), bulletPos.get(i).get(1), enemies.get(j).get(0), enemies.get(j).get(1));
-          if (distToEnemy <= 400*scaleFactor[1]){ //checks if the distance is less than or equal to 400
+          if (distToEnemy <= 400*scaleFactor[1]) { //checks if the distance is less than or equal to 400
             enemies.remove(j); //removes enemy
             j--;
           }
         }
-        for (int j = 0; j < obstacles.size(); j++){//searches all obstacle values
+        for (int j = 0; j < obstacles.size(); j++) {//searches all obstacle values
           //finds distance to all obstacles
           float distToObstacles = dist(bulletPos.get(i).get(0), bulletPos.get(i).get(1), obstacles.get(j).get(0), obstacles.get(j).get(1));
-          if (distToObstacles <= 400*scaleFactor[1]){//checks if the distance is less than or equal to 400
+          if (distToObstacles <= 400*scaleFactor[1]) {//checks if the distance is less than or equal to 400
             obstacles.remove(j); //removes obstacles
             j--;
           }
@@ -838,7 +823,7 @@ void detectCollision(){ //detecting collisions
       else bulletPos.get(i).set(2, bulletPos.get(i).get(2)+1); //if sniper, it adds one to objects gone through
     }
   }
-  for (int i = 0; i < enemies.size(); i++){ //goes through all enemy values
+  for (int i = 0; i < enemies.size(); i++) { //goes through all enemy values
     //finds position of enemy
     float right = enemies.get(i).get(0)+robot[0].width/2;
     float futureLeft = enemies.get(i).get(0)-robot[0].width/2-int((int(speed)/3+10)*scaleFactor[1]);
@@ -847,7 +832,7 @@ void detectCollision(){ //detecting collisions
     float bottomOfPlayer = pos[1]+character[0].height/3+character[2].height;
     float topOfPlayer = pos[1]-character[0].height/2;
     //checks if enemy will hit the player, and then will damage the player and kill the enemy
-    if (right > pos[0]-character[0].width/2 && futureLeft < pos[0]+character[0].width/2 && topOfPlayer < bottom && bottomOfPlayer > top){
+    if (right > pos[0]-character[0].width/2 && futureLeft < pos[0]+character[0].width/2 && topOfPlayer < bottom && bottomOfPlayer > top) {
       health -= enemies.get(i).get(3)/4;
       enemies.remove(i);
       i--;
@@ -855,18 +840,17 @@ void detectCollision(){ //detecting collisions
   }
 }
 
-void updateCoins(){ //function to update and draw coins
+void updateCoins() { //function to update and draw coins
   imageMode(CENTER); //align coins to center
-  for (int i = 0; i < coins.size(); i++){ //loop through all the coins
+  for (int i = 0; i < coins.size(); i++) { //loop through all the coins
     image(coin, coins.get(i).get(0), coins.get(i).get(1)); //draw coins on screen
     coins.get(i).set(0, coins.get(i).get(0)-int((int(speed)/3+5)*scaleFactor[1])); //moves coins back a bit
     //checks if coin will collide with player, then it will remove coin and add a random number of money
-    if (coins.get(i).get(1)-25*scaleFactor[0]>pos[1]-character[0].height/2&& coins.get(i).get(0)<pos[0]+character[0].width/2 && coins.get(i).get(0) > pos[0]-character[0].width/2 && coins.get(i).get(1)-25 < pos[1]+character[0].height/3+character[2].height){
+    if (coins.get(i).get(1)-25*scaleFactor[0]>pos[1]-character[0].height/2&& coins.get(i).get(0)<pos[0]+character[0].width/2 && coins.get(i).get(0) > pos[0]-character[0].width/2 && coins.get(i).get(1)-25 < pos[1]+character[0].height/3+character[2].height) {
       coins.remove(i);
       i--;
-      saveData[3] = Integer.toString(int(saveData[3])+int(random(5,11))*100);
-    }
-    else if (coins.get(i).get(0)+coin.width/2 <= 0){ //checks if coins will go off screen and then it will remove the coins
+      saveData[3] = Integer.toString(int(saveData[3])+int(random(5, 11))*100);
+    } else if (coins.get(i).get(0)+coin.width/2 <= 0) { //checks if coins will go off screen and then it will remove the coins
       coins.remove(i);
       i--;
     }
@@ -881,10 +865,10 @@ void game() { //function for actual game
   image(background[2], width/2, height/2); //showing blue sky
   nextHeight = random(-75*scaleFactor[3], 75*scaleFactor[3]); //creating random number for next heigt
   imageMode(CORNER);
-  for (int i = 0; i < skyX.length; i++){ //going through all sky positions
+  for (int i = 0; i < skyX.length; i++) { //going through all sky positions
     image(background[1], skyX[i], 0); //draws clouds
     if (!firstTime) skyX[i]-=int((int(speed)/4+1)*scaleFactor[1])+1; //moves skyX back only if not firstTime
-    if (skyX[i] <= -background[1].width){ //if skyX is completely off the screen, it moves to the right and off the screen
+    if (skyX[i] <= -background[1].width) { //if skyX is completely off the screen, it moves to the right and off the screen
       if (i == 0) next = 1;
       else next = 0;
       if (skyX[next] < 0) skyX[i] = width;
@@ -902,15 +886,13 @@ void game() { //function for actual game
       else next = 0;
       if (groundPos[next][1]+nextHeight > height-50*scaleFactor[0]) {
         groundPos[i][1] = height-50*scaleFactor[0];
-      }
-      else if (groundPos[next][1]+nextHeight < height-400*scaleFactor[0]){
+      } else if (groundPos[next][1]+nextHeight < height-400*scaleFactor[0]) {
         groundPos[i][1] = height-400*scaleFactor[0];
-      }
-      else groundPos[i][1] = groundPos[next][1]+nextHeight;
+      } else groundPos[i][1] = groundPos[next][1]+nextHeight;
       groundPos[i][0] = groundPos[next][0]+background[0].width;
       //creates a random number of obstacles and adds them to obstacle list
       int randomNumber = int(random(0, 4));
-      for (int a = 0; a < randomNumber; a++){
+      for (int a = 0; a < randomNumber; a++) {
         ArrayList<Float> newObstacle = new ArrayList<Float>();
         float whatObstacle = int(random(0, 2));
         newObstacle.add(random(groundPos[i][0]+obstacleImages[0].width, groundPos[i][0]+background[0].width-obstacleImages[0].width));
@@ -921,7 +903,7 @@ void game() { //function for actual game
       }
       //creates a random number of enemies and adds them to enemy list
       int numOfEnemies = int(random(0, 4));
-      for (int a = 0; a < numOfEnemies; a++){
+      for (int a = 0; a < numOfEnemies; a++) {
         ArrayList<Float> newEnemy = new ArrayList<Float>();
         newEnemy.add(random(groundPos[i][0]+robot[2].width, groundPos[i][0]+background[0].width-robot[2].width));
         newEnemy.add(groundPos[i][1]+34*scaleFactor[1]);
@@ -933,7 +915,7 @@ void game() { //function for actual game
       }
       //creates a random number of coins and adds them to coin list
       int numOfCoins = int(random(0, 4));
-      for (int a = 0; a < numOfCoins; a++){
+      for (int a = 0; a < numOfCoins; a++) {
         ArrayList<Float> newCoin = new ArrayList<Float>();
         newCoin.add(random(groundPos[i][0]+100*scaleFactor[0], groundPos[i][0]+background[0].width-100*scaleFactor[0]));
         newCoin.add(groundPos[i][1]+34*scaleFactor[1]-25*scaleFactor[0]);
@@ -945,21 +927,20 @@ void game() { //function for actual game
   updateCoins(); //calls on updateCoins
   updateEnemies(); //calls on updateEnemies
   detectCollision(); //calls on detectCollision
-  if (!firstTime){ // checks if it not first time and updates player info, and other controls
+  if (!firstTime) { // checks if it not first time and updates player info, and other controls
     movePlayer();
     distTravelled=distTravelled+0.04*speed;
     speed=speed+speedUp/60;
-    if(colliding){
+    if (colliding) {
       distTravelled=distTravelled-0.04*speed;
-     }
-    if(pos[0]>0 && health > 0){
-    drawChar();
-    jetpack();
-    charInfo();
-    jump();
     }
-  }
-  else { //if first time, shows all controls
+    if (pos[0]>0 && health > 0) {
+      drawChar();
+      jetpack();
+      charInfo();
+      jump();
+    }
+  } else { //if first time, shows all controls
     rectMode(CENTER);
     fill(0, 200);
     rect(width/2, height/2, width*0.8, height*0.8);
@@ -972,26 +953,26 @@ void game() { //function for actual game
     text("'JETPACK' to use jetpack, and 'FIRE' to shoot.", width/2, height/2-20*scaleFactor[0]);
     text("Go the furthest distance without dying!", width/2, height/2+40*scaleFactor[0]);
     text("Press anywhere to continue", width/2, height/2+150*scaleFactor[0]);
-    if (clicked){
+    if (clicked) {
       firstTime = false;
     }
   }
-  if(pos[0]<=0 || health <= 0){ //shows player stats if dead or beyond screen
+  if (pos[0]<=0 || health <= 0) { //shows player stats if dead or beyond screen
     speed=0;
     pos[0]=-1000;
     fill(0);
     textAlign(CENTER, CENTER);
     rectMode(CENTER);
     textFont(regular[1], 70*scaleFactor[0]);
-    text("GAME OVER",width/2, height/2 - 120*scaleFactor[0]);
-    text("Distance: "+int(distTravelled)+"m",width/2,height/2);
+    text("GAME OVER", width/2, height/2 - 120*scaleFactor[0]);
+    text("Distance: "+int(distTravelled)+"m", width/2, height/2);
     int highscore = int(saveData[0]);
     if (int(distTravelled) > highscore) highscore = int(distTravelled);
     text("High score: " + highscore+"m", width/2, height/2+120*scaleFactor[0]);
     textFont(regular[0], 48*scaleFactor[0]);
-    if (mouseX > width/2-300*scaleFactor[0] && mouseX < width/2 + 300*scaleFactor[0] && mouseY > height-130*scaleFactor[0] && mouseY < height-70*scaleFactor[0]){ //checks if button is pressed
+    if (mouseX > width/2-300*scaleFactor[0] && mouseX < width/2 + 300*scaleFactor[0] && mouseY > height-130*scaleFactor[0] && mouseY < height-70*scaleFactor[0]) { //checks if button is pressed
       fill(127);
-      if (clicked){ //updates all player stats, changes highscore if highscore is exceeded and returns to main menu and saves data
+      if (clicked) { //updates all player stats, changes highscore if highscore is exceeded and returns to main menu and saves data
         currentScene = 0;
         pos[0] = width*(500.0/1280);
         pos[1] = 0;
@@ -1011,13 +992,11 @@ void game() { //function for actual game
         coins.clear();
         saveGame(); //calls saveGame
       }
-    }
-    else fill(255);
+    } else fill(255);
     // displays button to return to main menu
     rect(width/2, height-100*scaleFactor[0], 600*scaleFactor[0], 60*scaleFactor[0]);
     fill(0);
     text("Return to main menu", width/2, height-105*scaleFactor[0]);
-    
   }
   if (justJumped) justJumped = false; //sets justJumped to false if true
 }
@@ -1048,25 +1027,25 @@ void credits() { //loads credits, and license to font
 
 int[] selection = {int(saveData[1]), int(saveData[2]), int(saveData[7])}; //values of store selection
 
-void shop(){ //game shop
+void shop() { //game shop
   //shows title and money
   background(0);
   fill(255);
   textFont(regular[1], 96*scaleFactor[0]);
   textAlign(CENTER, CENTER);
-  text("Shop",width/2, 70*scaleFactor[0]);
+  text("Shop", width/2, 70*scaleFactor[0]);
   rectMode(CENTER);
   textFont(regular[0], 30*scaleFactor[0]);
   textAlign(RIGHT, CENTER);
   text("Money: $" + String.format("%,d", int(saveData[3])), width-70*scaleFactor[0], 70*scaleFactor[0]);
-  
+
   textAlign(CENTER, CENTER);
-  for (int i = 0; i < shopOptions[0].length; i++){ //goes through all shopOptions and displays them
+  for (int i = 0; i < shopOptions[0].length; i++) { //goes through all shopOptions and displays them
     textFont(light[0], 40*scaleFactor[0]);
     fill(255);
     text(shopOptions[0][i], width/2, i*170*scaleFactor[0] + 180*scaleFactor[0]); //shows all avaliable options (i.e. gun upgrade, armour upgrade, jetpack upgrade)
     textFont(light[0], 30*scaleFactor[0]);
-    if (i!=2){
+    if (i!=2) {
       String price;
       if (selection[i] > int(saveData[i+4])+1) price = "LOCKED"; //if previous item hasn't been unlocked
       else if (selection[i] > int(saveData[i+4]))price = "$" + String.format("%,d", shopCosts[i][selection[i]]); //shows price of weapon if item is avaliable to be unlocked
@@ -1074,51 +1053,49 @@ void shop(){ //game shop
       else price = "BOUGHT"; //shows item that's already purchased
       text(shopOptions[i+1][selection[i]] + " (" + price + ")", width/2, i*170*scaleFactor[0]+310*scaleFactor[0]); //displays item and price/avaliability
       //checks if button is going to be clicked
-      if (mouseX >= width/2-40*scaleFactor[0] && mouseX <= width/2+40*scaleFactor[0] && mouseY >= i*170*scaleFactor[0]+210*scaleFactor[0] && mouseY <= i*170*scaleFactor[0]+290*scaleFactor[0]){
+      if (mouseX >= width/2-40*scaleFactor[0] && mouseX <= width/2+40*scaleFactor[0] && mouseY >= i*170*scaleFactor[0]+210*scaleFactor[0] && mouseY <= i*170*scaleFactor[0]+290*scaleFactor[0]) {
         fill(127);
-        if (clicked){ //shows if it's being clicked
-          if (selection[i] <= int(saveData[i+4]) || (int(saveData[3]) >= shopCosts[i][selection[i]] && selection[i] == int(saveData[i+4])+1)){ //switches item if it's avaliable 
+        if (clicked) { //shows if it's being clicked
+          if (selection[i] <= int(saveData[i+4]) || (int(saveData[3]) >= shopCosts[i][selection[i]] && selection[i] == int(saveData[i+4])+1)) { //switches item if it's avaliable 
             saveData[i+1] = Integer.toString(selection[i]);
             maxHealth = 100 + int(saveData[2])*20;
             health = maxHealth;
           }
-          if (int(saveData[3]) >= shopCosts[i][selection[i]] && selection[i] == int(saveData[i+4])+1){ //removes money if item is purchasable
+          if (int(saveData[3]) >= shopCosts[i][selection[i]] && selection[i] == int(saveData[i+4])+1) { //removes money if item is purchasable
             saveData[3] = Integer.toString(int(saveData[3]) - shopCosts[i][selection[i]]);
             saveData[i+4] = Integer.toString(int(saveData[i+4])+1);
           }
           saveGame(); //calls saveGame
         }
-      }
-      else fill(255);
+      } else fill(255);
       rect(width/2, i*170*scaleFactor[0]+250*scaleFactor[0], 80*scaleFactor[0], 80*scaleFactor[0]); //rectangle for selection
       imageMode(CENTER);
-      if (i == 0){ //shows all gun pictures in shop
-          pushMatrix();
-          translate(width/2, i*170*scaleFactor[0]+250*scaleFactor[0]);
-          rotate(-PI/2);
-          switch(selection[0]){
-            case 0:
-              image(guns[0][0], 0, 0);
-              image(guns[0][1], guns[0][0].width/2-guns[0][1].width/2-scaleFactor[0], 0);
-              break;
-            case 1:
-              image(guns[1][0], 0, 0);
-              image(guns[1][1], guns[1][0].width/2-guns[1][1].width/2-1, -1);
-              break;
-            default:
-              scale(75.0*scaleFactor[0]/guns[selection[0]][0].height);
-              image(guns[selection[0]][0], 0, 0);
-              break;
-          }
-          popMatrix();
+      if (i == 0) { //shows all gun pictures in shop
+        pushMatrix();
+        translate(width/2, i*170*scaleFactor[0]+250*scaleFactor[0]);
+        rotate(-PI/2);
+        switch(selection[0]) {
+        case 0:
+          image(guns[0][0], 0, 0);
+          image(guns[0][1], guns[0][0].width/2-guns[0][1].width/2-scaleFactor[0], 0);
+          break;
+        case 1:
+          image(guns[1][0], 0, 0);
+          image(guns[1][1], guns[1][0].width/2-guns[1][1].width/2-1, -1);
+          break;
+        default:
+          scale(75.0*scaleFactor[0]/guns[selection[0]][0].height);
+          image(guns[selection[0]][0], 0, 0);
+          break;
+        }
+        popMatrix();
       }
       //shows triangle to go one value down in selection and check if that button is pressed
       float[] areas = {abs(((width/2-50*scaleFactor[0])-mouseX) * ((i*170*scaleFactor[0]+290*scaleFactor[0])-mouseY) - ((width/2-50*scaleFactor[0])-mouseX) * ((i*170*scaleFactor[0]+210*scaleFactor[0])-mouseY)), abs(((width/2-50*scaleFactor[0])-mouseX)*((i*170*scaleFactor[0]+250*scaleFactor[0])-mouseY) - ((width/2-90*scaleFactor[0]) - mouseX) * ((i*170*scaleFactor[0]+290*scaleFactor[0])-mouseY)), abs(((width/2-90*scaleFactor[0])-mouseX)*((i*170*scaleFactor[0]+210*scaleFactor[0])-mouseY) - ((width/2-50*scaleFactor[0])-mouseX) * ((i*170*scaleFactor[0]+250*scaleFactor[0])-mouseY))};
-      if (areas[0]  + areas[1] + areas[2]== abs(((width/2-50*scaleFactor[0])-(width/2-50*scaleFactor[0]))*((i*170*scaleFactor[0]+250*scaleFactor[0])-(i*170*scaleFactor[0]+210*scaleFactor[0])) - ((width/2-90*scaleFactor[0])-(width/2-50*scaleFactor[0]))*((i*170*scaleFactor[0]+290*scaleFactor[0]) - (i*170*scaleFactor[0]+210*scaleFactor[0])))){
+      if (areas[0]  + areas[1] + areas[2]== abs(((width/2-50*scaleFactor[0])-(width/2-50*scaleFactor[0]))*((i*170*scaleFactor[0]+250*scaleFactor[0])-(i*170*scaleFactor[0]+210*scaleFactor[0])) - ((width/2-90*scaleFactor[0])-(width/2-50*scaleFactor[0]))*((i*170*scaleFactor[0]+290*scaleFactor[0]) - (i*170*scaleFactor[0]+210*scaleFactor[0])))) {
         fill(127);
         if (clicked && selection[i] > 0) selection[i]--;
-      }
-      else fill (255);
+      } else fill (255);
       beginShape();
       vertex(width/2-50*scaleFactor[0], i*170*scaleFactor[0]+210*scaleFactor[0]);
       vertex(width/2-50*scaleFactor[0], i*170*scaleFactor[0]+290*scaleFactor[0]);
@@ -1126,43 +1103,39 @@ void shop(){ //game shop
       endShape();
       //shows triangle to go one value up in selection and check if that button is pressed
       float[] areas1 = {abs(((width/2+50*scaleFactor[0])-mouseX) * ((i*170*scaleFactor[0]+290*scaleFactor[0])-mouseY) - ((width/2+50*scaleFactor[0])-mouseX) * ((i*170*scaleFactor[0]+210*scaleFactor[0])-mouseY)), abs(((width/2+50*scaleFactor[0])-mouseX)*((i*170*scaleFactor[0]+250*scaleFactor[0])-mouseY) - ((width/2+90*scaleFactor[0]) - mouseX) * ((i*170*scaleFactor[0]+290*scaleFactor[0])-mouseY)), abs(((width/2+90*scaleFactor[0])-mouseX)*((i*170*scaleFactor[0]+210*scaleFactor[0])-mouseY) - ((width/2+50*scaleFactor[0])-mouseX) * ((i*170*scaleFactor[0]+250*scaleFactor[0])-mouseY))};
-      if (areas1[0]  + areas1[1] + areas1[2]== abs(((width/2+50*scaleFactor[0])-(width/2+50*scaleFactor[0]))*((i*170*scaleFactor[0]+250*scaleFactor[0])-(i*170*scaleFactor[0]+210*scaleFactor[0])) - ((width/2+90*scaleFactor[0])-(width/2+50*scaleFactor[0]))*((i*170*scaleFactor[0]+290*scaleFactor[0]) - (i*170*scaleFactor[0]+210*scaleFactor[0])))){
+      if (areas1[0]  + areas1[1] + areas1[2]== abs(((width/2+50*scaleFactor[0])-(width/2+50*scaleFactor[0]))*((i*170*scaleFactor[0]+250*scaleFactor[0])-(i*170*scaleFactor[0]+210*scaleFactor[0])) - ((width/2+90*scaleFactor[0])-(width/2+50*scaleFactor[0]))*((i*170*scaleFactor[0]+290*scaleFactor[0]) - (i*170*scaleFactor[0]+210*scaleFactor[0])))) {
         fill(127);
         if (clicked && (selection[i] < shopOptions[i+1].length-1)||(i == 2 && selection[i]<int(saveData[6]))) selection[i]++;
-      }
-      else fill (255);
+      } else fill (255);
       beginShape();
       vertex(width/2+50*scaleFactor[0], i*170*scaleFactor[0]+210*scaleFactor[0]);
       vertex(width/2+50*scaleFactor[0], i*170*scaleFactor[0]+290*scaleFactor[0]);
       vertex(width/2+90*scaleFactor[0], i*170*scaleFactor[0]+250*scaleFactor[0]);
       endShape();
-    }
-    else{ //displaying information about jetpack upgrades
+    } else { //displaying information about jetpack upgrades
       textAlign(CENTER);
       //checks if mouse if hovering over jetpack upgrade button
-      if (mouseX >= width/2-150*scaleFactor[0] && mouseX <= width/2+150*scaleFactor[0] && mouseY >= i*170*scaleFactor[0]+210*scaleFactor[0] && mouseY <= i*170*scaleFactor[0]+290*scaleFactor[0]){
+      if (mouseX >= width/2-150*scaleFactor[0] && mouseX <= width/2+150*scaleFactor[0] && mouseY >= i*170*scaleFactor[0]+210*scaleFactor[0] && mouseY <= i*170*scaleFactor[0]+290*scaleFactor[0]) {
         fill(127);
-        if (clicked){ //checks if button is pressed
-          if (selection[i] <= int(saveData[i+4]) || int(saveData[3]) >= selection[2]*5000){ //if item is avaliable, it switches item
+        if (clicked) { //checks if button is pressed
+          if (selection[i] <= int(saveData[i+4]) || int(saveData[3]) >= selection[2]*5000) { //if item is avaliable, it switches item
             saveData[7] = Integer.toString(selection[i]);
             maxFuel = 100+((int(saveData[7])+1)/2)*20;
             speedBoost = gravity*(int(saveData[7])/2.0);
             fuel = maxFuel;
           }
-          if (int(saveData[3]) >= selection[2]*5000 && selection[i] > int(saveData[i+4])){ //if item can be purchased, money is removed
+          if (int(saveData[3]) >= selection[2]*5000 && selection[i] > int(saveData[i+4])) { //if item can be purchased, money is removed
             saveData[3] = Integer.toString(int(saveData[3]) - 5000*selection[2]);
             saveData[i+4] = Integer.toString(int(saveData[i+4])+1);
           }
           saveGame(); //calls saveGame
         }
-      }
-      else fill(255);
+      } else fill(255);
       rect(width/2, i*170*scaleFactor[0]+250*scaleFactor[0], 300*scaleFactor[0], 80*scaleFactor[0]);
       fill(0);
-      if (selection[2] == 0){ //if selection is 0, shows stock item
+      if (selection[2] == 0) { //if selection is 0, shows stock item
         text("Stock", width/2, i*170*scaleFactor[0]+245*scaleFactor[0]);
-      }
-      else{ //shows what type of upgrade is avaliable
+      } else { //shows what type of upgrade is avaliable
         if (selection[2]%2 == 1) text(shopOptions[i+1][selection[2]%2] + ((selection[2]+1)/2), width/2, i*170*scaleFactor[0]+245*scaleFactor[0]);
         else text(shopOptions[i+1][selection[2]%2] + (selection[2]/2), width/2, i*170*scaleFactor[0]+245*scaleFactor[0]);
       }
@@ -1172,11 +1145,10 @@ void shop(){ //game shop
       else text("(BOUGHT)", width/2, i*170*scaleFactor[0]+275*scaleFactor[0]);
       //shows triangle to go one value down in selection and check if that button is pressed
       float[] areas = {abs(((width/2-160*scaleFactor[0])-mouseX) * ((i*170*scaleFactor[0]+290*scaleFactor[0])-mouseY) - ((width/2-160*scaleFactor[0])-mouseX) * ((i*170*scaleFactor[0]+210*scaleFactor[0])-mouseY)), abs(((width/2-160*scaleFactor[0])-mouseX)*((i*170*scaleFactor[0]+250*scaleFactor[0])-mouseY) - ((width/2-200*scaleFactor[0]) - mouseX) * ((i*170*scaleFactor[0]+290*scaleFactor[0])-mouseY)), abs(((width/2-200*scaleFactor[0])-mouseX)*((i*170*scaleFactor[0]+210*scaleFactor[0])-mouseY) - ((width/2-160*scaleFactor[0])-mouseX) * ((i*170*scaleFactor[0]+250*scaleFactor[0])-mouseY))};
-      if (areas[0]  + areas[1] + areas[2]== abs(((width/2-160*scaleFactor[0])-(width/2-160*scaleFactor[0]))*((i*170*scaleFactor[0]+250*scaleFactor[0])-(i*170*scaleFactor[0]+210*scaleFactor[0])) - ((width/2-200*scaleFactor[0])-(width/2-160*scaleFactor[0]))*((i*170*scaleFactor[0]+290*scaleFactor[0]) - (i*170*scaleFactor[0]+210*scaleFactor[0])))){
+      if (areas[0]  + areas[1] + areas[2]== abs(((width/2-160*scaleFactor[0])-(width/2-160*scaleFactor[0]))*((i*170*scaleFactor[0]+250*scaleFactor[0])-(i*170*scaleFactor[0]+210*scaleFactor[0])) - ((width/2-200*scaleFactor[0])-(width/2-160*scaleFactor[0]))*((i*170*scaleFactor[0]+290*scaleFactor[0]) - (i*170*scaleFactor[0]+210*scaleFactor[0])))) {
         fill(127);
         if (clicked && selection[i] > 0) selection[i]--;
-      }
-      else fill (255);
+      } else fill (255);
       beginShape();
       vertex(width/2-160*scaleFactor[0], i*170*scaleFactor[0]+210*scaleFactor[0]);
       vertex(width/2-160*scaleFactor[0], i*170*scaleFactor[0]+290*scaleFactor[0]);
@@ -1184,11 +1156,10 @@ void shop(){ //game shop
       endShape();
       //shows triangle to go one value up in selection and check if that button is pressed
       float[] areas1 = {abs(((width/2+160*scaleFactor[0])-mouseX) * ((i*170*scaleFactor[0]+290*scaleFactor[0])-mouseY) - ((width/2+160*scaleFactor[0])-mouseX) * ((i*170*scaleFactor[0]+210*scaleFactor[0])-mouseY)), abs(((width/2+160*scaleFactor[0])-mouseX)*((i*170*scaleFactor[0]+250*scaleFactor[0])-mouseY) - ((width/2+200*scaleFactor[0]) - mouseX) * ((i*170*scaleFactor[0]+290*scaleFactor[0])-mouseY)), abs(((width/2+200*scaleFactor[0])-mouseX)*((i*170*scaleFactor[0]+210*scaleFactor[0])-mouseY) - ((width/2+160*scaleFactor[0])-mouseX) * ((i*170*scaleFactor[0]+250*scaleFactor[0])-mouseY))};
-      if (areas1[0]  + areas1[1] + areas1[2]== abs(((width/2+160*scaleFactor[0])-(width/2+160*scaleFactor[0]))*((i*170*scaleFactor[0]+250*scaleFactor[0])-(i*170*scaleFactor[0]+210*scaleFactor[0])) - ((width/2+200*scaleFactor[0])-(width/2+160*scaleFactor[0]))*((i*170*scaleFactor[0]+290*scaleFactor[0]) - (i*170*scaleFactor[0]+210*scaleFactor[0])))){
+      if (areas1[0]  + areas1[1] + areas1[2]== abs(((width/2+160*scaleFactor[0])-(width/2+160*scaleFactor[0]))*((i*170*scaleFactor[0]+250*scaleFactor[0])-(i*170*scaleFactor[0]+210*scaleFactor[0])) - ((width/2+200*scaleFactor[0])-(width/2+160*scaleFactor[0]))*((i*170*scaleFactor[0]+290*scaleFactor[0]) - (i*170*scaleFactor[0]+210*scaleFactor[0])))) {
         fill(127);
         if (clicked && selection[i] <= int(saveData[i+4]))selection[i]++;
-      }
-      else fill (255);
+      } else fill (255);
       beginShape();
       vertex(width/2+160*scaleFactor[0], i*170*scaleFactor[0]+210*scaleFactor[0]);
       vertex(width/2+160*scaleFactor[0], i*170*scaleFactor[0]+290*scaleFactor[0]);
@@ -1197,11 +1168,10 @@ void shop(){ //game shop
     }
   }
   //shows button for returning to main menu and being able to return to main menu
-  if(mouseX>=width/2-175*scaleFactor[0] && mouseX <= width/2+175*scaleFactor[0] && mouseY >= height-75*scaleFactor[0] && mouseY <= height-25*scaleFactor[0]){
+  if (mouseX>=width/2-175*scaleFactor[0] && mouseX <= width/2+175*scaleFactor[0] && mouseY >= height-75*scaleFactor[0] && mouseY <= height-25*scaleFactor[0]) {
     fill(127);
-    if(clicked) currentScene = 0;
-  }
-  else fill(255);
+    if (clicked) currentScene = 0;
+  } else fill(255);
   rect(width/2, height-50*scaleFactor[0], 350*scaleFactor[0], 50*scaleFactor[0]);
   fill(0);
   text("Return to main menu", width/2, height-40*scaleFactor[0]);
@@ -1215,6 +1185,6 @@ void draw() {
   else if (currentScene == 3) credits();
   else if (currentScene == 1) game();
   else if (currentScene == 4) exit(); //exits game
-  
+
   if (clicked) clicked = false; //if clicked, returns click to false
 }
