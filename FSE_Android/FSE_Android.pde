@@ -47,7 +47,7 @@ float vy=0;//vertical speed
 int[] fireRate = {50, 50, 250, 250, 100, 100, 250, 150, 100, 100, 100, 100, 50, 100, 50, 50, 100, 100, 50, 50}; //fire rate of each gun
 int[] bullets = {12, 7, 25, 32, 8, 8, 32, 50, 30, 30, 30, 30, 30, 30, 1, 10, 150, 150, 1, 1};//bullet capacity
 int[] dmg = {25, 40, 30, 25, 50, 55, 40, 35, 35, 40, 35, 40, 40, 50, 200, 250, 30, 40, 1000, 2000};//bullet damage
-int[] robotReload = {1250, 1500, 750, 750, 1000, 1000, 750, 750, 750, 750, 750, 750, 750, 750, 4500, 1000, 750, 750, 10000, 10000};//shows reload time for robots
+int[] robotReload = {1500, 1750, 1000, 1000, 1250, 1250, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 4500, 2000, 1000, 1000, 10000, 10000};//shows reload time for robots
 int bulletsRemaining = 0;//bullets remaining
 
 ArrayList<ArrayList<Float>> trail = new ArrayList<ArrayList<Float>>();//2D list for trail
