@@ -638,8 +638,8 @@ void updateEnemies() { //update and draws Enemies
       if (enemies.get(i).get(0)>= groundPos[j][0] && enemies.get(i).get(0)<= groundPos[j][0]+background[0].width) currentGroundEnemy = j; //checks if the enemy is on a groundPosition
     }
     int nextGroundEnemy = (currentGroundEnemy+1)%2; //finds the next ground position
-    float topGroundEnemy = groundPos[currentGroundEnemy][1]+49*scaleFactor[0]; //finds the top of the ground of where the enemy is on
-    float nextTopGroundEnemy = groundPos[nextGroundEnemy][1]+49*scaleFactor[0]; //finds the next top of the ground of where the enemy will be on
+    float topGroundEnemy = groundPos[currentGroundEnemy][1]+49*scaleFactor[1]; //finds the top of the ground of where the enemy is on
+    float nextTopGroundEnemy = groundPos[nextGroundEnemy][1]+49*scaleFactor[1]; //finds the next top of the ground of where the enemy will be on
     enemies.get(i).set(1, topGroundEnemy-(robot[0].height/3+robot[2].height)); //sets the enemy to be on the ground
     image(robot[0], enemies.get(i).get(0), enemies.get(i).get(1)); //draws the robot
     pushMatrix(); //begins robot transformation
@@ -699,7 +699,7 @@ void updateEnemies() { //update and draws Enemies
     }
     image(robot[1], enemies.get(i).get(0)-robot[1].width/2, enemies.get(i).get(1)); // draws arm
     image(robot[2], enemies.get(i).get(0), enemies.get(i).get(1)+robot[0].height/3+robot[2].height/2); //draw robot tracks
-    if (!(enemies.get(i).get(0)-int((int(speed)/3+10)*scaleFactor[1])>groundPos[nextGroundEnemy][0] && enemies.get(i).get(0)-int((int(speed)/3+10)*scaleFactor[3]) < groundPos[nextGroundEnemy][0]+background[0].width && bottomEnemy-nextTopGroundEnemy>5)) enemies.get(i).set(0, enemies.get(i).get(0)-int((int(speed)/3+10)*scaleFactor[1])); //checks if robot will collide with ground and pushes robot back
+    if (!(enemies.get(i).get(0)-int((int(speed)/3+10)*scaleFactor[1])>groundPos[nextGroundEnemy][0] && enemies.get(i).get(0)-int((int(speed)/3+10)*scaleFactor[1]) < groundPos[nextGroundEnemy][0]+background[0].width && bottomEnemy-nextTopGroundEnemy>5*scaleFactor[3])) enemies.get(i).set(0, enemies.get(i).get(0)-int((int(speed)/3+10)*scaleFactor[1])); //checks if robot will collide with ground and pushes robot back
     rectMode(CENTER);
     //drawing robot health
     fill(0);
