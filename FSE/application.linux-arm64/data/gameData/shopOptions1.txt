@@ -1,0 +1,20 @@
+Glock
+Deagle
+UMP-45
+UZI
+Remington 870
+SPAS-12
+AA-12
+P90
+AR-15
+SA80
+AUG
+C7
+AK-47
+FN SCAR
+M99
+AWP
+Negev
+M249
+SMAW
+Carl Gustaf
