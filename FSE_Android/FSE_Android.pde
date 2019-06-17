@@ -342,7 +342,7 @@ boolean justJumped = false; //checks if just jumped
 void jump() {//checks if key was pressed
   boolean jumpButton = mouseX>10*scaleFactor[0] && mouseX < 130*scaleFactor[0] && mouseY<height-130*scaleFactor[0] && mouseY > height-260*scaleFactor[0]; //check if finger is above button
   if (jumpButton && clicked && (onGround || onObstacle) && !justJumped && pos[0]>0 && currentScene == 1 && !firstTime) {//only jump if on ground
-    vy=int(JUMPPOWER*scaleFactor[3]);//jumping power
+    vy=int(JUMPPOWER*scaleFactor[0]);//jumping power
     pos[1]+=vy; //add vy to pos[1] to a give a little boost
     onGround = false; //sets onGround to false
     justJumped = true; //sets justJumped to true

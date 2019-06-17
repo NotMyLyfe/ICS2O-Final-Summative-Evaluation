@@ -309,7 +309,7 @@ boolean holding = false; // checks if still holding w button
 
 void keyPressed() {//checks if key was pressed
   if (keyCode == 87 && (onGround || onObstacle) && !justJumped && pos[0]>0 && !holding && currentScene == 1 && !firstTime) {//only jump if on ground
-    vy=int(JUMPPOWER*scaleFactor[3]);//jumping power
+    vy=int(JUMPPOWER*scaleFactor[0]);//jumping power
     onGround = false; //sets onGround to false
     justJumped = true; //sets justJumped to true
     holding = true; //sets holding to true
