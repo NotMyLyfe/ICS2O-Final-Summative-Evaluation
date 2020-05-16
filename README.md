@@ -6,4 +6,4 @@ By Gordon Lin and Daniel Weng
 
 This was an evaluation of what we've learnt from the ICS2O class, using the programming language, Processing 3 (A spinoff of Java).
 
-We worked on the for a month, feel free to download and try this game. We had no idea what we're doing, and we still have no idea what we're doing. We won't be updating anything, so any issues and bugs you encounter will not be fixed.
+We worked on this for a month, feel free to download and try this game. We had no idea what we're doing, and we still have no idea what we're doing. We won't be updating anything, so any issues and bugs you encounter will not be fixed.
